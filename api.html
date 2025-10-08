@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Testador API - Gerador de Documentos</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: #2c3e50;
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+            min-height: 800px;
+        }
+
+        .form-section {
+            padding: 30px;
+            background: #f8f9fa;
+            border-right: 2px solid #e9ecef;
+            overflow-y: auto;
+            max-height: 800px;
+        }
+
+        .preview-section {
+            padding: 30px;
+            background: white;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+            font-family: monospace;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .checkbox-group input {
+            width: auto;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        button {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #95a5a6;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #7f8c8d;
+            transform: translateY(-2px);
+        }
+
+        .pdf-preview {
+            flex: 1;
+            border: 3px dashed #bdc3c7;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f8f9fa;
+            margin-bottom: 20px;
+        }
+
+        .pdf-placeholder {
+            text-align: center;
+            color: #7f8c8d;
+        }
+
+        .pdf-placeholder i {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status.loading {
+            background: #cce7ff;
+            color: #004085;
+            border: 1px solid #b3d7ff;
+        }
+
+        .tab-buttons {
+            display: flex;
+            margin-bottom: 20px;
+            background: #e9ecef;
+            border-radius: 8px;
+            padding: 5px;
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            background: none;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .tab-button.active {
+            background: #3498db;
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .fato-item {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .fato-item input {
+            flex: 1;
+        }
+
+        .remove-fato {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 0 15px;
+            cursor: pointer;
+        }
+
+        .add-fato {
+            background: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 15px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-section {
+                border-right: none;
+                border-bottom: 2px solid #e9ecef;
+            }
+        }
+		
+		 /* NOVO CSS para pré-visualização de imagens */
+        .image-preview-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+            padding: 10px;
+            border: 2px dashed #e9ecef;
+            border-radius: 8px;
+            min-height: 50px;
+            background-color: #fff;
+        }
+        .img-preview-item {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100px;
+        }
+        .img-preview-item img {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        .img-preview-item .remove-img {
+            position: absolute;
+            top: -5px;
+            right: 5px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            line-height: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧪 Testador API - Gerador de Documentos</h1>
+            <p>Teste a geração de documentos PDF para notificações condominiais</p>
+        </div>
+
+        <div class="content">
+            <!-- Seção do Formulário -->
+            <div class="form-section">
+                <div class="tab-buttons">
+                    <button class="tab-button active" onclick="openTab('multa')">Multa</button>
+                    <button class="tab-button" onclick="openTab('advertencia')">Advertência</button>
+                    <button class="tab-button" onclick="openTab('customizado')">Customizado</button>
+                </div>
+
+                <form id="documentForm">
+                    <div id="status" class="status" style="display: none;"></div>
+
+                    <!-- Aba Multa -->
+                    <div id="multa" class="tab-content active">
+                        <div class="form-group">
+                            <label for="tipo_documento_multa">Tipo de Documento:</label>
+                            <input type="text" id="tipo_documento_multa" value="MULTA" readonly>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="numero_notificacao_multa">Número da Notificação:</label>
+                            <input type="text" id="numero_notificacao_multa" value="268/25">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="unidade_multa">Unidade Notificada:</label>
+                            <input type="text" id="unidade_multa" value="Unidade 201 – Bloco B">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="assunto_multa">Assunto:</label>
+                            <input type="text" id="assunto_multa" value="Deveres com o Pet - Infração às Normas Condominiais">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Fatos (lista de infrações):</label>
+                            <div id="fatos-multa">
+                                <div class="fato-item">
+                                    <input type="text" value="Condução do animal sem uso de guia nas áreas comuns">
+                                    <button type="button" class="remove-fato" onclick="removeFato(this)">×</button>
+                                </div>
+								<div class="form-group">
+									<label for="fotos_fatos_multa">Evidências Fotográficas (opcional):</label>
+									<input type="file" id="fotos_fatos_multa" accept="image/*" multiple onchange="handleFiles(this, 'preview-multa')">
+									<div class="image-preview-container" id="preview-multa"></div>
+								</div>
+                                <div class="fato-item">
+                                    <input type="text" value="Animal realizou necessidades fisiológicas em área comum">
+                                    <button type="button" class="remove-fato" onclick="removeFato(this)">×</button>
+                                </div>
+                                <div class="fato-item">
+                                    <input type="text" value="Uso do elevador social em desacordo com o regimento">
+                                    <button type="button" class="remove-fato" onclick="removeFato(this)">×</button>
+                                </div>
+                            </div>
+                            <button type="button" class="add-fato" onclick="addFato('fatos-multa')">+ Adicionar Fato</button>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="fundamentacao_multa">Fundamentação Legal:</label>
+                            <textarea id="fundamentacao_multa">Artigo 155 do Regimento Interno: Os animais domésticos não deverão fazer suas necessidades fisiológicas nas áreas comuns do Condomínio. Caberá ao dono ou tutor do animal providenciar imediatamente a limpeza, caso o animal venha a sujá-las. (Infração catalogada na letra 'C')
+
+Artigo 187: As multas aplicadas a qualquer unidade autônoma serão cobradas com base na menor taxa condominial ordinária vigente.</textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="texto_multa">Texto Descritivo:</label>
+                            <textarea id="texto_multa">Considerando as disposições normativas do Regimento Interno do Condomínio, é imperativo assegurar o fiel cumprimento das regras, que os pets não deverão fazer suas necessidades fisiológicas nas áreas comuns do Condomínio em respeito à limpeza, à ordem e ao bem-estar coletivo.</textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="valor_multa">Valor da Multa:</label>
+                            <input type="text" id="valor_multa" value="100% da menor taxa condominial ordinária">
+                        </div>
+                    </div>
+
+                    <!-- Aba Advertência -->
+                    <div id="advertencia" class="tab-content">
+                        <div class="form-group">
+                            <label for="tipo_documento_adv">Tipo de Documento:</label>
+                            <input type="text" id="tipo_documento_adv" value="ADVERTÊNCIA" readonly>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="numero_notificacao_adv">Número da Notificação:</label>
+                            <input type="text" id="numero_notificacao_adv" value="156/25">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="unidade_adv">Unidade Notificada:</label>
+                            <input type="text" id="unidade_adv" value="Unidade 305 – Bloco A">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="assunto_adv">Assunto:</label>
+                            <input type="text" id="assunto_adv" value="Perturbação do Sossego - Excesso de Ruído">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Fatos:</label>
+                            <div id="fatos-advertencia">
+                                <div class="fato-item">
+                                    <input type="text" value="Ruídos excessivos provenientes de aparelho de som após as 22h">
+                                    <button type="button" class="remove-fato" onclick="removeFato(this)">×</button>
+                                </div>
+                                <div class="fato-item">
+                                    <input type="text" value="Reclamações de múltiplos condôminos">
+                                    <button type="button" class="remove-fato" onclick="removeFato(this)">×</button>
+                                </div>
+                                <div class="fato-item">
+                                    <input type="text" value="Evento ocorrido no dia 08/09/2025 às 23h45">
+                                    <button type="button" class="remove-fato" onclick="removeFato(this)">×</button>
+                                </div>
+                            </div>
+                            <button type="button" class="add-fato" onclick="addFato('fatos-advertencia')">+ Adicionar Fato</button>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="fundamentacao_adv">Fundamentação Legal:</label>
+                            <textarea id="fundamentacao_adv">Artigo 134 do Regimento Interno: É proibido perturbar o sossego e a tranquilidade dos condôminos com ruídos excessivos, especialmente no período entre 22h e 7h.
+
+Artigo 187: Nos casos de infrações enquadradas nas categorias iniciais, será aplicada advertência por escrito.</textarea>
+                        </div>
+                    </div>
+
+                    <!-- Aba Customizado -->
+                    <div id="customizado" class="tab-content">
+                        <div class="form-group">
+                            <label for="tipo_documento_custom">Tipo de Documento:</label>
+                            <input type="text" id="tipo_documento_custom" placeholder="Ex: NOTIFICAÇÃO, COMUNICADO">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="numero_notificacao_custom">Número:</label>
+                            <input type="text" id="numero_notificacao_custom" placeholder="Ex: 001/25">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="unidade_custom">Unidade:</label>
+                            <input type="text" id="unidade_custom" placeholder="Unidade XXX – Bloco X">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="assunto_custom">Assunto:</label>
+                            <input type="text" id="assunto_custom" placeholder="Assunto da notificação">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="fatos_custom">Fatos (um por linha):</label>
+                            <textarea id="fatos_custom" placeholder="Descreva os fatos, um por linha" rows="5"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="fundamentacao_custom">Fundamentação Legal:</label>
+                            <textarea id="fundamentacao_custom" placeholder="Artigos do regimento..." rows="5"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="texto_custom">Texto Adicional:</label>
+                            <textarea id="texto_custom" placeholder="Texto descritivo adicional..." rows="4"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Campos comuns -->
+                    <div class="form-group">
+                        <label for="data_emissao">Data de Emissão:</label>
+                        <input type="date" id="data_emissao" value="2025-10-05">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cidade">Cidade/UF:</label>
+                        <input type="text" id="cidade" value="Taguatinga/DF">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email_contato">E-mail para Contato:</label>
+                        <input type="email" id="email_contato" value="conselhofiscalmiami2025@gmail.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="prazo_recurso">Prazo para Recurso (dias úteis):</label>
+                        <input type="number" id="prazo_recurso" value="5" min="1" max="30">
+                    </div>
+
+                    <div class="form-group">
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="incluir_recurso" checked>
+                            <label for="incluir_recurso">Incluir seção de direito ao recurso</label>
+                        </div>
+                    </div>
+
+                    <div class="button-group">
+                        <button type="button" class="btn-primary" onclick="gerarPDF()">
+                            📄 Gerar PDF
+                        </button>
+                        <button type="button" class="btn-secondary" onclick="limparFormulario()">
+                            🗑️ Limpar
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Seção de Preview -->
+            <div class="preview-section">
+                <h3>Visualização do PDF</h3>
+                <div class="pdf-preview" id="pdfPreview">
+                    <div class="pdf-placeholder" id="pdfPlaceholder">
+                        <div>📋</div>
+                        <p>O PDF gerado aparecerá aqui</p>
+                        <small>Use o botão "Gerar PDF" para testar</small>
+                    </div>
+                    <iframe id="pdfViewer" style="display: none; width: 100%; height: 100%; border: none;"></iframe>
+                </div>
+                
+                <div class="button-group">
+                    <button type="button" class="btn-secondary" onclick="baixarPDF()" id="btnDownload" style="display: none;">
+                        💾 Baixar PDF
+                    </button>
+                    <button type="button" class="btn-secondary" onclick="testarHealth()">
+                        🩺 Testar Health API
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentPdfUrl = null;
+		
+		// Armazenará os dados Base64 das imagens para cada aba
+		let imageStore = {
+			multa: [],
+			advertencia: [],
+			customizado: []
+		};
+		
+		// --- NOVAS FUNÇÕES PARA MANIPULAR IMAGENS ---
+
+    function handleFiles(input, previewContainerId) {
+        const previewContainer = document.getElementById(previewContainerId);
+        const tabKey = previewContainerId.split('-')[1]; // 'multa', 'adv', 'custom'
+        
+        // Limpa previews e dados antigos da aba atual
+        previewContainer.innerHTML = '';
+        imageStore[tabKey] = [];
+
+        const files = input.files;
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            if (!file.type.startsWith('image/')){ continue }
+
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                const base64String = e.target.result.split(',')[1];
+                const fileData = { name: file.name, b64: base64String };
+                
+                // Armazena os dados da imagem
+                imageStore[tabKey].push(fileData);
+
+                // Cria o preview visual
+                createImagePreview(e.target.result, file.name, previewContainer, tabKey);
+            }
+            
+            reader.readAsDataURL(file);
+        }
+    }
+
+    function createImagePreview(imageDataUrl, fileName, container, tabKey) {
+        const previewItem = document.createElement('div');
+        previewItem.className = 'img-preview-item';
+        previewItem.setAttribute('data-filename', fileName);
+
+        const img = document.createElement('img');
+        img.src = imageDataUrl;
+        
+        const removeBtn = document.createElement('button');
+        removeBtn.className = 'remove-img';
+        removeBtn.innerHTML = '&times;';
+        removeBtn.type = 'button';
+        removeBtn.onclick = () => removeImage(fileName, container, tabKey);
+
+        previewItem.appendChild(img);
+        previewItem.appendChild(removeBtn);
+        container.appendChild(previewItem);
+    }
+
+    function removeImage(fileName, container, tabKey) {
+        // Remove do array de dados
+        imageStore[tabKey] = imageStore[tabKey].filter(img => img.name !== fileName);
+        
+        // Remove do DOM
+        const itemToRemove = container.querySelector(`[data-filename="${fileName}"]`);
+        if (itemToRemove) {
+            container.removeChild(itemToRemove);
+        }
+    }
+
+        function openTab(tabName) {
+            // Esconder todas as abas
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Mostrar a aba selecionada
+            document.getElementById(tabName).classList.add('active');
+            
+            // Atualizar botões das abas
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+
+        function addFato(containerId) {
+            const container = document.getElementById(containerId);
+            const div = document.createElement('div');
+            div.className = 'fato-item';
+            div.innerHTML = `
+                <input type="text" placeholder="Descreva o fato...">
+                <button type="button" class="remove-fato" onclick="removeFato(this)">×</button>
+            `;
+            container.appendChild(div);
+        }
+
+        function removeFato(button) {
+            button.parentElement.remove();
+        }
+
+        function showStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+            status.style.display = 'block';
+            
+            if (type !== 'loading') {
+                setTimeout(() => {
+                    status.style.display = 'none';
+                }, 5000);
+            }
+        }
+
+        function getFormData() {
+			const activeTab = document.querySelector('.tab-content.active').id;
+			let dados = {
+				data_emissao: document.getElementById('data_emissao').value,
+				cidade: document.getElementById('cidade').value,
+				email_contato: document.getElementById('email_contato').value,
+				prazo_recurso: parseInt(document.getElementById('prazo_recurso').value),
+				incluir_recurso: document.getElementById('incluir_recurso').checked
+			};
+
+			if (activeTab === 'multa') {
+				dados.fotos_fatos = imageStore.multa.map(img => img.b64);
+				dados.tipo_documento = document.getElementById('tipo_documento_multa').value;
+				dados.numero_notificacao = document.getElementById('numero_notificacao_multa').value;
+				dados.unidade = limparTexto(document.getElementById('unidade_multa').value);
+				dados.assunto = limparTexto(document.getElementById('assunto_multa').value);
+				dados.fatos = Array.from(document.querySelectorAll('#fatos-multa input')).map(input => limparTexto(input.value)).filter(Boolean);
+				dados.fundamentacao_legal = limparTexto(document.getElementById('fundamentacao_multa').value);
+				dados.texto_descritivo = limparTexto(document.getElementById('texto_multa').value);
+				dados.tipo_penalidade = 'MULTA';
+				dados.valor_multa = limparTexto(document.getElementById('valor_multa').value);
+			}
+            else if (activeTab === 'advertencia') {
+                dados.tipo_documento = document.getElementById('tipo_documento_adv').value;
+                dados.numero_notificacao = document.getElementById('numero_notificacao_adv').value;
+                dados.unidade = document.getElementById('unidade_adv').value;
+                dados.assunto = document.getElementById('assunto_adv').value;
+                dados.fatos = Array.from(document.querySelectorAll('#fatos-advertencia input')).map(input => input.value).filter(Boolean);
+                dados.fundamentacao_legal = document.getElementById('fundamentacao_adv').value;
+                dados.tipo_penalidade = 'ADVERTÊNCIA';
+            }
+            else if (activeTab === 'customizado') {
+                dados.tipo_documento = document.getElementById('tipo_documento_custom').value;
+                dados.numero_notificacao = document.getElementById('numero_notificacao_custom').value;
+                dados.unidade = document.getElementById('unidade_custom').value;
+                dados.assunto = document.getElementById('assunto_custom').value;
+                
+                const fatosText = document.getElementById('fatos_custom').value;
+                dados.fatos = fatosText.split('\n').filter(line => line.trim());
+                
+                dados.fundamentacao_legal = document.getElementById('fundamentacao_custom').value;
+                dados.texto_descritivo = document.getElementById('texto_custom').value;
+                dados.tipo_penalidade = document.getElementById('tipo_documento_custom').value.toUpperCase().includes('MULTA') ? 'MULTA' : 'ADVERTÊNCIA';
+            }
+
+            return dados;
+        }
+
+        async function gerarPDF() {
+    const dados = getFormData();
+    
+    if (!dados.tipo_documento || !dados.numero_notificacao) {
+        showStatus('Preencha pelo menos o tipo e número do documento', 'error');
+        return;
+    }
+
+    showStatus('Gerando PDF...', 'loading');
+
+    try {
+        console.log('Enviando dados:', dados);
+        
+			const serverIP = '172.24.100.30'; // substitua pelo IP real
+			const response = await fetch("http://172.24.100.30:5000/gerar_documento", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(dados)
+        });
+
+        console.log('Status da resposta:', response.status);
+        console.log('Headers:', response.headers);
+
+        if (response.ok) {
+            const pdfBlob = await response.blob();
+            console.log('Tamanho do PDF:', pdfBlob.size);
+            
+            const pdfUrl = URL.createObjectURL(pdfBlob);
+            
+            // Mostrar PDF no iframe
+            document.getElementById('pdfPlaceholder').style.display = 'none';
+            const pdfViewer = document.getElementById('pdfViewer');
+            pdfViewer.src = pdfUrl;
+            pdfViewer.style.display = 'block';
+            
+            // Mostrar botão de download
+            document.getElementById('btnDownload').style.display = 'block';
+            currentPdfUrl = pdfUrl;
+            
+            showStatus('PDF gerado com sucesso!', 'success');
+        } else {
+            const errorText = await response.text();
+            console.error('Erro da API:', errorText);
+            showStatus(`Erro: ${response.status} - ${errorText}`, 'error');
+        }
+    } catch (error) {
+        console.error('Erro de conexão:', error);
+        showStatus(`Erro de conexão: ${error.message}`, 'error');
+    }
+}
+
+        function baixarPDF() {
+            if (currentPdfUrl) {
+                const link = document.createElement('a');
+                link.href = currentPdfUrl;
+                link.download = `documento_${Date.now()}.pdf`;
+                link.click();
+            }
+        }
+
+        async function testarHealth() {
+            try {
+                showStatus('Testando conexão com a API...', 'loading');
+                const response = await fetch('http://localhost:5000/health');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    showStatus(`✅ API saudável - ${data.status}`, 'success');
+                } else {
+                    showStatus('❌ API não respondeu corretamente', 'error');
+                }
+            } catch (error) {
+                showStatus(`❌ Erro: ${error.message}`, 'error');
+            }
+        }
+
+        function limparFormulario() {
+            document.getElementById('documentForm').reset();
+            document.getElementById('pdfPlaceholder').style.display = 'block';
+            document.getElementById('pdfViewer').style.display = 'none';
+            document.getElementById('btnDownload').style.display = 'none';
+			// NOVO: Limpa os previews de imagem e o armazenamento
+        document.querySelectorAll('.image-preview-container').forEach(container => {
+            container.innerHTML = '';
+        });
+        imageStore = { multa: [], advertencia: [], customizado: [] };
+            currentPdfUrl = null;
+            show
+			Status('Formulário limpo', 'success');
+        }
+		
+		function limparTexto(texto) {
+			if (!texto) return texto;
+			
+			const substituicoes = {
+				'–': '-',  // Travessão
+				'—': '-',  // Travessão longo
+				'´': "'",  // Acento
+				'`': "'",  // Crase
+				'“': '"',  // Aspas
+				'”': '"',  // Aspas
+				'‘': "'",  // Aspas simples
+				'’': "'",  // Aspas simples
+			};
+			
+			let textoLimpo = texto;
+			for (const [char, substituto] of Object.entries(substituicoes)) {
+				textoLimpo = textoLimpo.split(char).join(substituto);
+			}
+			
+			return textoLimpo;
+		}
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Testador API carregado!');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,142 @@
+/* Este é o mesmo CSS que você já tinha, agora em um arquivo separado */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.header {
+    background: #2c3e50;
+    color: white;
+    padding: 30px;
+    text-align: center;
+}
+
+.content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    min-height: 800px;
+}
+
+.form-section {
+    padding: 30px;
+    background: #f8f9fa;
+    border-right: 2px solid #e9ecef;
+    overflow-y: auto;
+    max-height: 800px;
+}
+
+.preview-section {
+    padding: 30px;
+    background: white;
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group.hidden {
+    display: none;
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+input, select, textarea {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.button-group {
+    display: flex;
+    gap: 15px;
+    margin-top: 30px;
+}
+
+button {
+    padding: 15px 30px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    flex: 1;
+}
+
+.btn-primary { background: #3498db; color: white; }
+.btn-primary:hover { background: #2980b9; transform: translateY(-2px); }
+.btn-secondary { background: #95a5a6; color: white; }
+.btn-secondary:hover { background: #7f8c8d; transform: translateY(-2px); }
+
+.pdf-preview {
+    flex: 1;
+    border: 3px dashed #bdc3c7;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8f9fa;
+    margin-bottom: 20px;
+}
+
+.pdf-placeholder { text-align: center; color: #7f8c8d; }
+.pdf-placeholder div { font-size: 48px; margin-bottom: 10px; }
+
+.status { padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center; font-weight: 600; }
+.status.success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+.status.error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+.status.loading { background: #cce7ff; color: #004085; border: 1px solid #b3d7ff; }
+
+.fato-item { display: flex; gap: 10px; margin-bottom: 10px; }
+.fato-item input { flex: 1; }
+.remove-fato { background: #e74c3c; color: white; border: none; border-radius: 5px; padding: 0 15px; cursor: pointer; }
+.add-fato { background: #27ae60; color: white; border: none; border-radius: 5px; padding: 10px 15px; cursor: pointer; margin-bottom: 10px; }
+
+.image-preview-container { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; padding: 10px; border: 2px dashed #e9ecef; border-radius: 8px; min-height: 50px; background-color: #fff; }
+.img-preview-item { position: relative; display: flex; flex-direction: column; align-items: center; width: 100px; }
+.img-preview-item img { width: 80px; height: 80px; object-fit: cover; border-radius: 5px; border: 1px solid #ddd; }
+.img-preview-item .remove-img { position: absolute; top: -5px; right: 5px; background: #e74c3c; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-weight: bold; line-height: 20px; text-align: center; }
+
+@media (max-width: 768px) {
+    .content { grid-template-columns: 1fr; }
+    .form-section { border-right: none; border-bottom: 2px solid #e9ecef; }
+}
