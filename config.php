@@ -10,6 +10,15 @@ define('DB_NAME', 'app_db');       // O nome do seu banco de dados
 // Constante para o caminho base de uploads
 define('UPLOADS_PATH', __DIR__ . '/uploads/imagens/');
 
+
+
+// ATENÇÃO: Em um ambiente de produção, esta chave NUNCA deve estar no código.
+// Use variáveis de ambiente (.env) para armazená-la de forma segura.
+// Para este exemplo, vamos defini-la aqui.
+define('JWT_SECRET_KEY', 'dinovatech');
+define('JWT_ALGORITHM', 'HS256');
+
+
 /**
  * Função para criar uma nova conexão com o banco de dados usando PDO.
  * PDO é a forma moderna e segura de se conectar a bancos de dados em PHP.
