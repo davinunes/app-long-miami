@@ -1,4 +1,6 @@
 $(document).ready(function() {
+	
+	
 
     // ----------------------------------------------------------------
     // FUNÇÕES DE UI E DE APOIO
@@ -65,6 +67,18 @@ $(document).ready(function() {
                 if (pushState) {
                     window.location.hash = url;
                 }
+				
+				
+				if (url.includes('lista.php')) {
+					carregarListaNotificacoes();
+				}
+				
+				else if (url.includes('editar.php')) {
+					inicializarFormularioNotificacao();
+				}
+				else if (url.includes('nova_not.php') || url.includes('editar.php')) {
+					inicializarFormularioNotificacao();
+				}
             },
             error: jqXHR => {
                 if (jqXHR.status === 401) {

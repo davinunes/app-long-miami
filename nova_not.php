@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <div class="container">
+
         <div class="header">
             <h1>Criar Nova Notificação</h1>
             <p>Preencha os dados para gerar e salvar uma nova notificação</p>
@@ -40,19 +40,7 @@
                 </div>
             </div>
         </div>
-    </div>
 
-    <script>
-        // Aponta para o IP do host onde o container Python está exposto
-        const API_BASE_URL_PYTHON = 'http://172.24.100.30:5000'; 
-        
-        // Caminho relativo para a API PHP, que está no mesmo serviço
-        const API_BASE_URL_PHP = '/api'; 
-    </script>
-
-    <script src="js/helpers.js"></script>
-    <script src="js/funcs.js"></script> 
-	<script src="js/main.js"></script>
     
 </body>
 </html>

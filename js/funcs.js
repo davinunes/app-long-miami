@@ -6,6 +6,9 @@ let currentPdfUrl = null;
 let configData = {};
 let imagensParaDeletar = [];
 
+const API_BASE_URL_PYTHON = `${window.location.protocol}//${window.location.hostname}:5000`;
+const API_BASE_URL_PHP = window.location.origin + '/api';
+
 // --- Bloco de Funções Auxiliares de UI (do antigo helpers.js) ---
 
 function configurarCampoBloco() {
@@ -33,7 +36,19 @@ function vincularCamposUnidadeBloco() {
 }
 
 // --- Bloco de Funções Comuns ---
-
+function urlParaBase64(url) {
+    return new Promise((resolve, reject) => {
+        fetch(url)
+            .then(response => response.blob())
+            .then(blob => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result.split(',')[1]);
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+            })
+            .catch(reject);
+    });
+}
 
 async function fetchInitialData() {
     try {
@@ -63,68 +78,81 @@ async function fetchInitialData() {
  * VERSÃO CORRETA E DEFINITIVA DA getFormData
  */
 async function getFormData(forPDF = false) {
+    console.log("--- 2. Função 'getFormData' iniciada. ---");
+    // ... (o início da função é o mesmo)
     const tipoSelect = document.getElementById('tipo_id');
-    const selectedTipoOption = tipoSelect.options[tipoSelect.selectedIndex];
     const assuntoSelect = document.getElementById('assunto_id');
+    const selectedTipoOption = tipoSelect.options[tipoSelect.selectedIndex];
     const selectedAssuntoOption = assuntoSelect.options[assuntoSelect.selectedIndex];
 
-    // Esta é a parte crucial. Note que os IDs são simples: 'numero', 'unidade', 'bloco'.
     const dados = {
         numero: document.getElementById('numero').value,
         unidade: document.getElementById('unidade').value,
         bloco: document.getElementById('bloco').value,
         data_emissao: document.getElementById('data_emissao').value,
         fundamentacao_legal: document.getElementById('fundamentacao_legal').value,
-        fatos: Array.from(document.querySelectorAll('#fatos-container input')).map(input => input.value).filter(Boolean),
-        fotos_fatos: imageStore 
+        fatos: Array.from(document.querySelectorAll('#fatos-container input')).map(input => input.value).filter(Boolean)
     };
 
     if (forPDF) {
-        dados.tipo_notificacao = selectedTipoOption.text;
-        dados.tipo_penalidade = selectedTipoOption.text.toUpperCase();
-        dados.assunto = selectedAssuntoOption.text;
-        dados.url_recurso = document.getElementById('url_recurso').value;
-        if (selectedTipoOption.text.toLowerCase().includes('multa')) {
-            dados.valor_multa = document.getElementById('valor_multa').value;
-        }
-        
+        dados.fotos_fatos = [];
         const novasImagensB64 = imageStore.map(img => img.b64);
-        const urlsImagensAntigas = Array.from(document.querySelectorAll('.existing-image:not(.marcada-para-delecao) img'))
-                                       .map(imgElement => imgElement.src);
-        const antigasImagensB64 = await Promise.all(urlsImagensAntigas.map(url => urlParaBase64(url)));
-        dados.fotos_fatos = [...antigasImagensB64, ...novasImagensB64];
         
-    } else {
-        // Para salvar no PHP
-        dados.tipo_id = parseInt(selectedTipoOption.value);
-        dados.assunto_id = parseInt(selectedAssuntoOption.value);
+        const imagensExistentes = document.querySelectorAll('.img-preview-item.existing-image img');
+        console.log(`--- 3. Encontradas ${imagensExistentes.length} imagens existentes. Iniciando conversão para Base64... ---`);
+        
+        const promessasImagensExistentes = Array.from(imagensExistentes).map(img => urlParaBase64(img.src));
+        
+        const existentesImagensB64 = await Promise.all(promessasImagensExistentes);
+        dados.fotos_fatos = existentesImagensB64.concat(novasImagensB64);
+        
+        // ... (o resto da lógica if forPDF é a mesma)
+        dados.tipo_notificacao = selectedTipoOption ? selectedTipoOption.text : '';
+        dados.tipo_penalidade = selectedTipoOption ? selectedTipoOption.text.toUpperCase() : '';
+        dados.assunto = selectedAssuntoOption ? selectedAssuntoOption.text : '';
         dados.url_recurso = document.getElementById('url_recurso').value;
-        if (selectedTipoOption.text.toLowerCase().includes('multa')) {
+        if (selectedTipoOption && selectedTipoOption.text.toLowerCase().includes('multa')) {
             dados.valor_multa = document.getElementById('valor_multa').value;
         }
+    } else {
+        // ... (lógica para PHP)
+        dados.fotos_fatos = imageStore;
+        dados.tipo_id = selectedTipoOption ? parseInt(selectedTipoOption.value) : null;
+        dados.assunto_id = selectedAssuntoOption ? parseInt(assuntoSelect.value) : null;
     }
+    
     return dados;
 }
 
 async function gerarPDF() {
-    showStatus('Preparando dados para o preview...', 'loading');
+    console.log("--- 1. Função 'gerarPDF' iniciada. ---");
     
-    // getFormData agora é assíncrono, então precisamos usar 'await'
-    const dados = await getFormData(true);
-
-    if (!dados.numero || !dados.unidade) {
-        showStatus('Preencha pelo menos Número e Unidade.', 'error'); return;
-    }
-    showStatus('Gerando preview...', 'loading');
     try {
+        const dados = await getFormData(true);
+        console.log("--- 4. 'getFormData' concluído com sucesso. Dados recebidos:", dados);
+
+        if (!dados.numero || !dados.unidade) {
+            showStatus('Preencha pelo menos Número e Unidade para gerar o preview.', 'error');
+            console.log("--- X. ERRO: Campos obrigatórios não preenchidos. ---");
+            return;
+        }
+
+        showStatus('Gerando preview do PDF...', 'loading');
+        
+        console.log(`--- 5. PREPARANDO CHAMADA PARA A API PYTHON com ${dados.fotos_fatos.length} imagem(ns). ---`);
+        
         const response = await fetch(`${API_BASE_URL_PYTHON}/gerar_documento`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(dados)
         });
+
+        console.log("--- 6. Resposta da API Python recebida. ---", response);
+
         if (response.ok) {
+            // ... (resto da lógica de sucesso)
             const pdfBlob = await response.blob();
-            currentPdfUrl = URL.createObjectURL(pdfBlob);
+            const currentPdfUrl = URL.createObjectURL(pdfBlob);
             document.getElementById('pdfPlaceholder').style.display = 'none';
             const pdfViewer = document.getElementById('pdfViewer');
             pdfViewer.src = currentPdfUrl;
@@ -132,11 +160,14 @@ async function gerarPDF() {
             document.getElementById('btnDownload').style.display = 'block';
             showStatus('Preview gerado com sucesso!', 'success');
         } else {
+            // ... (resto da lógica de erro)
             const errorData = await response.json();
             showStatus(`Erro ao gerar PDF: ${errorData.error}`, 'error');
         }
+
     } catch (error) {
-        showStatus(`Erro de conexão com a API Python: ${error.message}`, 'error');
+        console.error("--- X. ERRO CRÍTICO DENTRO DE 'gerarPDF': ---", error);
+        showStatus(`Ocorreu um erro de script: ${error.message}`, 'error');
     }
 }
 
@@ -218,6 +249,29 @@ function baixarPDF() {
     }
 }
 
+
+function vincularCamposUnidadeBloco() {
+    const unidadeInput = document.getElementById('unidade');
+    const blocoInput = document.getElementById('bloco');
+
+    if (!unidadeInput || !blocoInput) return; // Não faz nada se os campos não existirem
+
+    unidadeInput.addEventListener('input', function() {
+        const valor = this.value.trim().toUpperCase();
+        if (valor.length > 0) {
+            // Pega o primeiro caractere
+            const primeiroChar = valor.charAt(0);
+            // Verifica se o primeiro caractere é uma letra (não é um número)
+            if (isNaN(parseInt(primeiroChar))) {
+                blocoInput.value = primeiroChar;
+            } else {
+                blocoInput.value = ''; // Limpa se começar com número
+            }
+        } else {
+            blocoInput.value = ''; // Limpa se o campo estiver vazio
+        }
+    });
+}
 
 /**
  * Pega o JWT do localStorage, decodifica o payload e o retorna como um objeto.

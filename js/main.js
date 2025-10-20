@@ -1,22 +1,68 @@
-// js/main.js - Lógica específica da página de CRIAÇÃO
+// js/main.js
 
-document.addEventListener('DOMContentLoaded', async function() {
-    document.getElementById('data_emissao').value = new Date().toISOString().split('T')[0];
-    addFato();
-    
-    // Chama funções de UI que agora estão em funcs.js
-    configurarCampoBloco();
-    vincularCamposUnidadeBloco();
-    
-    // Configura o botão principal para a ação de SALVAR
-    document.getElementById('btnSalvar').onclick = salvarNotificacao;
-    
-    // Busca os dados iniciais e o próximo número
-    await Promise.all([
-        fetchInitialData(),
-        fetchProximoNumero()
-    ]);
-});
+/**
+ * Busca as notificações da API e preenche a tabela na página.
+ * Esta função será chamada pelo jwt.js depois que o HTML de lista.php for carregado.
+ */
+function carregarListaNotificacoes() {
+    const tbody = document.getElementById('notifications-table-body');
+    // Se o elemento da tabela não existir na página, não faz nada.
+    if (!tbody) return;
+
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">Carregando...</td></tr>';
+
+    const apiEndpoint = '/api/notificacoes.php';
+    const accessToken = localStorage.getItem('accessToken');
+
+    fetch(apiEndpoint, {
+        headers: {
+            'Authorization': `Bearer ${accessToken}`
+        }
+    })
+    .then(response => {
+        if (response.status === 401) {
+            alert('Sessão expirada. Faça o login novamente.');
+            window.location.replace('index.php');
+            throw new Error('Sessão expirada.');
+        }
+        if (!response.ok) {
+            throw new Error(`Erro na rede: ${response.statusText}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        tbody.innerHTML = ''; // Limpa a mensagem "Carregando..."
+        if (!data || data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">Nenhuma notificação encontrada.</td></tr>';
+            return;
+        }
+
+        data.forEach(n => {
+            const dataEmissao = new Date(n.data_emissao + 'T00:00:00');
+            const dataFormatada = dataEmissao.toLocaleDateString('pt-BR');
+
+            // Adicionamos a classe 'ajax-link' para que a navegação continue via AJAX
+            const row = `
+                <tr>
+                    <td>${n.numero}/${n.ano}</td>
+                    <td>${n.bloco ? n.bloco : ''}${n.unidade}</td>
+                    <td>${n.assunto}</td>
+                    <td>${n.tipo}</td>
+                    <td>${n.status}</td>
+                    <td>${dataFormatada}</td>
+                    <td>
+                        <a href="editar.php?id=${n.id}" class="action-btn ajax-link">Detalhes / Editar</a>
+                    </td>
+                </tr>
+            `;
+            tbody.innerHTML += row;
+        });
+    })
+    .catch(error => {
+        console.error('Erro ao buscar notificações:', error);
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center;">Erro ao carregar dados: ${error.message}</td></tr>`;
+    });
+}
 
 async function fetchProximoNumero() {
     try {
@@ -57,4 +103,415 @@ async function salvarNotificacao() {
     } catch (error) {
         showStatus(`Erro de conexão: ${error.message}`, 'error');
     }
+}
+
+// js/main.js
+
+// ... (a função carregarListaNotificacoes() continua aqui em cima) ...
+
+/**
+ * Inicializa a página de edição. Busca os dados da notificação pelo ID
+ * na URL e preenche o formulário.
+ */
+async function inicializarFormularioEdicao() {
+    // --- PARTE 1: LER O ID DA NOTIFICAÇÃO DA URL HASH ---
+    const hash = window.location.hash;
+    const queryStringIndex = hash.indexOf('?');
+    let notificacaoId = null;
+
+    if (queryStringIndex !== -1) {
+        const queryString = hash.substring(queryStringIndex + 1);
+        const urlParams = new URLSearchParams(queryString);
+        notificacaoId = urlParams.get('id');
+    }
+
+    if (!notificacaoId) {
+        document.getElementById('main-content').innerHTML = "<h1>Erro: ID da notificação não fornecido na URL.</h1>";
+        console.error("Não foi possível encontrar o 'id' na URL hash:", hash);
+        return;
+    }
+
+    console.log(`✅ Iniciando formulário de edição para o ID: ${notificacaoId}`);
+
+    // --- PARTE 2: LÓGICA PORTADA DO ANTIGO 'editar.js' ---
+
+    // Variável para guardar IDs de imagens a serem deletadas
+    let imagensParaDeletar = [];
+
+    // Função para preencher o formulário com os dados da API
+    function preencherFormulario(data) {
+        try {
+            document.getElementById('notificacao_id').value = data.id;
+            document.getElementById('numero').value = `${data.numero}/${data.ano}`;
+            document.getElementById('unidade').value = data.unidade;
+            document.getElementById('bloco').value = data.bloco || '';
+            document.getElementById('url_recurso').value = data.url_recurso || '';
+            document.getElementById('fundamentacao_legal').value = data.fundamentacao_legal || '';
+            document.getElementById('data_emissao').value = data.data_emissao;
+            document.getElementById('tipo_id').value = data.tipo_id;
+            document.getElementById('assunto_id').value = data.assunto_id;
+            
+            // Lógica dos fatos
+            const fatosContainer = document.getElementById('fatos-container');
+            fatosContainer.innerHTML = ''; // Limpa antes de adicionar
+            if (data.fatos && data.fatos.length > 0) {
+                data.fatos.forEach(fatoDescricao => addFato(fatoDescricao));
+            } else {
+                addFato(); // Adiciona um campo vazio se não houver fatos
+            }
+
+            // Lógica das imagens existentes
+            const previewContainer = document.getElementById('preview-container');
+            if (data.imagens && data.imagens.length > 0) {
+                data.imagens.forEach(img => {
+                    const imageUrl = `/uploads/imagens/${img.caminho_arquivo}`;
+                    const item = document.createElement('div');
+                    item.className = 'img-preview-item existing-image';
+                    item.id = `imagem-salva-${img.id}`;
+                    item.innerHTML = `
+                        <img src="${imageUrl}" alt="${img.nome_original}">
+                        <small>Salva</small>
+                        <button type="button" class="remove-btn-existing" onclick="marcarParaDeletar(${img.id})">&times;</button>
+                    `;
+                    previewContainer.appendChild(item);
+                });
+            }
+
+            // Força a atualização do campo de multa, caso seja necessário
+            toggleMultaField();
+            console.log("✅ Formulário preenchido com sucesso.");
+        } catch (error) {
+            console.error("❌ Erro ao preencher o formulário:", error);
+            showStatus("Ocorreu um erro ao exibir os dados no formulário.", "error");
+        }
+    }
+
+    // Função para marcar/desmarcar imagens para deleção
+    window.marcarParaDeletar = function(imageId) {
+        const previewItem = document.getElementById(`imagem-salva-${imageId}`);
+        const jaMarcada = imagensParaDeletar.includes(imageId);
+
+        if (jaMarcada) {
+            imagensParaDeletar = imagensParaDeletar.filter(id => id !== imageId);
+            previewItem.classList.remove('marcada-para-delecao');
+        } else {
+            imagensParaDeletar.push(imageId);
+            previewItem.classList.add('marcada-para-delecao');
+        }
+        console.log("Imagens marcadas para deletar:", imagensParaDeletar);
+    }
+
+    // Função para enviar os dados atualizados para a API
+    async function atualizarNotificacao() {
+        const dados = getFormData(false); // getFormData deve estar em funcs.js
+        dados.id = notificacaoId;
+        dados.status_id = 1; // Você pode querer tornar isso dinâmico
+        dados.imagens_para_deletar = imagensParaDeletar;
+
+        showStatus('Atualizando notificação...', 'loading');
+
+        try {
+            const response = await fetch(`${API_BASE_URL_PHP}/notificacoes.php`, {
+                method: 'POST', // O seu backend usa POST para criar e atualizar
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dados)
+            });
+            const result = await response.json();
+            if (response.ok) {
+                showStatus(result.message, 'success');
+                // Após o sucesso, simula um clique no link da lista para voltar
+                setTimeout(() => document.querySelector('a[href="lista.php"]').click(), 1500);
+            } else {
+                showStatus(`Erro: ${result.message}`, 'error');
+            }
+        } catch (error) {
+            showStatus(`Erro de conexão: ${error.message}`, 'error');
+        }
+    }
+
+    // --- PARTE 3: EXECUÇÃO E CONFIGURAÇÃO INICIAL ---
+
+    try {
+        // Configura o botão principal para a ação de ATUALIZAR
+        const btnSalvar = document.getElementById('btnSalvar');
+        btnSalvar.textContent = '💾 Atualizar Notificação';
+        btnSalvar.onclick = atualizarNotificacao;
+
+        // Mostra um status inicial
+        showStatus('Carregando dados da notificação...', 'loading');
+
+        // Busca os dados da notificação específica
+        const response = await fetch(`${API_BASE_URL_PHP}/notificacoes.php?id=${notificacaoId}`);
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Notificação não encontrada.');
+        }
+        const data = await response.json();
+
+        // Finalmente, preenche o formulário com os dados recebidos
+        await fetchInitialData(); // Garante que os selects de tipo/assunto estejam prontos
+        preencherFormulario(data);
+        showStatus('Dados carregados. Pronto para edição.', 'success');
+
+    } catch (error) {
+        console.error("❌ Erro crítico ao carregar dados da notificação:", error);
+        showStatus(error.message, 'error');
+    }
+}
+
+async function carregarDadosNotificacao() {
+    showStatus('Carregando dados da notificação...', 'loading');
+    try {
+        const response = await fetch(`${API_BASE_URL_PHP}/notificacoes.php?id=${NOTIFICACAO_ID}`);
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'Notificação não encontrada.');
+        }
+        
+        const data = await response.json();
+
+        // --- PONTO DE DEBUG 1 ---
+        console.log("DADOS BRUTOS RECEBIDOS DA API:", data);
+
+        preencherFormulario(data);
+        showStatus('Dados da notificação carregados com sucesso.', 'success');
+        
+    } catch (error) {
+        console.error("ERRO EM carregarDadosNotificacao:", error);
+        showStatus(error.message, 'error');
+        document.getElementById('btnSalvar').disabled = true;
+    }
+}
+
+// MODIFICADO: A função de atualizar agora envia a lista de imagens a serem deletadas
+async function atualizarNotificacao() {
+    const dados = await getFormData(false);
+    dados.id = NOTIFICACAO_ID;
+    dados.status_id = 1;
+    
+    // NOVO: Adiciona a lista de IDs a serem deletados no payload
+    dados.imagens_para_deletar = imagensParaDeletar;
+
+    showStatus('Atualizando notificação...', 'loading');
+    
+    try {
+        const response = await fetch(`${API_BASE_URL_PHP}/notificacoes.php`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(dados)
+        });
+        const result = await response.json();
+        if (response.ok) {
+            showStatus(result.message, 'success');
+            setTimeout(() => window.location.href = 'lista.php', 1500);
+        } else {
+            showStatus(`Erro: ${result.message}`, 'error');
+        }
+    } catch (error) {
+        showStatus(`Erro de conexão: ${error.message}`, 'error');
+    }
+}
+
+/**
+ * NOVO: Marca ou desmarca uma imagem existente para deleção.
+ * @param {number} imageId - O ID da imagem no banco de dados.
+ */
+function marcarParaDeletar(imageId) {
+    const previewItem = document.getElementById(`imagem-salva-${imageId}`);
+    const jaMarcada = imagensParaDeletar.includes(imageId);
+
+    if (jaMarcada) {
+        // Se já estava marcada, desmarca
+        imagensParaDeletar = imagensParaDeletar.filter(id => id !== imageId);
+        previewItem.classList.remove('marcada-para-delecao');
+    } else {
+        // Se não estava marcada, marca
+        imagensParaDeletar.push(imageId);
+        previewItem.classList.add('marcada-para-delecao');
+    }
+    
+    console.log("Imagens marcadas para deletar:", imagensParaDeletar);
+}
+
+function preencherFormulario(data) {
+    console.log("--- INICIANDO PREENCHIMENTO DO FORMULÁRIO ---");
+
+    try {
+        // --- PONTO DE DEBUG PARA CADA CAMPO PROBLEMÁTICO ---
+        console.log(`Tentando preencher 'bloco' com o valor: "${data.bloco}"`);
+        document.getElementById('bloco').value = data.bloco || ''; // Usamos || '' para evitar 'null'
+
+        console.log(`Tentando preencher 'fundamentacao_legal' com o valor: "${data.fundamentacao_legal}"`);
+        document.getElementById('fundamentacao_legal').value = data.fundamentacao_legal || '';
+
+        console.log(`Tentando preencher 'data_emissao' com o valor: "${data.data_emissao}"`);
+        document.getElementById('data_emissao').value = data.data_emissao;
+
+        // Preenchendo os outros campos que já funcionavam
+        document.getElementById('notificacao_id').value = data.id;
+        document.getElementById('numero').value = `${data.numero}/${data.ano}`;
+        document.getElementById('unidade').value = data.unidade;
+        document.getElementById('url_recurso').value = data.url_recurso;
+        document.getElementById('tipo_id').value = data.tipo_id;
+        document.getElementById('assunto_id').value = data.assunto_id;
+
+        // Lógica dos fatos
+        const fatosContainer = document.getElementById('fatos-container');
+        fatosContainer.innerHTML = '';
+        if (data.fatos && data.fatos.length > 0) {
+            data.fatos.forEach(fatoDescricao => addFato(fatoDescricao));
+        } else {
+            addFato();
+        }
+
+        // --- PONTO DE DEBUG PARA IMAGENS ---
+        console.log("Dados das imagens recebidos:", data.imagens);
+        const previewContainer = document.getElementById('preview-container');
+		if (data.imagens && data.imagens.length > 0) {
+			data.imagens.forEach(img => {
+				const imageUrl = `/uploads/imagens/${img.caminho_arquivo}`;
+				const item = document.createElement('div');
+				item.className = 'img-preview-item existing-image';
+				item.id = `imagem-salva-${img.id}`; // Adiciona um ID único ao elemento
+				
+				// ALTERAÇÃO AQUI: Adicionado data-caminho-arquivo="${img.caminho_arquivo}"
+				item.innerHTML = `
+					<img src="${imageUrl}" alt="${img.nome_original}" data-caminho-arquivo="${img.caminho_arquivo}">
+					<small>Salva</small>
+					<button type="button" class="remove-btn-existing" onclick="marcarParaDeletar(${img.id})">&times;</button>
+				`;
+				previewContainer.appendChild(item);
+			});
+		} else {
+            console.log("Nenhuma imagem encontrada para esta notificação.");
+        }
+
+        toggleMultaField();
+        console.log("--- PREENCHIMENTO DO FORMULÁRIO CONCLUÍDO ---");
+
+    } catch (error) {
+        console.error("❌ ERRO DENTRO DE preencherFormulario:", error);
+        showStatus("Erro ao tentar preencher os campos do formulário.", "error");
+    }
+}
+
+
+// js/main.js
+
+// ... (função carregarListaNotificacoes aqui em cima) ...
+
+/**
+ * Função ÚNICA para inicializar AMBOS os formulários (novo e edição).
+ */
+async function inicializarFormularioNotificacao() {
+    console.log("🚀 Inicializando formulário de notificação...");
+
+    // Passo 1: Popula os dropdowns. O 'await' garante que o código ESPERA
+    // a conclusão desta etapa antes de continuar.
+    await fetchInitialData(); 
+    console.log("✅ Dropdowns (Tipos/Assuntos) populados.");
+
+    // --- A CORREÇÃO MÁGICA ACONTECE AQUI ---
+    // Passo 2: AGORA que os <select>s têm <option>s, inicializamos o Materialize.
+    $('select').formSelect();
+    console.log("✅ Componentes <select> do Materialize inicializados.");
+
+    // Passo 3: O resto da lógica continua normalmente...
+    const hash = window.location.hash;
+    const queryStringIndex = hash.indexOf('?');
+    let notificacaoId = null;
+
+    if (queryStringIndex !== -1) {
+        const urlParams = new URLSearchParams(hash.substring(queryStringIndex + 1));
+        notificacaoId = urlParams.get('id');
+    }
+
+    if (notificacaoId) {
+        console.log(`🎨 Configurando formulário para EDIÇÃO do ID: ${notificacaoId}`);
+        await configurarModoEdicao(notificacaoId);
+    } else {
+        console.log(`✨ Configurando formulário para CRIAÇÃO de nova notificação.`);
+        await configurarModoCriacao();
+    }
+}
+
+
+// --- Funções Auxiliares para o Formulário ---
+
+async function configurarModoEdicao(id) {
+    // Esta é a sua lógica de edição que já tínhamos
+    const btnSalvar = document.getElementById('btnSalvar');
+    btnSalvar.textContent = '💾 Atualizar Notificação';
+    btnSalvar.onclick = () => atualizarNotificacao(id); // Passa o ID para a função
+
+    showStatus('Carregando dados para edição...', 'loading');
+    try {
+        const response = await fetch(`${API_BASE_URL_PHP}/notificacoes.php?id=${id}`);
+        if (!response.ok) throw new Error('Falha ao buscar dados da notificação.');
+        const data = await response.json();
+        preencherFormulario(data); // preencherFormulario deve estar em funcs.js
+        showStatus('Pronto para edição.', 'success');
+    } catch (error) {
+        showStatus(error.message, 'error');
+    }
+}
+
+async function configurarModoCriacao() {
+    console.log("✨ Configurando formulário para CRIAÇÃO de nova notificação.");
+
+    // --- AQUI ENTRA A SUA LÓGICA DE INICIALIZAÇÃO ---
+
+    // 1. Preenche a data de emissão com a data de hoje
+    document.getElementById('data_emissao').value = new Date().toISOString().split('T')[0];
+
+    // 2. Adiciona o primeiro campo de "Fato"
+    addFato(); // a função addFato() deve estar em funcs.js ou helpers.js
+
+    // 3. Vincula os campos de Unidade e Bloco
+    vincularCamposUnidadeBloco(); // a função que acabamos de adicionar em funcs.js
+
+    // 4. Configura o botão principal para a ação de SALVAR
+    const btnSalvar = document.getElementById('btnSalvar');
+    btnSalvar.textContent = '💾 Salvar Nova Notificação';
+    btnSalvar.onclick = salvarNotificacao; // a função salvarNotificacao deve estar em funcs.js
+
+    // 5. Busca o próximo número de notificação para preencher o campo 'numero'
+    try {
+        const response = await fetch(`${API_BASE_URL_PHP}/notificacoes.php?proximo_numero=true`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('accessToken')}` }
+        });
+        const data = await response.json();
+        if (data.proximo_numero) {
+            document.getElementById('numero').value = data.proximo_numero;
+        }
+    } catch (error) {
+        console.error("Erro ao buscar próximo número:", error);
+        showStatus("Não foi possível obter o número da notificação.", "error");
+    }
+}
+
+// ... (o resto do seu main.js) ...
+
+/**
+ * NOVO: Função auxiliar para converter uma URL de imagem em uma string Base64.
+ * @param {string} url - A URL da imagem a ser convertida.
+ * @returns {Promise<string>} Uma Promise que resolve com a string Base64 (sem o prefixo).
+ */
+function urlParaBase64(url) {
+    return new Promise((resolve, reject) => {
+        fetch(url)
+            .then(response => response.blob())
+            .then(blob => {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    // Resultado é 'data:image/jpeg;base64, ...'
+                    // Nós queremos apenas a parte depois da vírgula
+                    const base64String = reader.result.split(',')[1];
+                    resolve(base64String);
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+            })
+            .catch(reject);
+    });
 }
