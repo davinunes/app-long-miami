@@ -371,7 +371,12 @@ async function configurarModoEdicao(id) {
     // O resto da função (fetch, preencherFormulario, etc.) continua igual...
     showStatus('Carregando dados para edição...', 'loading');
     try {
-        const response = await fetch(`${API_BASE_URL_PHP}/notificacoes.php?id=${id}`);
+        const response = await fetch(`${API_BASE_URL_PHP}/notificacoes.php?id=${id}`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+            }
+        });
         if (!response.ok) throw new Error('Falha ao buscar dados da notificação.');
         const data = await response.json();
         preencherFormulario(data);
@@ -393,7 +398,10 @@ async function configurarModoCriacao() {
     
     try {
         const response = await fetch(`${API_BASE_URL_PHP}/notificacoes.php?proximo_numero=true`, {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('accessToken')}` }
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+            }
         });
         const data = await response.json();
         if (data.proximo_numero) {
