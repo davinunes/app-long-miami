@@ -19,7 +19,7 @@
 
 <div class="form-group">
     <label for="bloco">Bloco (automático):</label>
-    <input type="text" id="bloco" placeholder="Ex: A" readonly style="background-color: #e9ecef;">
+    <input type="text" id="bloco" placeholder="Ex: A"  style="background-color: #e9ecef;">
 </div>
 
 <div class="form-group">
@@ -48,9 +48,6 @@
     <label for="valor_multa">Valor da Multa:</label>
     <input type="text" id="valor_multa">
 </div>
-
-<hr style="margin: 20px 0;">
-<h3>Configurações de Emissão</h3>
 
 <div class="form-group">
     <label for="data_emissao">Data de Emissão:</label>

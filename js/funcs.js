@@ -9,8 +9,6 @@ let imagensParaDeletar = [];
 const API_BASE_URL_PYTHON = `${window.location.protocol}//${window.location.hostname}:5000`;
 const API_BASE_URL_PHP = window.location.origin + '/api';
 
-// --- Bloco de Funções Auxiliares de UI (do antigo helpers.js) ---
-
 function configurarCampoBloco() {
     const blocoInput = document.getElementById('bloco');
     if (!blocoInput) return;
@@ -20,22 +18,6 @@ function configurarCampoBloco() {
     });
 }
 
-function vincularCamposUnidadeBloco() {
-    const unidadeInput = document.getElementById('unidade');
-    const blocoInput = document.getElementById('bloco');
-    if (!unidadeInput || !blocoInput) return;
-    unidadeInput.addEventListener('input', function(e) {
-        const valorAtual = e.target.value;
-        const matchLetra = valorAtual.match(/[a-zA-Z]/);
-        const letra = matchLetra ? matchLetra[0].toUpperCase() : '';
-        const matchNumeros = valorAtual.match(/\d/g);
-        const numeros = matchNumeros ? matchNumeros.join('') : '';
-        blocoInput.value = letra;
-        e.target.value = numeros;
-    });
-}
-
-// --- Bloco de Funções Comuns ---
 function urlParaBase64(url) {
     return new Promise((resolve, reject) => {
         fetch(url)
@@ -74,54 +56,50 @@ async function fetchInitialData() {
     }
 }
 
-    function carregarConteudo(url, pushState = true) {
-        const accessToken = localStorage.getItem('accessToken');
-        if (!accessToken) {
-            fazerLogout();
-            return;
-        }
+function carregarConteudo(url, pushState = true) {
+	const accessToken = localStorage.getItem('accessToken');
+	if (!accessToken) {
+		fazerLogout();
+		return;
+	}
 
-        // Mostra um feedback visual de carregamento
-        $('#main-content').html('<div class="progress"><div class="indeterminate"></div></div>');
+	// Mostra um feedback visual de carregamento
+	$('#main-content').html('<div class="progress"><div class="indeterminate"></div></div>');
 
-        $.ajax({
-            url: url,
-            method: 'GET',
-            beforeSend: xhr => xhr.setRequestHeader('Authorization', `Bearer ${accessToken}`),
-            success: responseHtml => {
-                $('#main-content').html(responseHtml);
+	$.ajax({
+		url: url,
+		method: 'GET',
+		beforeSend: xhr => xhr.setRequestHeader('Authorization', `Bearer ${accessToken}`),
+		success: responseHtml => {
+			$('#main-content').html(responseHtml);
 
-                // Se a URL na barra de endereços precisar ser atualizada
-                if (pushState) {
-                    window.location.hash = url;
-                }
-				
-				
-				if (url.includes('lista.php')) {
-					carregarListaNotificacoes();
-				}
-				
-				else if (url.includes('editar.php')) {
-					inicializarFormularioNotificacao();
-				}
-				else if (url.includes('nova_not.php') || url.includes('editar.php')) {
-					inicializarFormularioNotificacao();
-				}
-            },
-            error: jqXHR => {
-                if (jqXHR.status === 401) {
-                    alert('Sua sessão expirou. Por favor, faça login novamente.');
-                    fazerLogout();
-                } else {
-                    $('#main-content').html(`<div class='container center-align'><h4>Erro ao carregar</h4><p>Não foi possível carregar o conteúdo de: ${url}</p></div>`);
-                }
-            }
-        });
-    }
-	
-/**
- * VERSÃO CORRETA E DEFINITIVA DA getFormData
- */
+			// Se a URL na barra de endereços precisar ser atualizada
+			if (pushState) {
+				window.location.hash = url;
+			}
+			
+			
+			if (url.includes('lista.php')) {
+				carregarListaNotificacoes();
+			}
+			
+			else if (url.includes('editar.php')) {
+				inicializarFormularioNotificacao();
+			}
+			else if (url.includes('nova_not.php') || url.includes('editar.php')) {
+				inicializarFormularioNotificacao();
+			}
+		},
+		error: jqXHR => {
+			if (jqXHR.status === 401) {
+				alert('Sua sessão expirou. Por favor, faça login novamente.');
+				fazerLogout();
+			} else {
+				$('#main-content').html(`<div class='container center-align'><h4>Erro ao carregar</h4><p>Não foi possível carregar o conteúdo de: ${url}</p></div>`);
+			}
+		}
+	});
+}
 
 async function getFormData(forPDF = false) {
     console.log("--- 2. Função 'getFormData' iniciada. ---");
@@ -130,6 +108,14 @@ async function getFormData(forPDF = false) {
     const assuntoSelect = document.getElementById('assunto_id');
     const selectedTipoOption = tipoSelect.options[tipoSelect.selectedIndex];
     const selectedAssuntoOption = assuntoSelect.options[assuntoSelect.selectedIndex];
+	
+	// --- LOGS DE DIAGNÓSTICO ---
+    console.log("getFormData: Lendo 'numero'...", document.getElementById('numero').value);
+    console.log("getFormData: Lendo 'unidade'...", document.getElementById('unidade').value);
+    console.log("getFormData: Lendo 'assuntoSelect'...", assuntoSelect);
+    console.log("getFormData: Lendo 'selectedAssuntoOption'...", selectedAssuntoOption);
+    console.log("getFormData: Lendo 'selectedAssuntoOption.value'...", selectedAssuntoOption ? selectedAssuntoOption.value : "N/A");
+    // --- FIM DOS LOGS ---
 
     const dados = {
         numero: document.getElementById('numero').value,
@@ -162,11 +148,21 @@ async function getFormData(forPDF = false) {
             dados.valor_multa = document.getElementById('valor_multa').value;
         }
     } else {
-        // ... (lógica para PHP)
+        // Lógica para salvar no PHP (com IDs)
         dados.fotos_fatos = imageStore;
         dados.tipo_id = selectedTipoOption ? parseInt(selectedTipoOption.value) : null;
-        dados.assunto_id = selectedAssuntoOption ? parseInt(assuntoSelect.value) : null;
+        
+        const assuntoVal = selectedAssuntoOption ? selectedAssuntoOption.value : null;
+        dados.assunto_id = (assuntoVal && assuntoVal !== "") ? parseInt(assuntoVal) : null;
+        
+        console.log("getFormData: 'assunto_id' processado para:", dados.assunto_id); // Log do valor final
+
+        if (selectedTipoOption && selectedTipoOption.text.toLowerCase().includes('multa')) {
+            dados.valor_multa = document.getElementById('valor_multa').value;
+        }
     }
+	
+	console.log("--- getFormData: CONCLUÍDO ---");
     
     return dados;
 }
@@ -368,7 +364,6 @@ function baixarPDF() {
     }
 }
 
-
 function vincularCamposUnidadeBloco() {
     const unidadeInput = document.getElementById('unidade');
     const blocoInput = document.getElementById('bloco');
@@ -392,10 +387,6 @@ function vincularCamposUnidadeBloco() {
     });
 }
 
-/**
- * Pega o JWT do localStorage, decodifica o payload e o retorna como um objeto.
- * Retorna null se não houver token ou se ele for inválido.
- */
 function getJwtPayload() {
     const token = localStorage.getItem('accessToken');
     if (!token) {
@@ -411,4 +402,3 @@ function getJwtPayload() {
         return null;
     }
 }
-

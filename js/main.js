@@ -1,9 +1,4 @@
-// js/main.js
 
-/**
- * Busca as notificações da API e preenche a tabela na página.
- * Esta função será chamada pelo jwt.js depois que o HTML de lista.php for carregado.
- */
 function carregarListaNotificacoes() {
     const tbody = document.getElementById('notifications-table-body');
     // Se o elemento da tabela não existir na página, não faz nada.
@@ -80,40 +75,47 @@ async function fetchProximoNumero() {
 }
 
 async function salvarNotificacao() {
-    const dados = getFormData(false);
+    console.log("--- salvarNotificacao: INICIADA ---");
+    const dados = await getFormData(false);
+    console.log("--- salvarNotificacao: Dados recebidos do getFormData:", dados);
+
+    // --- LOGS DA VALIDAÇÃO ---
+    console.log("salvarNotificacao: Validando dados.numero:", dados.numero, `(!dados.numero = ${!dados.numero})`);
+    console.log("salvarNotificacao: Validando dados.unidade:", dados.unidade, `(!dados.unidade = ${!dados.unidade})`);
+    console.log("salvarNotificacao: Validando dados.assunto_id:", dados.assunto_id, `(!dados.assunto_id = ${!dados.assunto_id})`);
+    // --- FIM DOS LOGS ---
+
     if (!dados.numero || !dados.unidade || !dados.assunto_id) {
-        showStatus('Preencha os campos obrigatórios.', 'error');
-        return;
+        showStatus('Preencha os campos obrigatórios: Número, Unidade e Assunto.', 'error');
+        console.error("--- salvarNotificacao: FALHA NA VALIDAÇÃO ---");
+        return; 
     }
+
+    console.log("--- salvarNotificacao: Validação APROVADA. Enviando para a API... ---");
     showStatus('Salvando notificação...', 'loading');
+    
     try {
         const response = await fetch(`${API_BASE_URL_PHP}/notificacoes.php`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+            },
             body: JSON.stringify(dados)
         });
         const result = await response.json();
+        
         if (response.ok) {
-            showStatus(`Notificação salva! ID: ${result.id}`, 'success');
-            // Opcional: redirecionar para a página de edição ou lista
-            setTimeout(() => carregarConteudo(`editar.php?id=${result.id}`), 1500);
-			// setTimeout(() => carregarConteudo('lista.php'), 1500);
+            showStatus(result.message, 'success');
+            setTimeout(() => carregarConteudo('lista.php'), 1500);
         } else {
             showStatus(`Erro ao salvar: ${result.message}`, 'error');
         }
     } catch (error) {
-        showStatus(`Erro de conexão: ${error.message}`, 'error');
+        showStatus(`Erro de conexão com a API PHP: ${error.message}`, 'error');
     }
 }
 
-// js/main.js
-
-// ... (a função carregarListaNotificacoes() continua aqui em cima) ...
-
-/**
- * Inicializa a página de edição. Busca os dados da notificação pelo ID
- * na URL e preenche o formulário.
- */
 async function inicializarFormularioEdicao() {
     // --- PARTE 1: LER O ID DA NOTIFICAÇÃO DA URL HASH ---
     const hash = window.location.hash;
@@ -284,7 +286,6 @@ async function carregarDadosNotificacao() {
     }
 }
 
-// MODIFICADO: A função de atualizar agora envia a lista de imagens a serem deletadas
 async function atualizarNotificacao(id) {
     const dados = await getFormData(false);
     dados.id = id;
@@ -314,10 +315,6 @@ async function atualizarNotificacao(id) {
     }
 }
 
-/**
- * NOVO: Marca ou desmarca uma imagem existente para deleção.
- * @param {number} imageId - O ID da imagem no banco de dados.
- */
 function marcarParaDeletar(imageId) {
     const previewItem = document.getElementById(`imagem-salva-${imageId}`);
     const jaMarcada = imagensParaDeletar.includes(imageId);
@@ -335,16 +332,6 @@ function marcarParaDeletar(imageId) {
     console.log("Imagens marcadas para deletar:", imagensParaDeletar);
 }
 
-
-
-
-// js/main.js
-
-// ... (função carregarListaNotificacoes aqui em cima) ...
-
-/**
- * Função ÚNICA para inicializar AMBOS os formulários (novo e edição).
- */
 async function inicializarFormularioNotificacao() {
     console.log("🚀 Inicializando formulário de notificação...");
 
@@ -377,21 +364,17 @@ async function inicializarFormularioNotificacao() {
     }
 }
 
-
-// --- Funções Auxiliares para o Formulário ---
-
 async function configurarModoEdicao(id) {
-    // Esta é a sua lógica de edição que já tínhamos
-    const btnSalvar = document.getElementById('btnSalvar');
-    btnSalvar.textContent = '💾 Atualizar Notificação';
-    btnSalvar.onclick = () => atualizarNotificacao(id); // Passa o ID para a função
+    // Apenas define o texto do botão. O listener de clique será gerenciado pelo jwt.js
+    document.getElementById('btnSalvar').textContent = '💾 Atualizar Notificação';
 
+    // O resto da função (fetch, preencherFormulario, etc.) continua igual...
     showStatus('Carregando dados para edição...', 'loading');
     try {
         const response = await fetch(`${API_BASE_URL_PHP}/notificacoes.php?id=${id}`);
         if (!response.ok) throw new Error('Falha ao buscar dados da notificação.');
         const data = await response.json();
-        preencherFormulario(data); // preencherFormulario deve estar em funcs.js
+        preencherFormulario(data);
         showStatus('Pronto para edição.', 'success');
     } catch (error) {
         showStatus(error.message, 'error');
@@ -401,21 +384,13 @@ async function configurarModoEdicao(id) {
 async function configurarModoCriacao() {
     console.log("✨ Configurando formulário para CRIAÇÃO de nova notificação.");
 
-    // Passo 1: Configura o texto e o evento ONCLICK do botão Salvar
-    const btnSalvar = document.getElementById('btnSalvar');
-    btnSalvar.textContent = '💾 Salvar Nova Notificação';
-    btnSalvar.onclick = salvarNotificacao; // ESTA É A LINHA MAIS IMPORTANTE!
+    // Apenas define o texto do botão. O listener de clique será gerenciado pelo jwt.js
+    document.getElementById('btnSalvar').textContent = '💾 Salvar Nova Notificação';
 
-    // Passo 2: Preenche a data de emissão com a data de hoje
+    // O resto da sua lógica de inicialização continua aqui (data, fato, número)
     document.getElementById('data_emissao').value = new Date().toISOString().split('T')[0];
-
-    // Passo 3: Adiciona o primeiro campo de "Fato"
     addFato(); 
-
-    // Passo 4: Vincula os campos de Unidade e Bloco
-    vincularCamposUnidadeBloco();
-
-    // Passo 5: Busca o próximo número de notificação para preencher o campo 'numero'
+    
     try {
         const response = await fetch(`${API_BASE_URL_PHP}/notificacoes.php?proximo_numero=true`, {
             headers: { 'Authorization': `Bearer ${localStorage.getItem('accessToken')}` }
@@ -430,13 +405,6 @@ async function configurarModoCriacao() {
     }
 }
 
-// ... (o resto do seu main.js) ...
-
-/**
- * NOVO: Função auxiliar para converter uma URL de imagem em uma string Base64.
- * @param {string} url - A URL da imagem a ser convertida.
- * @returns {Promise<string>} Uma Promise que resolve com a string Base64 (sem o prefixo).
- */
 function urlParaBase64(url) {
     return new Promise((resolve, reject) => {
         fetch(url)

@@ -73,26 +73,75 @@ $(document).ready(function() {
         });
     });
 
-    // **NOVO EVENT HANDLER** - Intercepta cliques SOMENTE nos links com a classe 'ajax-link'
     $(document).on('click', 'a.ajax-link', function(e) {
         e.preventDefault(); // Impede o navegador de seguir o link
         const href = $(this).attr('href');
         carregarConteudo(href);
     });
     
-    // Evento de clique no botão de logout
     $('#dashboard-container').on('click', '#logout-link', function(e) {
         e.preventDefault();
         fazerLogout();
     });
 
-    // Lida com os botões de voltar/avançar do navegador
     window.onpopstate = function(event) {
         if (event.state && event.state.path) {
             carregarConteudo(event.state.path, false);
         }
     };
 
+	// -----------------------------------------------------------------
+    // --- NOVOS LISTENERS DELEGADOS PARA OS FORMULÁRIOS ---
+    // -----------------------------------------------------------------
+
+    // 1. Listener para o botão SALVAR (Criar OU Atualizar)
+    // Ele escuta cliques no #main-content, mas só reage se o clique foi no #btnSalvar
+    $('#main-content').on('click', '#btnSalvar', function() {
+        const btnText = $(this).text();
+        
+        if (btnText.includes('Salvar Nova')) {
+            console.log("Botão 'Salvar Nova' clicado.");
+            salvarNotificacao(); // Chama a função global
+        } else if (btnText.includes('Atualizar')) {
+            console.log("Botão 'Atualizar' clicado.");
+            const id = $('#notificacao_id').val(); // Pega o ID do campo hidden
+            if(id) {
+                atualizarNotificacao(id); // Chama a função global
+            } else {
+                console.error("Não foi possível atualizar: ID não encontrado no formulário.");
+            }
+        }
+    });
+
+    // 2. Listener para o campo UNIDADE (Corrigindo o bug do "A812")
+    // Escuta 'input' no #main-content, mas só reage se foi no #unidade
+    $('#main-content').on('input', '#unidade', function() {
+        const unidadeInput = $(this);
+        const blocoInput = $('#bloco');
+        
+        if (!blocoInput.length) return;
+
+        let unidadeVal = unidadeInput.val().trim().toUpperCase();
+        
+        if (unidadeVal.length === 0) {
+            // CASO 1: Se o usuário apagar tudo da unidade, limpa o bloco
+            blocoInput.val('');
+        } else {
+            const primeiroChar = unidadeVal.charAt(0);
+            
+            // CASO 2: Se o primeiro caractere for uma letra
+            if (isNaN(parseInt(primeiroChar))) {
+                blocoInput.val(primeiroChar); // Define o bloco
+                unidadeInput.val(unidadeVal.substring(1)); // Remove a letra da unidade
+            } else {
+                // CASO 3: O primeiro caractere é um número.
+                // NÃO FAZEMOS NADA. Deixamos o bloco como está.
+                // O "blocoInput.val('');" foi removido daqui.
+            }
+        }
+    });
+
+    // --- FIM DOS NOVOS LISTENERS ---
     // ----------------------------------------------------------------
     // INICIALIZAÇÃO DA APLICAÇÃO
     // ----------------------------------------------------------------
