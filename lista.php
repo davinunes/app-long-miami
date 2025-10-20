@@ -78,7 +78,7 @@
         </div>
         <div class="table-container">
             <div class="header-actions">
-                <a href="index.php" class="btn-new">+ Criar Nova Notificação</a>
+                <a href="nova_not.php" class="btn-new">+ Criar Nova Notificação</a>
             </div>
             <table>
                 <thead>

@@ -140,3 +140,48 @@ button {
     .content { grid-template-columns: 1fr; }
     .form-section { border-right: none; border-bottom: 2px solid #e9ecef; }
 }
+
+/* css/style.css */
+
+/* --- Layout Principal com Sidenav Fixo --- */
+
+/* Em telas de desktop (maiores que 992px), o conteúdo principal é empurrado para a direita */
+@media only screen and (min-width: 993px) {
+  header, main, footer {
+    padding-left: 300px;
+  }
+}
+
+/* --- Estilo do Menu (Sidenav) --- */
+
+/* Adiciona um fundo mais escuro e moderno ao menu */
+.sidenav {
+    background-color: #2c3e50; /* Um azul escuro/grafite */
+}
+
+/* Altera a cor dos ícones e texto dos links do menu para branco */
+.sidenav li > a {
+    color: rgba(255, 255, 255, 0.87);
+}
+.sidenav li > a > i.material-icons {
+    color: rgba(255, 255, 255, 0.87);
+}
+
+/* Efeito 'hover' (mouse em cima) nos links do menu */
+.sidenav li > a:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Linha divisória com uma cor mais sutil */
+.sidenav .divider {
+    background-color: rgba(255, 255, 255, 0.12);
+}
+
+/* Estilo para a área do usuário no topo do menu */
+.sidenav .user-view {
+    background-color: #212f3d;
+    padding-bottom: 10px;
+}
+.sidenav .user-view .name, .sidenav .user-view .email {
+    color: #fff;
+}
