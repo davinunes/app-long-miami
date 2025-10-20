@@ -96,7 +96,8 @@ async function salvarNotificacao() {
         if (response.ok) {
             showStatus(`Notificação salva! ID: ${result.id}`, 'success');
             // Opcional: redirecionar para a página de edição ou lista
-            // setTimeout(() => window.location.href = `editar.php?id=${result.id}`, 1500);
+            setTimeout(() => carregarConteudo(`editar.php?id=${result.id}`), 1500);
+			// setTimeout(() => carregarConteudo('lista.php'), 1500);
         } else {
             showStatus(`Erro ao salvar: ${result.message}`, 'error');
         }
@@ -284,9 +285,9 @@ async function carregarDadosNotificacao() {
 }
 
 // MODIFICADO: A função de atualizar agora envia a lista de imagens a serem deletadas
-async function atualizarNotificacao() {
+async function atualizarNotificacao(id) {
     const dados = await getFormData(false);
-    dados.id = NOTIFICACAO_ID;
+    dados.id = id;
     dados.status_id = 1;
     
     // NOVO: Adiciona a lista de IDs a serem deletados no payload
@@ -303,7 +304,8 @@ async function atualizarNotificacao() {
         const result = await response.json();
         if (response.ok) {
             showStatus(result.message, 'success');
-            setTimeout(() => window.location.href = 'lista.php', 1500);
+            // setTimeout(() => carregarConteudo('lista.php'), 1500);
+			setTimeout(() => carregarConteudo(`editar.php?id=${id}`), 1500);
         } else {
             showStatus(`Erro: ${result.message}`, 'error');
         }
@@ -333,67 +335,7 @@ function marcarParaDeletar(imageId) {
     console.log("Imagens marcadas para deletar:", imagensParaDeletar);
 }
 
-function preencherFormulario(data) {
-    console.log("--- INICIANDO PREENCHIMENTO DO FORMULÁRIO ---");
 
-    try {
-        // --- PONTO DE DEBUG PARA CADA CAMPO PROBLEMÁTICO ---
-        console.log(`Tentando preencher 'bloco' com o valor: "${data.bloco}"`);
-        document.getElementById('bloco').value = data.bloco || ''; // Usamos || '' para evitar 'null'
-
-        console.log(`Tentando preencher 'fundamentacao_legal' com o valor: "${data.fundamentacao_legal}"`);
-        document.getElementById('fundamentacao_legal').value = data.fundamentacao_legal || '';
-
-        console.log(`Tentando preencher 'data_emissao' com o valor: "${data.data_emissao}"`);
-        document.getElementById('data_emissao').value = data.data_emissao;
-
-        // Preenchendo os outros campos que já funcionavam
-        document.getElementById('notificacao_id').value = data.id;
-        document.getElementById('numero').value = `${data.numero}/${data.ano}`;
-        document.getElementById('unidade').value = data.unidade;
-        document.getElementById('url_recurso').value = data.url_recurso;
-        document.getElementById('tipo_id').value = data.tipo_id;
-        document.getElementById('assunto_id').value = data.assunto_id;
-
-        // Lógica dos fatos
-        const fatosContainer = document.getElementById('fatos-container');
-        fatosContainer.innerHTML = '';
-        if (data.fatos && data.fatos.length > 0) {
-            data.fatos.forEach(fatoDescricao => addFato(fatoDescricao));
-        } else {
-            addFato();
-        }
-
-        // --- PONTO DE DEBUG PARA IMAGENS ---
-        console.log("Dados das imagens recebidos:", data.imagens);
-        const previewContainer = document.getElementById('preview-container');
-		if (data.imagens && data.imagens.length > 0) {
-			data.imagens.forEach(img => {
-				const imageUrl = `/uploads/imagens/${img.caminho_arquivo}`;
-				const item = document.createElement('div');
-				item.className = 'img-preview-item existing-image';
-				item.id = `imagem-salva-${img.id}`; // Adiciona um ID único ao elemento
-				
-				// ALTERAÇÃO AQUI: Adicionado data-caminho-arquivo="${img.caminho_arquivo}"
-				item.innerHTML = `
-					<img src="${imageUrl}" alt="${img.nome_original}" data-caminho-arquivo="${img.caminho_arquivo}">
-					<small>Salva</small>
-					<button type="button" class="remove-btn-existing" onclick="marcarParaDeletar(${img.id})">&times;</button>
-				`;
-				previewContainer.appendChild(item);
-			});
-		} else {
-            console.log("Nenhuma imagem encontrada para esta notificação.");
-        }
-
-        toggleMultaField();
-        console.log("--- PREENCHIMENTO DO FORMULÁRIO CONCLUÍDO ---");
-
-    } catch (error) {
-        console.error("❌ ERRO DENTRO DE preencherFormulario:", error);
-        showStatus("Erro ao tentar preencher os campos do formulário.", "error");
-    }
-}
 
 
 // js/main.js
@@ -459,23 +401,21 @@ async function configurarModoEdicao(id) {
 async function configurarModoCriacao() {
     console.log("✨ Configurando formulário para CRIAÇÃO de nova notificação.");
 
-    // --- AQUI ENTRA A SUA LÓGICA DE INICIALIZAÇÃO ---
-
-    // 1. Preenche a data de emissão com a data de hoje
-    document.getElementById('data_emissao').value = new Date().toISOString().split('T')[0];
-
-    // 2. Adiciona o primeiro campo de "Fato"
-    addFato(); // a função addFato() deve estar em funcs.js ou helpers.js
-
-    // 3. Vincula os campos de Unidade e Bloco
-    vincularCamposUnidadeBloco(); // a função que acabamos de adicionar em funcs.js
-
-    // 4. Configura o botão principal para a ação de SALVAR
+    // Passo 1: Configura o texto e o evento ONCLICK do botão Salvar
     const btnSalvar = document.getElementById('btnSalvar');
     btnSalvar.textContent = '💾 Salvar Nova Notificação';
-    btnSalvar.onclick = salvarNotificacao; // a função salvarNotificacao deve estar em funcs.js
+    btnSalvar.onclick = salvarNotificacao; // ESTA É A LINHA MAIS IMPORTANTE!
 
-    // 5. Busca o próximo número de notificação para preencher o campo 'numero'
+    // Passo 2: Preenche a data de emissão com a data de hoje
+    document.getElementById('data_emissao').value = new Date().toISOString().split('T')[0];
+
+    // Passo 3: Adiciona o primeiro campo de "Fato"
+    addFato(); 
+
+    // Passo 4: Vincula os campos de Unidade e Bloco
+    vincularCamposUnidadeBloco();
+
+    // Passo 5: Busca o próximo número de notificação para preencher o campo 'numero'
     try {
         const response = await fetch(`${API_BASE_URL_PHP}/notificacoes.php?proximo_numero=true`, {
             headers: { 'Authorization': `Bearer ${localStorage.getItem('accessToken')}` }

@@ -46,50 +46,7 @@ $(document).ready(function() {
     // FUNÇÃO PRINCIPAL DE CARREGAMENTO DE CONTEÚDO (O CORAÇÃO DA SPA)
     // ----------------------------------------------------------------
 
-    function carregarConteudo(url, pushState = true) {
-        const accessToken = localStorage.getItem('accessToken');
-        if (!accessToken) {
-            fazerLogout();
-            return;
-        }
 
-        // Mostra um feedback visual de carregamento
-        $('#main-content').html('<div class="progress"><div class="indeterminate"></div></div>');
-
-        $.ajax({
-            url: url,
-            method: 'GET',
-            beforeSend: xhr => xhr.setRequestHeader('Authorization', `Bearer ${accessToken}`),
-            success: responseHtml => {
-                $('#main-content').html(responseHtml);
-
-                // Se a URL na barra de endereços precisar ser atualizada
-                if (pushState) {
-                    window.location.hash = url;
-                }
-				
-				
-				if (url.includes('lista.php')) {
-					carregarListaNotificacoes();
-				}
-				
-				else if (url.includes('editar.php')) {
-					inicializarFormularioNotificacao();
-				}
-				else if (url.includes('nova_not.php') || url.includes('editar.php')) {
-					inicializarFormularioNotificacao();
-				}
-            },
-            error: jqXHR => {
-                if (jqXHR.status === 401) {
-                    alert('Sua sessão expirou. Por favor, faça login novamente.');
-                    fazerLogout();
-                } else {
-                    $('#main-content').html(`<div class='container center-align'><h4>Erro ao carregar</h4><p>Não foi possível carregar o conteúdo de: ${url}</p></div>`);
-                }
-            }
-        });
-    }
 
     // ----------------------------------------------------------------
     // EVENTOS (QUEM CHAMA AS FUNÇÕES)

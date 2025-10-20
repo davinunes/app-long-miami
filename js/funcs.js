@@ -74,9 +74,55 @@ async function fetchInitialData() {
     }
 }
 
+    function carregarConteudo(url, pushState = true) {
+        const accessToken = localStorage.getItem('accessToken');
+        if (!accessToken) {
+            fazerLogout();
+            return;
+        }
+
+        // Mostra um feedback visual de carregamento
+        $('#main-content').html('<div class="progress"><div class="indeterminate"></div></div>');
+
+        $.ajax({
+            url: url,
+            method: 'GET',
+            beforeSend: xhr => xhr.setRequestHeader('Authorization', `Bearer ${accessToken}`),
+            success: responseHtml => {
+                $('#main-content').html(responseHtml);
+
+                // Se a URL na barra de endereços precisar ser atualizada
+                if (pushState) {
+                    window.location.hash = url;
+                }
+				
+				
+				if (url.includes('lista.php')) {
+					carregarListaNotificacoes();
+				}
+				
+				else if (url.includes('editar.php')) {
+					inicializarFormularioNotificacao();
+				}
+				else if (url.includes('nova_not.php') || url.includes('editar.php')) {
+					inicializarFormularioNotificacao();
+				}
+            },
+            error: jqXHR => {
+                if (jqXHR.status === 401) {
+                    alert('Sua sessão expirou. Por favor, faça login novamente.');
+                    fazerLogout();
+                } else {
+                    $('#main-content').html(`<div class='container center-align'><h4>Erro ao carregar</h4><p>Não foi possível carregar o conteúdo de: ${url}</p></div>`);
+                }
+            }
+        });
+    }
+	
 /**
  * VERSÃO CORRETA E DEFINITIVA DA getFormData
  */
+
 async function getFormData(forPDF = false) {
     console.log("--- 2. Função 'getFormData' iniciada. ---");
     // ... (o início da função é o mesmo)
@@ -89,9 +135,10 @@ async function getFormData(forPDF = false) {
         numero: document.getElementById('numero').value,
         unidade: document.getElementById('unidade').value,
         bloco: document.getElementById('bloco').value,
+		url_recurso: document.getElementById('url_recurso').value,
         data_emissao: document.getElementById('data_emissao').value,
         fundamentacao_legal: document.getElementById('fundamentacao_legal').value,
-        fatos: Array.from(document.querySelectorAll('#fatos-container input')).map(input => input.value).filter(Boolean)
+        fatos: Array.from(document.querySelectorAll('#fatos-container textarea')).map(input => input.value).filter(Boolean)
     };
 
     if (forPDF) {
@@ -122,6 +169,69 @@ async function getFormData(forPDF = false) {
     }
     
     return dados;
+}
+
+function preencherFormulario(data) {
+    console.log("--- INICIANDO PREENCHIMENTO DO FORMULÁRIO ---");
+
+    try {
+        // --- PONTO DE DEBUG PARA CADA CAMPO PROBLEMÁTICO ---
+        console.log(`Tentando preencher 'bloco' com o valor: "${data.bloco}"`);
+        document.getElementById('bloco').value = data.bloco || ''; // Usamos || '' para evitar 'null'
+
+        console.log(`Tentando preencher 'fundamentacao_legal' com o valor: "${data.fundamentacao_legal}"`);
+        document.getElementById('fundamentacao_legal').value = data.fundamentacao_legal || '';
+
+        console.log(`Tentando preencher 'data_emissao' com o valor: "${data.data_emissao}"`);
+        document.getElementById('data_emissao').value = data.data_emissao;
+
+        // Preenchendo os outros campos que já funcionavam
+        document.getElementById('notificacao_id').value = data.id;
+        document.getElementById('numero').value = `${data.numero}/${data.ano}`;
+        document.getElementById('unidade').value = data.unidade;
+        document.getElementById('url_recurso').value = data.url_recurso;
+        document.getElementById('tipo_id').value = data.tipo_id;
+        document.getElementById('assunto_id').value = data.assunto_id;
+		document.getElementById('url_recurso').value = data.url_recurso || '';
+
+        // Lógica dos fatos
+        const fatosContainer = document.getElementById('fatos-container');
+        fatosContainer.innerHTML = '';
+        if (data.fatos && data.fatos.length > 0) {
+            data.fatos.forEach(fatoDescricao => addFato(fatoDescricao));
+        } else {
+            addFato();
+        }
+
+        // --- PONTO DE DEBUG PARA IMAGENS ---
+        console.log("Dados das imagens recebidos:", data.imagens);
+        const previewContainer = document.getElementById('preview-container');
+		if (data.imagens && data.imagens.length > 0) {
+			data.imagens.forEach(img => {
+				const imageUrl = `/uploads/imagens/${img.caminho_arquivo}`;
+				const item = document.createElement('div');
+				item.className = 'img-preview-item existing-image';
+				item.id = `imagem-salva-${img.id}`; // Adiciona um ID único ao elemento
+				
+				// ALTERAÇÃO AQUI: Adicionado data-caminho-arquivo="${img.caminho_arquivo}"
+				item.innerHTML = `
+					<img src="${imageUrl}" alt="${img.nome_original}" data-caminho-arquivo="${img.caminho_arquivo}">
+					<small>Salva</small>
+					<button type="button" class="remove-btn-existing" onclick="marcarParaDeletar(${img.id})">&times;</button>
+				`;
+				previewContainer.appendChild(item);
+			});
+		} else {
+            console.log("Nenhuma imagem encontrada para esta notificação.");
+        }
+
+        toggleMultaField();
+        console.log("--- PREENCHIMENTO DO FORMULÁRIO CONCLUÍDO ---");
+
+    } catch (error) {
+        console.error("❌ ERRO DENTRO DE preencherFormulario:", error);
+        showStatus("Erro ao tentar preencher os campos do formulário.", "error");
+    }
 }
 
 async function gerarPDF() {
@@ -175,7 +285,12 @@ function addFato(valor = '') {
     const container = document.getElementById('fatos-container');
     const div = document.createElement('div');
     div.className = 'fato-item';
-    div.innerHTML = `<input type="text" value="${valor}" placeholder="Descreva o fato..."><button type="button" class="remove-fato" onclick="removeFato(this)">×</button>`;
+
+    // MODIFICAÇÃO: Trocamos <input> por <textarea>
+    // O conteúdo (valor) agora vai entre as tags de abertura e fechamento.
+    div.innerHTML = `<textarea placeholder="Descreva o fato...">${valor}</textarea>
+                     <button type="button" class="remove-fato" onclick="removeFato(this)">×</button>`;
+    
     container.appendChild(div);
 }
 
@@ -197,7 +312,7 @@ function toggleMultaField() {
 
 function handleFiles(input, previewContainerId) {
     const previewContainer = document.getElementById(previewContainerId);
-    previewContainer.innerHTML = '';
+    document.querySelectorAll('.new-image-preview').forEach(el => el.remove());
     imageStore = [];
     const files = input.files;
     for (const file of files) {
@@ -215,9 +330,13 @@ function handleFiles(input, previewContainerId) {
 
 function createImagePreview(imageDataUrl, fileName, container) {
     const item = document.createElement('div');
-    item.className = 'img-preview-item';
+    // Adicionamos a nova classe 'new-image-preview'
+    item.className = 'img-preview-item new-image-preview'; 
     item.setAttribute('data-filename', fileName);
-    item.innerHTML = `<img src="${imageDataUrl}" alt="Preview"><button type="button" class="remove-img" onclick="removeImage('${fileName}')">&times;</button>`;
+    item.innerHTML = `
+        <img src="${imageDataUrl}" alt="Preview">
+        <button type="button" class="remove-img" onclick="removeImage('${fileName}')">&times;</button>
+    `;
     container.appendChild(item);
 }
 
