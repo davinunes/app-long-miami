@@ -55,9 +55,15 @@ try {
     $stmt->execute([hash('sha256', $refreshToken), date('Y-m-d H:i:s', $exp_refresh), $usuario['id']]);
     
     // Envia o refresh token em um cookie HttpOnly seguro
-    setcookie('refreshToken', $refreshToken, [
-        'expires' => $exp_refresh, 'path' => '/', 'secure' => true, 'httponly' => true, 'samesite' => 'Strict'
-    ]);
+	setcookie(
+		'refreshToken',              // Nome
+		$refreshToken,               // Valor
+		$exp_refresh,                // Expiração (como inteiro)
+		'/',                         // Path
+		'',                          // Domain (vazio para o domínio atual)
+		true,                        // Secure (use 'true' se estiver em HTTPS)
+		true                         // HttpOnly
+	);
 
     http_response_code(200);
     echo json_encode(['status' => 'success', 'access_token' => $accessToken]);

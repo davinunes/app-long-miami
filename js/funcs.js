@@ -218,3 +218,24 @@ function baixarPDF() {
     }
 }
 
+
+/**
+ * Pega o JWT do localStorage, decodifica o payload e o retorna como um objeto.
+ * Retorna null se não houver token ou se ele for inválido.
+ */
+function getJwtPayload() {
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+        return null;
+    }
+    try {
+        // O token é dividido em 3 partes. O payload é a segunda.
+        const payloadBase64 = token.split('.')[1];
+        const jsonPayload = atob(payloadBase64);
+        return JSON.parse(jsonPayload);
+    } catch (e) {
+        console.error("Erro ao decodificar JWT:", e);
+        return null;
+    }
+}
+

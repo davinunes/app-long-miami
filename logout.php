@@ -12,7 +12,12 @@ if ($refreshToken && $pdo) {
 }
 
 // Limpa o cookie do lado do cliente
-setcookie('refreshToken', '', ['expires' => time() - 3600, 'path' => '/', 'secure' => true, 'httponly' => true, 'samesite' => 'Strict']);
+setcookie(
+    'refreshToken',
+    '',
+    time() - 3600, // Expiração no passado
+    '/'
+);
 
 http_response_code(200);
 echo json_encode(['status' => 'success', 'message' => 'Logout realizado com sucesso.']);
