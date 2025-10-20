@@ -91,10 +91,21 @@ function carregarConteudo(url, pushState = true) {
 			}
 		},
 		error: jqXHR => {
-			if (jqXHR.status === 401) {
-				alert('Sua sessão expirou. Por favor, faça login novamente.');
-				fazerLogout();
-			} else {
+            // --- O CÓDIGO VAI ENTRAR AQUI AGORA! ---
+
+            // 1. O PHP enviou um 401, então jqXHR.status será 401.
+            if (jqXHR.status === 401) {
+                
+                // 2. Tenta ler a mensagem que o PHP enviou: {"message": "Expired token"}
+                const errorMsg = jqXHR.responseJSON?.message || 'Sua sessão expirou.';
+                
+                // 3. Exibe o alerta para o usuário
+                alert(errorMsg); // Vai mostrar "Expired token"
+                
+                // 4. Chama a função de logout
+                fazerLogout(); // Esta função limpa o localStorage e recarrega a página
+
+            } else {
 				$('#main-content').html(`<div class='container center-align'><h4>Erro ao carregar</h4><p>Não foi possível carregar o conteúdo de: ${url}</p></div>`);
 			}
 		}

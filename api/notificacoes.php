@@ -1,11 +1,28 @@
 <?php
-// Endpoint: /api/notificacoes.php (Versão Final e Completa)
+// Endpoint: /api/notificacoes.php
 
+// --- PASSO 1: Declarar TODOS os headers CORS primeiro ---
+// É crucial que 'Authorization' esteja em 'Allow-Headers'
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
-header("Access-Control-Allow-Methods: POST, GET");
+header("Access-Control-Allow-Methods: POST, GET, OPTIONS"); // Adicionamos OPTIONS
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
+// --- PASSO 2: Lidar com a requisição Preflight (OPTIONS) ---
+// Se for uma requisição OPTIONS, apenas retornamos OK (200) e saímos.
+// Isso diz ao navegador "Sim, eu aceito os headers que você quer enviar".
+if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+    http_response_code(200);
+    exit();
+}
+
+// --- PASSO 3: AGORA sim, verificamos o token ---
+// Se o script chegou aqui, não era um OPTIONS, então deve ser um GET ou POST.
+// Agora podemos exigir o token de autorização.
+require_once '../verificar_token.php';
+$dadosUsuario = verificarTokenEAutorizar();
+
+// --- PASSO 4: O resto do seu script continua normal ---
 require_once '../config.php';
 
 $metodo = $_SERVER['REQUEST_METHOD'];
