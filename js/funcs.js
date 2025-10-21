@@ -89,6 +89,10 @@ function carregarConteudo(url, pushState = true) {
 			else if (url.includes('nova_not.php') || url.includes('editar.php')) {
 				inicializarFormularioNotificacao();
 			}
+			else if (url.includes('usuarios.php')) {
+				// Esta função será criada no main.js
+				inicializarGerenciadorUsuarios();
+			}
 		},
 		error: jqXHR => {
             // --- O CÓDIGO VAI ENTRAR AQUI AGORA! ---

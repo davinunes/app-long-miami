@@ -40,11 +40,16 @@ try {
     $iat = time();
     $exp_access = $iat + 900;
     $payload_access = [
-        'iss' => $_SERVER['HTTP_HOST'],
-        'iat' => $iat,
-        'exp' => $exp_access,
-        'data' => ['userId' => $usuario['id'], 'role' => $usuario['role']]
-    ];
+		'iss' => $_SERVER['HTTP_HOST'],
+		'iat' => $iat,
+		'exp' => $exp_access,
+		'data' => [
+			'userId' => $usuario['id'], 
+			'role' => $usuario['role'],
+			'nome' => $usuario['nome'],   // <<-- LINHA NOVA
+			'email' => $usuario['email'] // <<-- LINHA NOVA
+		]
+	];
     $accessToken = JWT::encode($payload_access, JWT_SECRET_KEY, JWT_ALGORITHM);
 
     // ---- Refresh Token (longo: 7 dias) ----

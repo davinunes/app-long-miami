@@ -145,6 +145,28 @@ $(document).ready(function() {
     // ----------------------------------------------------------------
     // INICIALIZAÇÃO DA APLICAÇÃO
     // ----------------------------------------------------------------
+	
+	// --- NOVOS LISTENERS PARA GERENCIAR USUÁRIOS ---
+
+    // 1. Abre o modal para um NOVO usuário
+    $('#main-content').on('click', '#btn-novo-usuario', function() {
+        // Esta função 'abrirModalUsuario' será criada no main.js
+        abrirModalUsuario(null); 
+    });
+
+    // 2. Abre o modal para EDITAR um usuário
+    $('#main-content').on('click', '.btn-editar-usuario', function() {
+        const id = $(this).data('id');
+        abrirModalUsuario(id);
+    });
+
+    // 3. Salva o formulário (Criação ou Edição)
+    // O modal é anexado ao 'body', então usamos $(document) para garantir
+    $(document).on('submit', '#form-usuario', function(e) {
+        e.preventDefault();
+        // Esta função 'salvarUsuarioModal' será criada no main.js
+        salvarUsuarioModal();
+    });
 
 	function roteamentoInicial() {
 		if (localStorage.getItem('accessToken')) {

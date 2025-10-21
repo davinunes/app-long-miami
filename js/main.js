@@ -1,3 +1,141 @@
+function inicializarGerenciadorUsuarios() {
+    // 1. Inicializa o componente Modal do Materialize
+    $('.modal').modal();
+    
+    // 2. Carrega a lista de usuários na tabela
+    carregarListaUsuarios();
+}
+
+async function carregarListaUsuarios() {
+    const tbody = $('#usuarios-table-body');
+    tbody.html('<tr><td colspan="4" style="text-align: center;">Carregando...</td></tr>');
+    
+    try {
+        const response = await fetch(`${API_BASE_URL_PHP}/usuarios.php`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('accessToken')}` }
+        });
+        
+        if (!response.ok) {
+            const err = await response.json();
+            throw new Error(err.message || 'Erro ao buscar usuários.');
+        }
+
+        const usuarios = await response.json();
+        tbody.empty(); // Limpa o "Carregando..."
+
+        if (usuarios.length === 0) {
+            tbody.html('<tr><td colspan="4" style="text-align: center;">Nenhum usuário encontrado.</td></tr>');
+            return;
+        }
+
+        usuarios.forEach(user => {
+            const row = `
+                <tr>
+                    <td>${user.nome}</td>
+                    <td>${user.email}</td>
+                    <td>${user.role}</td>
+                    <td>
+                        <a href="#modal-usuario" class="btn-floating btn-small waves-effect waves-light blue btn-editar-usuario modal-trigger" data-id="${user.id}">
+                            <i class="material-icons">edit</i>
+                        </a>
+                        </td>
+                </tr>
+            `;
+            tbody.append(row);
+        });
+
+    } catch (error) {
+        tbody.html(`<tr><td colspan="4" style="text-align: center; color: red;">${error.message}</td></tr>`);
+    }
+}
+
+async function abrirModalUsuario(id) {
+    const modal = $('#modal-usuario');
+    const form = $('#form-usuario');
+    
+    form[0].reset(); // Limpa o formulário
+    
+    if (id) {
+        // --- MODO EDIÇÃO ---
+        $('#modal-usuario-titulo').text('Editar Usuário');
+        $('#usuario_id').val(id); // Define o ID oculto
+        $('#senha-helper-text').text('Deixe em branco para não alterar a senha.');
+        $('#usuario_senha').prop('required', false); // Senha não é obrigatória na edição
+
+        // Busca os dados do usuário específico
+        try {
+            const response = await fetch(`${API_BASE_URL_PHP}/usuarios.php?id=${id}`, {
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('accessToken')}` }
+            });
+            if (!response.ok) throw new Error('Não foi possível carregar os dados do usuário.');
+            
+            const user = await response.json();
+            $('#usuario_nome').val(user.nome);
+            $('#usuario_email').val(user.email);
+            $('#usuario_role').val(user.role);
+            
+            M.updateTextFields(); // Atualiza os labels flutuantes do Materialize
+            $('select').formSelect(); // Re-inicializa o select com o valor correto
+            
+        } catch (error) {
+            alert(error.message);
+            return;
+        }
+
+    } else {
+        // --- MODO CRIAÇÃO ---
+        $('#modal-usuario-titulo').text('Novo Usuário');
+        $('#usuario_id').val(''); // Garante que o ID oculto está vazio
+        $('#senha-helper-text').text('A senha é obrigatória para criar.');
+        $('#usuario_senha').prop('required', true); // Senha é obrigatória na criação
+    }
+    
+    M.updateTextFields();
+    $('select').formSelect();
+    
+    // Abre o modal
+    M.Modal.getInstance(modal).open();
+}
+
+async function salvarUsuarioModal() {
+    const id = $('#usuario_id').val();
+    const dados = {
+        nome: $('#usuario_nome').val(),
+        email: $('#usuario_email').val(),
+        role: $('#usuario_role').val(),
+        senha: $('#usuario_senha').val()
+    };
+    
+    let url = `${API_BASE_URL_PHP}/usuarios.php`;
+    
+    if (id) {
+        dados.id = id; // Adiciona o ID para a API saber que é um UPDATE
+    }
+    
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+            },
+            body: JSON.stringify(dados)
+        });
+        
+        const result = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(result.message || 'Erro ao salvar.');
+        }
+
+        alert(result.message); // Exibe "Usuário salvo com sucesso!"
+        M.Modal.getInstance($('#modal-usuario')).close(); // Fecha o modal
+        carregarListaUsuarios(); // Recarrega a tabela
+        
+    } catch (error) {
+        alert(error.message); // Exibe o erro (ex: "Este email já existe")
+    }
+}
 
 function carregarListaNotificacoes() {
     const tbody = document.getElementById('notifications-table-body');
