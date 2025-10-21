@@ -95,24 +95,27 @@ function carregarConteudo(url, pushState = true) {
 			}
 		},
 		error: jqXHR => {
-            // --- O CÓDIGO VAI ENTRAR AQUI AGORA! ---
-
-            // 1. O PHP enviou um 401, então jqXHR.status será 401.
+            // --- TRATAMENTO CENTRAL DE ERROS ---
+            
             if (jqXHR.status === 401) {
+                // Erro de Autenticação (Token inválido/expirado)
                 
-                // 2. Tenta ler a mensagem que o PHP enviou: {"message": "Expired token"}
-                const errorMsg = jqXHR.responseJSON?.message || 'Sua sessão expirou.';
+                // Pega a mensagem do PHP (ex: "Expired token") ou usa uma padrão
+                const errorMsg = jqXHR.responseJSON?.message || 'Sua sessão expirou. Faça login novamente.';
                 
-                // 3. Exibe o alerta para o usuário
-                alert(errorMsg); // Vai mostrar "Expired token"
+                // ANTES (ERRADO): alert(errorMsg);
+                // DEPOIS (CORRETO): Mostra um Toast não bloqueante
+                M.toast({html: errorMsg, classes: 'red darken-1'});
                 
-                // 4. Chama a função de logout
-                fazerLogout(); // Esta função limpa o localStorage e recarrega a página
+                // Chama a função de logout IMEDIATAMENTE após mostrar o Toast
+                fazerLogout(); 
 
             } else {
-				$('#main-content').html(`<div class='container center-align'><h4>Erro ao carregar</h4><p>Não foi possível carregar o conteúdo de: ${url}</p></div>`);
-			}
-		}
+                // Outros erros (404, 500, etc.)
+                const errorMsg = jqXHR.responseJSON?.message || `Erro ${jqXHR.status} ao carregar a página.`;
+                $('#main-content').html(`<div class='container center-align'><h4>Erro ao carregar</h4><p>${errorMsg}</p></div>`);
+            }
+        }
 	});
 }
 

@@ -45,7 +45,9 @@ async function carregarListaUsuarios() {
         });
 
     } catch (error) {
-        tbody.html(`<tr><td colspan="4" style="text-align: center; color: red;">${error.message}</td></tr>`);
+        // O catch agora só mostra o erro na tabela ou no console
+        console.error('Erro ao buscar usuários:', error);
+        tbody.html(`<tr><td colspan="4" style="text-align: center; color: red;">Erro: ${error.message}</td></tr>`);
     }
 }
 
@@ -153,11 +155,6 @@ function carregarListaNotificacoes() {
         }
     })
     .then(response => {
-        if (response.status === 401) {
-            alert('Sessão expirada. Faça o login novamente.');
-            window.location.replace('index.php');
-            throw new Error('Sessão expirada.');
-        }
         if (!response.ok) {
             throw new Error(`Erro na rede: ${response.statusText}`);
         }
@@ -192,8 +189,9 @@ function carregarListaNotificacoes() {
         });
     })
     .catch(error => {
+        // O catch agora só mostra o erro na tabela ou no console
         console.error('Erro ao buscar notificações:', error);
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center;">Erro ao carregar dados: ${error.message}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center;">Erro: ${error.message}</td></tr>`;
     });
 }
 
@@ -520,7 +518,9 @@ async function configurarModoEdicao(id) {
         preencherFormulario(data);
         showStatus('Pronto para edição.', 'success');
     } catch (error) {
-        showStatus(error.message, 'error');
+        // O catch agora só mostra o erro na tabela ou no console
+        console.error('Erro:', error);
+        tbody.html(`<tr><td colspan="4" style="text-align: center; color: red;">Erro: ${error.message}</td></tr>`);
     }
 }
 
