@@ -25,7 +25,21 @@ $(document).ready(function() {
     function mostrarTelaDashboard() {
         $('#login-container').hide();
         $('#dashboard-container').show();
-        $('.sidenav').sidenav(); // Inicializa o menu lateral
+        $('.sidenav').sidenav({
+            edge: 'left',
+            onOpenStart: function() {
+                $('.sidenav').addClass('sidenav-open');
+                $('body').append('<div class="sidenav-overlay"></div>');
+            },
+            onCloseEnd: function() {
+                $('.sidenav').removeClass('sidenav-open');
+                $('.sidenav-overlay').remove();
+            }
+        });
+
+        $(document).on('click', '.sidenav-overlay', function() {
+            M.Sidenav.getInstance($('.sidenav')).close();
+        });
 
         const payload = decodeJwt(localStorage.getItem('accessToken'));
         if (payload && payload.data) {

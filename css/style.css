@@ -9,25 +9,263 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    /* Fundo da aplicação inteira, do seu design original */
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    background: #f0f2f5;
     min-height: 100vh;
 }
 
-/* --- 2. LAYOUT PRINCIPAL DA SPA (SIDENAV) --- */
-/* Mantém o menu lateral e empurra o conteúdo em telas grandes */
-@media only screen and (min-width: 993px) {
-  header, main, footer {
-    padding-left: 300px;
-  }
+/* --- LOGIN MODERNO --- */
+#login-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 20px;
 }
 
-.sidenav { background-color: #2c3e50; }
+.login-wrapper {
+    display: flex;
+    width: 100%;
+    max-width: 1000px;
+    min-height: 600px;
+    background: #fff;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.login-left {
+    flex: 1;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 50px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    color: white;
+}
+
+.login-brand {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.brand-icon {
+    width: 80px;
+    height: 80px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+}
+
+.brand-icon i {
+    font-size: 40px;
+    color: white;
+}
+
+.login-brand h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.login-brand p {
+    opacity: 0.9;
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+.login-features {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.feature-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.95rem;
+    opacity: 0.9;
+}
+
+.feature-item i {
+    font-size: 20px;
+    color: #a8edea;
+}
+
+.login-right {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 50px;
+}
+
+.login-form-container {
+    width: 100%;
+    max-width: 350px;
+}
+
+.login-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.login-header h2 {
+    font-size: 1.8rem;
+    color: #1a1a2e;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.login-header p {
+    color: #666;
+    font-size: 0.95rem;
+}
+
+#login-form .input-field {
+    margin-bottom: 25px;
+}
+
+#login-form .input-field input {
+    border: 2px solid #e8e8e8;
+    border-radius: 12px;
+    padding: 15px 15px 15px 50px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    height: auto;
+}
+
+#login-form .input-field input:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+}
+
+#login-form .input-field .prefix {
+    left: 15px;
+    font-size: 22px;
+    color: #999;
+}
+
+#login-form .input-field input:focus + label,
+#login-form .input-field input.validate + label,
+#login-form .input-field input.validate.filled + label {
+    color: #667eea;
+}
+
+#login-form .input-field input:focus ~ .prefix,
+#login-form .input-field input.validate:focus ~ .prefix {
+    color: #667eea;
+}
+
+.error-message {
+    color: #e74c3c;
+    font-size: 0.85rem;
+    margin-bottom: 15px;
+    padding: 10px;
+    background: #ffeaea;
+    border-radius: 8px;
+    display: none;
+}
+
+.login-btn {
+    width: 100%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 12px;
+    padding: 15px 30px;
+    font-size: 1rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+}
+
+.login-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+}
+
+.login-btn:active {
+    transform: translateY(0);
+}
+
+/* --- 2. LAYOUT PRINCIPAL DA SPA (SIDENAV) --- */
+#dashboard-container {
+    display: flex;
+    min-height: 100vh;
+}
+
+#dashboard-container header {
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 100vh;
+    width: 280px;
+    z-index: 997;
+}
+
+.sidenav {
+    background-color: #1e293b;
+    width: 280px !important;
+    height: 100vh;
+    position: fixed !important;
+    left: 0;
+    top: 0;
+    transform: translateX(0) !important;
+}
+
 .sidenav li > a, .sidenav li > a > i.material-icons { color: rgba(255, 255, 255, 0.9); }
 .sidenav li > a:hover { background-color: rgba(255, 255, 255, 0.05); }
 .sidenav .divider { background-color: rgba(255, 255, 255, 0.12); }
-.sidenav .user-view { padding: 16px; margin-bottom: 8px; background-color: #212f3d; }
-.sidenav .user-view .name, .sidenav .user-view .email { color: #fff; font-weight: 500; }
+.sidenav .user-view { padding: 20px; background-color: #0f172a; }
+.sidenav .user-view .name { color: #fff; font-weight: 600; font-size: 1.1rem; }
+.sidenav .user-view .email { color: #94a3b8; font-size: 0.85rem; }
+
+.sidenav .user-view .sidenav-header {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 15px;
+}
+
+.sidenav .user-view .sidenav-header i {
+    font-size: 30px;
+    color: white;
+}
+
+.sidenav li a i.material-icons {
+    margin-right: 15px;
+    font-size: 22px;
+}
+
+.sidenav li a {
+    padding: 12px 20px;
+    font-size: 0.95rem;
+}
+
+.sidenav li a.ajax-link.active {
+    background-color: rgba(102, 126, 234, 0.15) !important;
+    border-left: 3px solid #667eea;
+}
+
+#main-content {
+    margin-left: 280px;
+    min-height: 100vh;
+    flex: 1;
+    background: #f0f2f5;
+}
 
 /* --- 3. ESTILOS DE CONTEÚDO CARREGADO VIA AJAX --- */
 /* Estilo base para os 'cards' brancos de conteúdo (lista, formulários, etc.) */
@@ -125,7 +363,100 @@ main#main-content .header p { margin: 5px 0 0; color: #ccc; }
 .status.loading { background: #cce7ff; color: #004085; border: 1px solid #b3d7ff; }
 
 /* --- 6. RESPONSIVIDADE --- */
-@media (max-width: 992px) { /* Alinhado com o breakpoint do Materialize */
+@media (max-width: 992px) {
     .content { grid-template-columns: 1fr; }
     .form-section { border-right: none; border-bottom: 2px solid #e9ecef; }
+    
+    #dashboard-container header {
+        width: 0;
+    }
+    
+    .sidenav {
+        transform: translateX(-105%) !important;
+        width: 280px !important;
+    }
+    
+    .sidenav.sidenav-open {
+        transform: translateX(0) !important;
+    }
+    
+    #main-content {
+        margin-left: 0;
+    }
+    
+    .mobile-menu-btn {
+        position: fixed;
+        top: 15px;
+        left: 15px;
+        z-index: 998;
+        width: 45px;
+        height: 45px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+    
+    .mobile-menu-btn i {
+        color: white;
+        font-size: 24px;
+    }
+    
+    .sidenav-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 996;
+    }
+}
+
+/* Login responsivo */
+@media (max-width: 768px) {
+    .login-wrapper {
+        flex-direction: column;
+        max-width: 450px;
+    }
+    
+    .login-left {
+        padding: 40px 30px;
+    }
+    
+    .login-brand {
+        margin-bottom: 25px;
+    }
+    
+    .login-brand h1 {
+        font-size: 1.5rem;
+    }
+    
+    .login-features {
+        display: none;
+    }
+    
+    .login-right {
+        padding: 30px;
+    }
+    
+    .login-form-container {
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .login-left {
+        padding: 30px 20px;
+    }
+    
+    .login-right {
+        padding: 20px;
+    }
+    
+    .login-header h2 {
+        font-size: 1.5rem;
+    }
 }
