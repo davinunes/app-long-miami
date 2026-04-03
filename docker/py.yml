@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  app:
+    image: python:3.11-slim
+    container_name: app-pdf-generator
+    working_dir: /root/app-py
+    volumes:
+      - /root/app-py:/root/app-py:ro
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+    command: >
+      sh -c "pip install --no-cache-dir -r requirements.txt && waitress-serve --host=0.0.0.0 --port=5000 app:app"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
