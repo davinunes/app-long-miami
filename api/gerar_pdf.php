@@ -1,5 +1,4 @@
 <?php
-header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
@@ -23,6 +22,7 @@ if (!$authHeader) {
 
 if (!$authHeader || !preg_match('/^Bearer\s+(.+)$/i', $authHeader, $matches)) {
     http_response_code(401);
+    header('Content-Type: application/json; charset=utf-8');
     echo json_encode(['error' => 'Token não fornecido.']);
     exit;
 }
@@ -32,6 +32,7 @@ try {
     JWT::decode($token, new Firebase\JWT\Key(JWT_SECRET_KEY, JWT_ALGORITHM));
 } catch (Exception $e) {
     http_response_code(401);
+    header('Content-Type: application/json; charset=utf-8');
     echo json_encode(['error' => 'Token inválido ou expirado.']);
     exit;
 }
@@ -39,11 +40,12 @@ try {
 $input = json_decode(file_get_contents('php://input'), true);
 if (!$input) {
     http_response_code(400);
+    header('Content-Type: application/json; charset=utf-8');
     echo json_encode(['error' => 'Dados inválidos.']);
     exit;
 }
 
-$pythonApiUrl = getenv('PYTHON_API_URL') ?: 'http://python-api:5000';
+$pythonApiUrl = getenv('PYTHON_API_URL') ?: 'http://app:5000';
 
 $ch = curl_init($pythonApiUrl . '/gerar_documento');
 curl_setopt_array($ch, [
@@ -62,14 +64,23 @@ curl_close($ch);
 
 if ($error) {
     http_response_code(502);
+    header('Content-Type: application/json; charset=utf-8');
     echo json_encode(['error' => 'Erro ao comunicar com o serviço de PDF: ' . $error]);
     exit;
 }
 
 if ($httpCode !== 200) {
     http_response_code($httpCode);
+    header('Content-Type: application/json; charset=utf-8');
     echo $response;
     exit;
+}
+
+if (strpos($response, '%PDF') === 0) {
+    header('Content-Type: application/pdf');
+    header('Content-Length: ' . strlen($response));
+} else {
+    header('Content-Type: application/json; charset=utf-8');
 }
 
 echo $response;
