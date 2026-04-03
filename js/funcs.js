@@ -34,7 +34,9 @@ function urlParaBase64(url) {
 
 async function fetchInitialData() {
     try {
-        const response = await fetch(`${API_BASE_URL_PHP}/config.php`);
+        const response = await fetch(`${API_BASE_URL_PHP}/config.php`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('accessToken')}` }
+        });
         if (!response.ok) throw new Error('Falha ao carregar configurações do servidor.');
         
         configData = await response.json();

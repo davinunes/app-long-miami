@@ -59,7 +59,9 @@ function populateSelectsWithMockData() {
  */
 async function fetchInitialData() {
     try {
-        const response = await fetch(`${API_BASE_URL_PHP}/config.php`);
+        const response = await fetch(`${API_BASE_URL_PHP}/config.php`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('accessToken')}` }
+        });
         if (!response.ok) throw new Error('Falha ao carregar configurações do servidor.');
         
         configData = await response.json();
@@ -245,7 +247,10 @@ async function salvarNotificacao() {
     try {
         const response = await fetch(`${API_BASE_URL_PHP}/notificacoes.php`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+            },
             body: JSON.stringify(dados)
         });
         const result = await response.json();

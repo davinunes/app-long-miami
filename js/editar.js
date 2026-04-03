@@ -1,5 +1,7 @@
 // js/editar.js - Lógica específica da página de EDIÇÃO
 
+const API_BASE_URL_PHP = '/api';
+
 document.addEventListener('DOMContentLoaded', async function() {
     console.log("✅ 1. Página de edição carregada. Iniciando script 'editar.js'.");
 
@@ -34,7 +36,9 @@ document.addEventListener('DOMContentLoaded', async function() {
 async function carregarDadosNotificacao() {
     showStatus('Carregando dados da notificação...', 'loading');
     try {
-        const response = await fetch(`${API_BASE_URL_PHP}/notificacoes.php?id=${NOTIFICACAO_ID}`);
+        const response = await fetch(`${API_BASE_URL_PHP}/notificacoes.php?id=${NOTIFICACAO_ID}`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('accessToken')}` }
+        });
         if (!response.ok) {
             const errorData = await response.json();
             throw new Error(errorData.message || 'Notificação não encontrada.');
@@ -69,7 +73,10 @@ async function atualizarNotificacao() {
     try {
         const response = await fetch(`${API_BASE_URL_PHP}/notificacoes.php`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+            },
             body: JSON.stringify(dados)
         });
         const result = await response.json();
