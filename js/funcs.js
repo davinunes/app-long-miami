@@ -6,7 +6,7 @@ let currentPdfUrl = null;
 let configData = {};
 let imagensParaDeletar = [];
 
-const API_BASE_URL_PYTHON = `${window.location.protocol}//${window.location.hostname}:5000`;
+const API_BASE_URL_PYTHON = 'http://docker.internalhost:5000';
 const API_BASE_URL_PHP = window.location.origin + '/api';
 
 function configurarCampoBloco() {

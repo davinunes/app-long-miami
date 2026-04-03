@@ -1,5 +1,5 @@
 // A constante API_BASE_URL agora aponta para a pasta da sua API
-const API_BASE_URL_PYTHON = `${window.location.protocol}//${window.location.hostname}:5000`;
+const API_BASE_URL_PYTHON = 'http://docker.internalhost:5000';
 const API_BASE_URL_PHP = '/api'; // Caminho relativo para a API PHP
 
 // Variáveis globais para armazenar dados do formulário
