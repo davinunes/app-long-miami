@@ -1,7 +1,6 @@
-// js/regimento-busca.js - Busca no regimento interno e Quill editor
+// js/regimento-busca.js - Busca no regimento interno
 
 let selectedArticles = [];
-let quillInstance = null;
 
 async function inicializarBuscaRegimento() {
     const searchInput = document.getElementById('regimento-search');
@@ -46,7 +45,7 @@ async function inicializarBuscaRegimento() {
 
     document.addEventListener('click', (e) => {
         const searchWrapper = searchInput.closest('.regimento-busca');
-        if (!searchWrapper.contains(e.target)) {
+        if (!searchWrapper || !searchWrapper.contains(e.target)) {
             resultsContainer.classList.remove('show');
         }
     });
@@ -109,7 +108,7 @@ function updateSelectedArticlesUI() {
     list.innerHTML = selectedArticles.map(article => `
         <span class="selected-article-tag">
             Art. ${article.notation}
-            <button onclick="removerArtigo('${article.notation}')">&times;</button>
+            <button type="button" onclick="removerArtigo('${article.notation}')">&times;</button>
         </span>
     `).join('');
 }
@@ -120,70 +119,17 @@ window.removerArtigo = function(notation) {
 };
 
 window.adicionarArtigosATextarea = function() {
-    if (selectedArticles.length === 0 || !quillInstance) return;
+    if (selectedArticles.length === 0) return;
+    
+    const fundamentacao = document.getElementById('fundamentacao_legal');
+    if (!fundamentacao) return;
     
     const conteudo = selectedArticles.map(article => {
-        return `<p><strong>Art. ${article.notation}:</strong> ${article.text}</p>`;
-    }).join('');
+        return `\nArt. ${article.notation}: ${article.text}`;
+    }).join('\n');
     
-    // Insere HTML no Quill
-    const delta = quillInstance.getContents();
-    quillInstance.setContents(delta.concat([
-        { insert: conteudo, attributes: { allowHTML: true } },
-        { insert: '\n' }
-    ]));
+    fundamentacao.value += conteudo;
     
     selectedArticles = [];
     updateSelectedArticlesUI();
 };
-
-async function inicializarQuill() {
-    if (typeof Quill === 'undefined') {
-        // Carrega CSS do Quill
-        const link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = 'https://cdn.quilljs.com/1.3.7/quill.snow.css';
-        document.head.appendChild(link);
-        
-        // Carrega JS do Quill
-        const script = document.createElement('script');
-        script.src = 'https://cdn.quilljs.com/1.3.7/quill.min.js';
-        script.onload = () => initQuillEditor();
-        document.head.appendChild(script);
-    } else {
-        initQuillEditor();
-    }
-}
-
-function initQuillEditor() {
-    const textarea = document.getElementById('fundamentacao_legal');
-    if (!textarea) return;
-    
-    // Oculta textarea original e cria div para Quill
-    textarea.style.display = 'none';
-    
-    const editorDiv = document.createElement('div');
-    editorDiv.id = 'quill-editor';
-    editorDiv.style.height = '200px';
-    textarea.parentNode.insertBefore(editorDiv, textarea.nextSibling);
-    
-    quillInstance = new Quill('#quill-editor', {
-        theme: 'snow',
-        placeholder: 'Artigos do regimento, leis, etc...',
-        modules: {
-            toolbar: [
-                ['bold', 'italic', 'underline'],
-                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                ['clean']
-            ]
-        }
-    });
-    
-    // Sincroniza conteúdo do Quill com textarea(hidden) antes de enviar
-    const form = textarea.closest('form') || textarea.closest('.form-section');
-    if (form) {
-        form.addEventListener('submit', () => {
-            textarea.value = quillInstance.root.innerHTML;
-        });
-    }
-}

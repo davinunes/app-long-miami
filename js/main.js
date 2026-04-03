@@ -493,10 +493,9 @@ async function inicializarFormularioNotificacao() {
     $('select').formSelect();
     console.log("✅ Componentes <select> do Materialize inicializados.");
 
-    // Passo 3: Inicializa busca do regimento e Quill editor
+    // Passo 3: Inicializa busca do regimento
     await inicializarBuscaRegimento();
-    inicializarQuill();
-    console.log("✅ Editor Quill e busca do regimento inicializados.");
+    console.log("✅ Busca do regimento inicializada.");
 
     // Passo 4: O resto da lógica continua normalmente...
     const hash = window.location.hash;

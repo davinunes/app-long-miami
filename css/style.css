@@ -601,26 +601,6 @@ main#main-content .header p { margin: 5px 0 0; color: #ccc; }
     background: #219a52;
 }
 
-/* Quill editor overrides */
-#quill-editor {
-    background: white;
-    border-radius: 8px;
-    border: 2px solid #e9ecef;
-}
-
-#quill-editor .ql-toolbar {
-    border-top-left-radius: 8px;
-    border-top-right-radius: 8px;
-    border-bottom: 1px solid #e9ecef;
-}
-
-#quill-editor .ql-container {
-    border-bottom-left-radius: 8px;
-    border-bottom-right-radius: 8px;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    font-size: 14px;
-}
-
 .fato-item textarea {
     width: 100%;
     min-height: 80px;

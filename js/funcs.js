@@ -208,6 +208,11 @@ function preencherFormulario(data) {
         document.getElementById('tipo_id').value = data.tipo_id;
         document.getElementById('assunto_id').value = data.assunto_id;
 		document.getElementById('url_recurso').value = data.url_recurso || '';
+        document.getElementById('valor_multa').value = data.valor_multa || '';
+        
+        if (data.valor_multa) {
+            document.getElementById('valor_multa_group').classList.remove('hidden');
+        }
 
         // Lógica dos fatos
         const fatosContainer = document.getElementById('fatos-container');
