@@ -1,24 +1,27 @@
 version: '3.8'
 services:
   php-web:
-    image: ilunne/php7.4-mysqli # Ou php:8.3-fpm se usar um servidor web separado como Nginx
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+    image: ilunne/php7.4-mysqli
     container_name: homepage-php
+    networks:
+      - app-network
     ports:
-      - "8080:80" # Mapeia a porta 80 do host para a porta 80 do contêiner
+      - "8080:80"
     volumes:
-      - /root/homepage:/var/www/html # Mapeia a pasta local para o diretório de trabalho do Apache/PHP
+      - /root/homepage:/var/www/html
     environment:
-      - TZ=America/Recife  # Fuso horário
+      - TZ=America/Recife
       - PHP_DATE_TIMEZONE=America/Recife
       - APP_MASTER_KEY=Dinov@tech123
       - APP_MODE_VET=false
-      # Banco de Dados
       - DB_HOSTNAME=10.0.0.208
       - DB_DATABASE=app_multas
       - DB_USERNAME=azakdb
       - DB_PASSWORD=Dinov@tech123
       - DB_CHARSET=UTF8
-      - PYTHON_API_URL=http://host.docker.internal:5000
-    restart: always # Opcional: Reinicia o contêiner automaticamente se ele parar 
+      - PYTHON_API_URL=http://app:5000
+    restart: always
+
+networks:
+  app-network:
+    external: true 

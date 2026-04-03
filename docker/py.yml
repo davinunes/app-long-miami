@@ -4,8 +4,8 @@ services:
   app:
     image: python:3.11-slim
     container_name: app-pdf-generator
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+    networks:
+      - app-network
     working_dir: /root/app-py
     volumes:
       - /root/app-py:/root/app-py:ro
@@ -21,3 +21,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+
+networks:
+  app-network:
+    external: true
