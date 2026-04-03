@@ -188,30 +188,30 @@ async function getFormData(forPDF = false) {
 
 function preencherFormulario(data) {
     console.log("--- INICIANDO PREENCHIMENTO DO FORMULÁRIO ---");
+    console.log("Dados recebidos da API:", data);
 
     try {
-        // --- PONTO DE DEBUG PARA CADA CAMPO PROBLEMÁTICO ---
-        console.log(`Tentando preencher 'bloco' com o valor: "${data.bloco}"`);
-        document.getElementById('bloco').value = data.bloco || ''; // Usamos || '' para evitar 'null'
-
-        console.log(`Tentando preencher 'fundamentacao_legal' com o valor: "${data.fundamentacao_legal}"`);
+        document.getElementById('notificacao_id').value = data.id || '';
+        document.getElementById('numero').value = data.numero ? `${data.numero}/${data.ano}` : '';
+        document.getElementById('unidade').value = data.unidade || '';
+        document.getElementById('bloco').value = data.bloco || '';
+        document.getElementById('url_recurso').value = data.url_recurso || '';
         document.getElementById('fundamentacao_legal').value = data.fundamentacao_legal || '';
-
-        console.log(`Tentando preencher 'data_emissao' com o valor: "${data.data_emissao}"`);
-        document.getElementById('data_emissao').value = data.data_emissao;
-
-        // Preenchendo os outros campos que já funcionavam
-        document.getElementById('notificacao_id').value = data.id;
-        document.getElementById('numero').value = `${data.numero}/${data.ano}`;
-        document.getElementById('unidade').value = data.unidade;
-        document.getElementById('url_recurso').value = data.url_recurso;
-        document.getElementById('tipo_id').value = data.tipo_id;
-        document.getElementById('assunto_id').value = data.assunto_id;
-		document.getElementById('url_recurso').value = data.url_recurso || '';
+        document.getElementById('data_emissao').value = data.data_emissao || '';
         document.getElementById('valor_multa').value = data.valor_multa || '';
+        
+        if (data.tipo_id) {
+            document.getElementById('tipo_id').value = data.tipo_id;
+        }
+        if (data.assunto_id) {
+            document.getElementById('assunto_id').value = data.assunto_id;
+        }
+        
+        $('select').formSelect();
         
         if (data.valor_multa) {
             document.getElementById('valor_multa_group').classList.remove('hidden');
+            toggleMultaField();
         }
 
         // Lógica dos fatos
@@ -282,6 +282,11 @@ async function gerarPDF() {
 
         console.log("--- 6. Resposta do wrapper PHP recebida. ---", response);
 
+        if (response.status === 401) {
+            window.tratarTokenExpirado();
+            return;
+        }
+
         if (response.ok) {
             const pdfBlob = await response.blob();
             currentPdfUrl = URL.createObjectURL(pdfBlob);
@@ -292,13 +297,17 @@ async function gerarPDF() {
             document.getElementById('btnDownload').style.display = 'block';
             showStatus('Preview gerado com sucesso!', 'success');
         } else {
-            const errorData = await response.json();
+            const errorData = await response.json().catch(() => ({}));
             showStatus(`Erro ao gerar PDF: ${errorData.error || 'Erro desconhecido'}`, 'error');
         }
 
     } catch (error) {
         console.error("--- X. ERRO CRÍTICO DENTRO DE 'gerarPDF': ---", error);
-        showStatus(`Ocorreu um erro de script: ${error.message}`, 'error');
+        if (error.message.includes('401') || error.message.includes('expirou')) {
+            window.tratarTokenExpirado();
+        } else {
+            showStatus(`Ocorreu um erro de script: ${error.message}`, 'error');
+        }
     }
 }
 

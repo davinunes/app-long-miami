@@ -6,7 +6,6 @@ $(document).ready(function() {
     // FUNÇÕES DE UI E DE APOIO
     // ----------------------------------------------------------------
 
-    // Decodifica o token para pegar informações (como nome de usuário)
     function decodeJwt(token) {
         try {
             return JSON.parse(atob(token.split('.')[1]));
@@ -15,13 +14,11 @@ $(document).ready(function() {
         }
     }
 
-    // Mostra a tela de login e esconde o painel
     function mostrarTelaLogin() {
         $('#dashboard-container').hide();
         $('#login-container').show();
     }
 
-    // Mostra o painel, esconde o login, e inicializa componentes Materialize
     function mostrarTelaDashboard() {
         $('#login-container').hide();
         $('#dashboard-container').show();
@@ -48,13 +45,28 @@ $(document).ready(function() {
         }
     }
     
-    // Faz o logout, limpa o token e redireciona
+    window.tratarTokenExpirado = function(mensagem) {
+        const msg = mensagem || 'Sua sessão expirou. Faça login novamente.';
+        if (typeof M !== 'undefined') {
+            M.toast({html: msg, classes: 'orange darken-2', displayLength: 5000});
+        }
+        setTimeout(() => fazerLogout(), 1500);
+    }
+    
     function fazerLogout() {
         localStorage.removeItem('accessToken');
         $.post('logout.php').always(() => {
             window.location.replace('index.php');
         });
     }
+    
+    $.ajaxSetup({
+        statusCode: {
+            401: function() {
+                window.tratarTokenExpirado();
+            }
+        }
+    });
 
     // ----------------------------------------------------------------
     // FUNÇÃO PRINCIPAL DE CARREGAMENTO DE CONTEÚDO (O CORAÇÃO DA SPA)

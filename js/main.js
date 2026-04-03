@@ -517,10 +517,8 @@ async function inicializarFormularioNotificacao() {
 }
 
 async function configurarModoEdicao(id) {
-    // Apenas define o texto do botão. O listener de clique será gerenciado pelo jwt.js
     document.getElementById('btnSalvar').textContent = '💾 Atualizar Notificação';
 
-    // O resto da função (fetch, preencherFormulario, etc.) continua igual...
     showStatus('Carregando dados para edição...', 'loading');
     try {
         const response = await fetch(`${API_BASE_URL_PHP}/notificacoes.php?id=${id}`, {
@@ -529,14 +527,30 @@ async function configurarModoEdicao(id) {
                 'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
             }
         });
-        if (!response.ok) throw new Error('Falha ao buscar dados da notificação.');
+        
+        if (response.status === 401) {
+            window.tratarTokenExpirado();
+            return;
+        }
+        
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            throw new Error(err.message || 'Falha ao buscar dados da notificação.');
+        }
+        
         const data = await response.json();
+        console.log("📋 Dados da notificação recebidos:", data);
+        console.log("📋 tipo_id:", data.tipo_id, "assunto_id:", data.assunto_id);
+        
         preencherFormulario(data);
         showStatus('Pronto para edição.', 'success');
     } catch (error) {
-        // O catch agora só mostra o erro na tabela ou no console
-        console.error('Erro:', error);
-        tbody.html(`<tr><td colspan="4" style="text-align: center; color: red;">Erro: ${error.message}</td></tr>`);
+        console.error('Erro ao carregar notificação:', error);
+        if (error.message.includes('401') || error.message.includes('expirou')) {
+            window.tratarTokenExpirado();
+        } else {
+            showStatus('Erro: ' + error.message, 'error');
+        }
     }
 }
 
