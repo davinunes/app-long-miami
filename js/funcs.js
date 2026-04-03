@@ -6,7 +6,6 @@ let currentPdfUrl = null;
 let configData = {};
 let imagensParaDeletar = [];
 
-const API_BASE_URL_PYTHON = 'http://docker.internalhost:5000';
 const API_BASE_URL_PHP = window.location.origin + '/api';
 
 function configurarCampoBloco() {
@@ -265,20 +264,22 @@ async function gerarPDF() {
 
         showStatus('Gerando preview do PDF...', 'loading');
         
-        console.log(`--- 5. PREPARANDO CHAMADA PARA A API PYTHON com ${dados.fotos_fatos.length} imagem(ns). ---`);
+        console.log(`--- 5. PREPARANDO CHAMADA PARA O WRAPPER PHP com ${dados.fotos_fatos.length} imagem(ns). ---`);
         
-        const response = await fetch(`${API_BASE_URL_PYTHON}/gerar_documento`, {
+        const response = await fetch(`${API_BASE_URL_PHP}/gerar_pdf.php`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+            },
             body: JSON.stringify(dados)
         });
 
-        console.log("--- 6. Resposta da API Python recebida. ---", response);
+        console.log("--- 6. Resposta do wrapper PHP recebida. ---", response);
 
         if (response.ok) {
-            // ... (resto da lógica de sucesso)
             const pdfBlob = await response.blob();
-            const currentPdfUrl = URL.createObjectURL(pdfBlob);
+            currentPdfUrl = URL.createObjectURL(pdfBlob);
             document.getElementById('pdfPlaceholder').style.display = 'none';
             const pdfViewer = document.getElementById('pdfViewer');
             pdfViewer.src = currentPdfUrl;
@@ -286,9 +287,8 @@ async function gerarPDF() {
             document.getElementById('btnDownload').style.display = 'block';
             showStatus('Preview gerado com sucesso!', 'success');
         } else {
-            // ... (resto da lógica de erro)
             const errorData = await response.json();
-            showStatus(`Erro ao gerar PDF: ${errorData.error}`, 'error');
+            showStatus(`Erro ao gerar PDF: ${errorData.error || 'Erro desconhecido'}`, 'error');
         }
 
     } catch (error) {
