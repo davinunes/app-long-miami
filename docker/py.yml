@@ -4,6 +4,8 @@ services:
   app:
     image: python:3.11-slim
     container_name: app-pdf-generator
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     working_dir: /root/app-py
     volumes:
       - /root/app-py:/root/app-py:ro
