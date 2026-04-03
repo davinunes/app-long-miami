@@ -14,8 +14,14 @@ require_once __DIR__ . '/../lib/jwt_loader.php';
 
 use Firebase\JWT\JWT;
 
-$token = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
-if (!$token || !preg_match('/^Bearer\s+(.+)$/i', $token, $matches)) {
+$authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '';
+
+if (!$authHeader) {
+    $headers = getallheaders();
+    $authHeader = $headers['Authorization'] ?? $headers['authorization'] ?? '';
+}
+
+if (!$authHeader || !preg_match('/^Bearer\s+(.+)$/i', $authHeader, $matches)) {
     http_response_code(401);
     echo json_encode(['error' => 'Token não fornecido.']);
     exit;
