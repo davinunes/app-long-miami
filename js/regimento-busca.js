@@ -1,7 +1,7 @@
-// js/regimento-busca.js - Busca no regimento interno e TinyMCE
+// js/regimento-busca.js - Busca no regimento interno e Quill editor
 
 let selectedArticles = [];
-let tinymceInstance = null;
+let quillInstance = null;
 
 async function inicializarBuscaRegimento() {
     const searchInput = document.getElementById('regimento-search');
@@ -120,47 +120,70 @@ window.removerArtigo = function(notation) {
 };
 
 window.adicionarArtigosATextarea = function() {
-    if (selectedArticles.length === 0 || !tinymceInstance) return;
+    if (selectedArticles.length === 0 || !quillInstance) return;
     
     const conteudo = selectedArticles.map(article => {
         return `<p><strong>Art. ${article.notation}:</strong> ${article.text}</p>`;
-    }).join('<br>');
+    }).join('');
     
-    tinymceInstance.setContent(tinymceInstance.getContent() + conteudo);
+    // Insere HTML no Quill
+    const delta = quillInstance.getContents();
+    quillInstance.setContents(delta.concat([
+        { insert: conteudo, attributes: { allowHTML: true } },
+        { insert: '\n' }
+    ]));
     
     selectedArticles = [];
     updateSelectedArticlesUI();
 };
 
-async function inicializarTinyMCE() {
-    if (typeof tinymce === 'undefined') {
+async function inicializarQuill() {
+    if (typeof Quill === 'undefined') {
+        // Carrega CSS do Quill
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = 'https://cdn.quilljs.com/1.3.7/quill.snow.css';
+        document.head.appendChild(link);
+        
+        // Carrega JS do Quill
         const script = document.createElement('script');
-        script.src = 'https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js';
-        script.referrerpolicy = 'strict-origin-when-cross-origin';
-        script.onload = () => initTinyMCEEditor();
+        script.src = 'https://cdn.quilljs.com/1.3.7/quill.min.js';
+        script.onload = () => initQuillEditor();
         document.head.appendChild(script);
     } else {
-        initTinyMCEEditor();
+        initQuillEditor();
     }
 }
 
-function initTinyMCEEditor() {
-    tinymce.init({
-        selector: '#fundamentacao_legal',
-        height: 200,
-        menubar: false,
-        plugins: [
-            'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
-            'searchreplace', 'visualblocks', 'code', 'fullscreen',
-            'insertdatetime', 'table', 'help', 'wordcount'
-        ],
-        toolbar: 'undo redo | formatselect | bold italic backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help',
-        content_style: 'body { font-family:Segoe UI, Tahoma, Geneva, Verdana, sans-serif; font-size:14px }',
-        init_instance_callback: function(editor) {
-            tinymceInstance = editor;
-            editor.on('change', function() {
-                editor.save();
-            });
+function initQuillEditor() {
+    const textarea = document.getElementById('fundamentacao_legal');
+    if (!textarea) return;
+    
+    // Oculta textarea original e cria div para Quill
+    textarea.style.display = 'none';
+    
+    const editorDiv = document.createElement('div');
+    editorDiv.id = 'quill-editor';
+    editorDiv.style.height = '200px';
+    textarea.parentNode.insertBefore(editorDiv, textarea.nextSibling);
+    
+    quillInstance = new Quill('#quill-editor', {
+        theme: 'snow',
+        placeholder: 'Artigos do regimento, leis, etc...',
+        modules: {
+            toolbar: [
+                ['bold', 'italic', 'underline'],
+                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                ['clean']
+            ]
         }
     });
+    
+    // Sincroniza conteúdo do Quill com textarea(hidden) antes de enviar
+    const form = textarea.closest('form') || textarea.closest('.form-section');
+    if (form) {
+        form.addEventListener('submit', () => {
+            textarea.value = quillInstance.root.innerHTML;
+        });
+    }
 }
