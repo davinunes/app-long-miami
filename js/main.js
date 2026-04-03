@@ -197,7 +197,9 @@ function carregarListaNotificacoes() {
 
 async function fetchProximoNumero() {
     try {
-        const response = await fetch(`${API_BASE_URL_PHP}/notificacoes.php?proximo_numero=true`);
+        const response = await fetch(`${API_BASE_URL_PHP}/notificacoes.php?proximo_numero=true`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('accessToken')}` }
+        });
         if (!response.ok) throw new Error('Falha ao buscar o próximo número.');
         const data = await response.json();
         const numeroInput = document.getElementById('numero');
@@ -352,7 +354,10 @@ async function inicializarFormularioEdicao() {
         try {
             const response = await fetch(`${API_BASE_URL_PHP}/notificacoes.php`, {
                 method: 'POST', // O seu backend usa POST para criar e atualizar
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                },
                 body: JSON.stringify(dados)
             });
             const result = await response.json();
@@ -380,7 +385,9 @@ async function inicializarFormularioEdicao() {
         showStatus('Carregando dados da notificação...', 'loading');
 
         // Busca os dados da notificação específica
-        const response = await fetch(`${API_BASE_URL_PHP}/notificacoes.php?id=${notificacaoId}`);
+        const response = await fetch(`${API_BASE_URL_PHP}/notificacoes.php?id=${notificacaoId}`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('accessToken')}` }
+        });
         if (!response.ok) {
             const errorData = await response.json();
             throw new Error(errorData.message || 'Notificação não encontrada.');
@@ -401,7 +408,9 @@ async function inicializarFormularioEdicao() {
 async function carregarDadosNotificacao() {
     showStatus('Carregando dados da notificação...', 'loading');
     try {
-        const response = await fetch(`${API_BASE_URL_PHP}/notificacoes.php?id=${NOTIFICACAO_ID}`);
+        const response = await fetch(`${API_BASE_URL_PHP}/notificacoes.php?id=${NOTIFICACAO_ID}`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('accessToken')}` }
+        });
         if (!response.ok) {
             const errorData = await response.json();
             throw new Error(errorData.message || 'Notificação não encontrada.');
@@ -435,7 +444,10 @@ async function atualizarNotificacao(id) {
     try {
         const response = await fetch(`${API_BASE_URL_PHP}/notificacoes.php`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+            },
             body: JSON.stringify(dados)
         });
         const result = await response.json();
