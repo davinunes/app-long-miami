@@ -85,6 +85,7 @@
     <script src="js/jwt.js"></script>
 	<script src="js/helpers.js"></script>
 	<script src="js/funcs.js"></script> 
-	<script src="js/main.js"></script> 
+	<script src="js/main.js"></script>
+    <script src="js/regimento-busca.js"></script>
 </body>
 </html>

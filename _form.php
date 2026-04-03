@@ -40,7 +40,21 @@
 </div>
 
 <div class="form-group">
-    <label for="fundamentacao_legal">Fundamentação Legal:</label>
+    <label>Fundamentação Legal:</label>
+    
+    <div class="regimento-busca">
+        <input type="text" id="regimento-search" placeholder="Buscar artigo (número ou palavra-chave)...">
+        <div class="regimento-results" id="regimento-results"></div>
+    </div>
+    
+    <div class="selected-articles" id="selected-articles" style="display: none;">
+        <div class="selected-articles-title">Artigos selecionados:</div>
+        <div id="selected-articles-list"></div>
+        <button type="button" class="add-to-textarea-btn" onclick="adicionarArtigosATextarea()">
+            + Adicionar à Fundamentação
+        </button>
+    </div>
+    
     <textarea id="fundamentacao_legal" rows="4" placeholder="Artigos do regimento, leis, etc..."></textarea>
 </div>
 

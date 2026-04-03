@@ -493,7 +493,12 @@ async function inicializarFormularioNotificacao() {
     $('select').formSelect();
     console.log("✅ Componentes <select> do Materialize inicializados.");
 
-    // Passo 3: O resto da lógica continua normalmente...
+    // Passo 3: Inicializa busca do regimento e TinyMCE
+    await inicializarBuscaRegimento();
+    inicializarTinyMCE();
+    console.log("✅ Editor TinyMCE e busca do regimento inicializados.");
+
+    // Passo 4: O resto da lógica continua normalmente...
     const hash = window.location.hash;
     const queryStringIndex = hash.indexOf('?');
     let notificacaoId = null;

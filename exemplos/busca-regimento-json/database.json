@@ -1,0 +1,1523 @@
+{
+  "titulo": "CONDOMÍNIO RESIDENCIAL TOP LIFE MIAMI BEACH - REGIMENTO INTERNO",
+  "capitulos": {
+    "1": "CAPÍTULO I - DO OBJETO",
+    "2": "CAPÍTULO II – DO SÍNDICO E DO SUBSÍNDICO",
+    "3": "CAPÍTULO III - DO CONSELHO FISCAL E CONSULTIVO",
+    "4": "CAPÍTULO IV - DAS RECLAMAÇÕES E DAS SUGESTÕES",
+    "5": "CAPÍTULO V - DA HIGIENE/LIMPEZA/LIXO/SAÚDE",
+    "6": "CAPÍTULO VI - DO CADASTRO DE MORADORES E VEÍCULOS",
+    "7": "CAPÍTULO VII - DAS OBRAS E REFORMAS DAS UNIDADES AUTÔNOMAS",
+    "8": "CAPÍTULO VIII – DOS PROCEDIMENTOS EM CASO DE MUDANÇAS",
+    "9": "CAPÍTULO IX - DO ACESSO DE PESSOAS AO PRÉDIO",
+    "10": "CAPÍTULO X - DO USO DA GARAGEM",
+    "11": "CAPÍTULO XI - DA DISCIPLINA E DO USO ESPECÍFICO DAS ÁREAS DE LAZER",
+    "12": "CAPÍTULO XII - DO USO DO ESPAÇO SALÃO DE FESTA ADULTO E INFANTIL",
+    "13": "CAPÍTULO XIII – DO USO DO ESPAÇO DA CHURRASQUEIRA E ESPAÇO GOURMET",
+    "14": "CAPÍTULO XIV – DO USO DAS PISCINAS",
+    "15": "CAPÍTULO XV - DO USO DA SAUNA",
+    "16": "CAPÍTULO XVI - DO USO DO ESPAÇO ZEN",
+    "17": "CAPÍTULO XVII – DO USO DA QUADRA DE ESPORTES",
+    "18": "CAPÍTULO XVIII – DO USO DO ESPAÇO FITNESS",
+    "19": "CAPÍTULO XIX - DO USO DO ESPAÇO WEB SPACE",
+    "20": "CAPÍTULO XX - DO USO DO ESPAÇO SALÃO DE JOGOS",
+    "21": "CAPÍTULO XXI - DO USO DO ESPAÇO HOME CINEMA",
+    "22": "CAPÍTULO XXII – DO USO DA BRINQUEDOTECA",
+    "23": "CAPÍTULO XXIII – DO USO DOS ELEVADORES",
+    "24": "CAPÍTULO XXIV - DA CONTRATAÇÃO DE SERVIÇOS DE TELECOMUNICAÇÃO",
+    "25": "CAPÍTULO XXV - DOS ANIMAIS DOMÉSTICOS",
+    "26": "CAPÍTULO XXVI - DO CONSUMO DE CIGARROS E SIMILARES NAS ÁREAS COMUNS",
+    "27": "CAPÍTULO XXVII - DAS CORRESPONDÊNCIAS",
+    "28": "CAPÍTULO XXVIII – OUTROS DEVERES E PROIBIÇÕES",
+    "29": "CAPÍTULO XXIX - MONITORAMENTO DE CFTV",
+    "30": "CAPÍTULO XXX - USO DO BICICLETÁRIO",
+    "31": "CAPÍTULO XXXI - DAS PENALIDADES",
+    "32": "CAPÍTULO XXXII - DAS MODIFICAÇÕES DO REGIMENTO INTERNO",
+    "33": "CAPÍTULO XXXIII – DAS DISPOSIÇÕES GERAIS"
+  },
+  "artigos": {
+    "1": {
+      "capitulo": 1,
+      "texto": "Reger-se-á o Condomínio Residencial Top Life Miami Beach, sediado na QI 24 lotes 01/13 CEP 72135-240 Taguatinga/DF, para todos os efeitos da Lei nº 10.406, de 10 de janeiro de 2002 (Código Civil Brasileiro) e demais legislações aplicáveis, pela Convenção do Condomínio e pelas presentes Normas de Funcionamento, a cujo estrito cumprimento estão obrigados todos os proprietários, promitentes compradores, cessionários de direitos, permissionários, locatários, moradores, visitantes, hóspedes e serviçais, cujas infrações serão punidas de acordo com as legislações vigentes e os artigos aqui contidos com a catalogação das letras \"A\", \"B\", \"C\", \"D\", \"E\" e \"F\", de acordo com o Art. 187, §2º, deste Regimento.",
+      "paragrafos": {
+        "unico": {
+          "texto": "As unidades, no todo ou em parte, destinam-se a funcionar como condomínio residencial, sendo expressamente proibido o uso, locação ou cessão para atividades profissionais, comerciais ou industriais de qualquer natureza, para depósito de qualquer objeto, assim como para qualquer fim escuso ou ilícito."
+        }
+      }
+    },
+    "2": {
+      "capitulo": 1,
+      "texto": "Quando a Convenção Condominial e este Regimento Interno não forem rigorosamente explícitos a respeito de regra para solução de quaisquer casos surgidos entre condôminos e/ou visitantes, entre alguns desses e o condômino ou entre aqueles e o síndico, caberá ao último, assessorado pelo Conselho Consultivo, resolver o assunto, observando sempre os dispositivos do Código Civil e demais legislações pertinentes."
+    },
+    "3": {
+      "capitulo": 2,
+      "texto": "A Administração do Condomínio será exercida pelo síndico, cabendo a ele representar o condomínio ativa e passivamente em juízo ou fora dele e demais determinações da convenção, sendo assessorado pelos subsíndicos e Conselho Fiscal/Consultivo."
+    },
+    "4": {
+      "capitulo": 2,
+      "texto": "Na qualidade de dirigente e responsável pela administração dos assuntos de ordem comum ao Condomínio, o síndico tomará conhecimento e proverá recursos para solucionar os assuntos não expressamente tratados na Convenção Condominial e neste Regimento Interno, bem como os que envolvem a aplicação ou interpretação dos respectivos preceitos, contando, para isso, com a assessoria dos subsíndicos e do Conselho Fiscal/Consultivo.",
+      "paragrafos": {
+        "1": {
+          "texto": "Para um melhor desempenho de suas funções, o síndico poderá contar com o apoio dos subsíndicos (um para cada bloco), sendo, contudo, considerado o único responsável perante a legislação e o Condomínio."
+        },
+        "2": {
+          "texto": "A título de eleição de síndico, quando o interessado for condômino, este deverá apresentar à Administração do Condomínio uma \"carta do candidato\" (currículo) no prazo de até 15 (quinze) dias corridos antes das eleições. A Administração, por sua vez, informará por intermédio de e-mail, e/ou mala direta aos condôminos, 5 (cinco) dias antes das eleições, as cartas dos candidatos, disponíveis e entregues na Administração:",
+          "incisos": {
+            "1": {
+              "texto": "Não será permitido candidato que seja dono, administrador, funcionário, sócio (incluindo cônjuges) ou participante de empresas que prestam qualquer serviço ao Condomínio;"
+            },
+            "2": {
+              "texto": "O candidato, se morador, deverá estar adimplente; bem como deverá apresentar o nada consta criminal e civil."
+            }
+          }
+        },
+        "3": {
+          "texto": "O síndico morador eleito deverá cumprir o acompanhamento diário das atividades condominiais, devendo estar no Condomínio o tempo necessário para cumprir 100% (cem por cento) de suas atribuições, independente de quantas horas foram dedicadas no mês, sábados, domingos e feriados e quando for necessário."
+        }
+      }
+    },
+    "5": {
+      "capitulo": 2,
+      "texto": "Caso o candidato ao encargo de sindico não seja condômino, aquele denominado como profissional, a candidatura só será permitida se cumprida às exigências arroladas a seguir:",
+      "incisos": {
+        "1": {
+          "texto": "A empresa deverá apresentar CNPJ ativo com no mínimo 2 (dois) anos; certidões de nada consta civil, federal e do GDF, Fazenda Pública e Receita Federal;"
+        },
+        "2": {
+          "texto": "No registro da empresa deverá constar, em seu objeto social, atividades relacionadas à Administração de Condomínio residencial ou comercial;"
+        },
+        "3": {
+          "texto": "Apresentar no mínimo três cartas de recomendação de condomínios."
+        }
+      },
+      "paragrafos": {
+        "1": {
+          "texto": "A área jurídica do Condomínio e a comissão de transparência deverão analisar as documentações apresentadas dos candidatos, visando verificar a idoneidade financeira e cível da empresa, no prazo de até 10 (dez) dias antes das eleições. No caso de parecer negativo da área jurídica, será informado à referida empresa e aos condôminos, abrindo prazo de 5 (cinco) dias para esclarecimentos."
+        },
+        "2": {
+          "texto": "O síndico geral profissional deverá cumprir o acompanhamento diário das atividades condominiais, devendo está no condomínio o tempo necessário para cumprir 100% (cem por cento) de suas atribuições, independente de quantas horas foram dedicadas no mês, sábados, domingos e feriados e quando for necessário."
+        },
+        "3": {
+          "texto": "A eleição de síndico geral se dará sempre em dois turnos, por voto eletrônico. Dentre os dois candidatos mais votados no primeiro turno, será eleito aquele com maior representatividade da maioria no segundo turno."
+        }
+      }
+    },
+    "6": {
+      "capitulo": 2,
+      "texto": "É de competência do síndico:",
+      "incisos": {
+        "1": {
+          "texto": "Exercer a administração interna do Condomínio, no que se refere a sua vigilância, moralidade e manutenção, bem como executar os serviços que interessam a todos os condôminos, zelando sempre pela segurança, boa reputação do Condomínio e pela harmonia entre todos os condôminos, obedecendo aos princípios da boa vizinhança, não causando danos ou incômodo, nem obstáculos ou embaraços ao uso das partes e coisas comuns;"
+        },
+        "2": {
+          "texto": "Praticar os atos que lhe forem atribuídos pela legislação vigente, pela Convenção e por este Regimento;"
+        },
+        "3": {
+          "texto": "Deixar disponível para os condôminos, no escritório do Condomínio, exemplares da Convenção e do Regimento Interno;"
+        },
+        "4": {
+          "texto": "Apresentar mensalmente ao Conselho Fiscal/Consultivo os balancetes para que eles realizem a devida verificação e aprovação;"
+        },
+        "5": {
+          "texto": "Deixar disponível para os condôminos, mensalmente, balancete demonstrativo das receitas e das despesas do Condomínio e cópias das Atas de Assembleias Gerais;"
+        },
+        "6": {
+          "texto": "Prestar ao Conselho Consultivo, a qualquer tempo, informações sobre os atos da Administração;"
+        },
+        "7": {
+          "texto": "Prestar contas de sua gestão, acompanhada da documentação respectiva, em assembleia específica para este fim, quando do término de seu mandato;"
+        },
+        "8": {
+          "texto": "Verificar a correta utilização das dependências do Condomínio, conforme a sua destinação;"
+        },
+        "9": {
+          "texto": "Promover a higienização sanitária das partes comuns do Condomínio pela dedetização periódica e pulverização anti-infecciosas recomendadas pela Saúde Pública, bem como eventual desratização;"
+        },
+        "10": {
+          "texto": "Aplicar as penalidades administrativas previstas neste Regimento e na convenção;"
+        },
+        "11": {
+          "texto": "Acionar judicialmente o condômino que não atender ao que prescreve a Convenção, o Regimento Interno ou decisões da Assembleia Geral do Condomínio, esgotadas as medidas administrativas previstas neste Regimento;"
+        },
+        "12": {
+          "texto": "Representar ativa e passivamente o Condomínio, em juízo ou fora dele, e praticar os atos em defesa dos interesses comuns, nos limites das atribuições conferidas pela legislação vigente, pela Convenção e por este Regimento;"
+        },
+        "13": {
+          "texto": "Cumprir e fazer cumprir a Convenção e o Regimento Interno, bem como executar e fazer executar as deliberações das Assembleias;"
+        },
+        "14": {
+          "texto": "Convocar os condôminos para Assembleias e reuniões pertinentes ao Condomínio, por meio de edital - via carta registrada, protocolo de recebimento ou por e-mail com antecedência de 5 (cinco) dias úteis, e indicação do resumo da ordem do dia e a data;"
+        },
+        "15": {
+          "texto": "Zelar pela guarda durante 5 (cinco) anos, para eventuais verificações contábeis, de toda documentação relativa ao Condomínio, observando também os prazos legais para guarda de cada tipo de documentação, antes de descartar qualquer documento após o prazo citado acima;"
+        },
+        "16": {
+          "texto": "Apresentar aos conselheiros fiscais as propostas de contratações antes de fechar o contrato, observada a devida necessidade contida neste Regimento;"
+        },
+        "17": {
+          "texto": "Contratar e desfazer contratos com profissionais liberais e técnicos;"
+        },
+        "18": {
+          "texto": "Supervisionar as obras de melhoramento relativas ao Condomínio;"
+        },
+        "19": {
+          "texto": "Representar o Condomínio junto às repartições públicas e às empresas privadas, assinar guias, pagar impostos, abrir e movimentar contas bancárias em nome do Condomínio Residencial Top Life - Miami Beach;"
+        },
+        "20": {
+          "texto": "Contrair compromissos ou despesas em nome do Condomínio da seguinte maneira:",
+          "alineas": {
+            "a": {
+              "texto": "Até 4 (quatro) salários mínimos por compromisso ou despesa - Podendo consultar OS subsíndicos, sem necessidade de prévia autorização do Conselho Consultivo/Fiscal;"
+            },
+            "b": {
+              "texto": "De 4 (quatro) até 20 (vinte) salários mínimos por compromisso ou despesa fora da previsão orçamentária aprovada em AGO - Apenas após concordância expressa e escrita de, no mínimo, três subsíndicos e a maioria dos membros do Conselho Consultivo/Fiscal;"
+            },
+            "c": {
+              "texto": "A partir de 20 (vinte) salários mínimos por compromisso ou despesa - Será levado à aprovação da Assembleia."
+            }
+          }
+        },
+        "21": {
+          "texto": "Promover festas, eventos culturais e torneios esportivos de interesse dos condôminos, visando integração, união e participação, podendo criar comissões específicas;"
+        },
+        "22": {
+          "texto": "Na vacância do cargo de subsíndico, competirá ao síndico suprir o cargo vacante até a realização da assembleia para eleição do novo subsíndico. O síndico não acumulará o seu pró-labore com o do cargo vacante:"
+        },
+        "23": {
+          "texto": "Comunicar formalmente ao colegiado de subsíndicos, com antecedência mínima de 72 (setenta e duas) horas, as ausências ou os impedimentos temporários para cumprimento do que estabelece o art. 6º inciso IV deste Regimento;"
+        },
+        "24": {
+          "texto": "Toda aplicação de multa deve ser aplicada somente pelo síndico e/ou representante legal, cabendo aos subsíndicos apenas o encaminhamento ou solicitação da penalidade;"
+        },
+        "25": {
+          "texto": "Convocar os subsíndicos, dentro dos horários possíveis da maioria, para negociações contratuais que envolvam o Condomínio até o momento de assinatura e vigência dos contratos."
+        }
+      },
+      "paragrafos": {
+        "unico": {
+          "texto": "Os valores de compromissos e despesas citados no inciso XX do art. 6º devem ser considerados em seu montante total, sendo vetado o uso de notas parceladas para um mesmo compromisso e/ou despesa."
+        }
+      }
+    },
+    "7": {
+      "capitulo": 2,
+      "texto": "É de competência dos subsíndicos:",
+      "incisos": {
+        "1": {
+          "texto": "Auxiliar o síndico nos trabalhos e soluções dos problemas administrativos do Condomínio;"
+        },
+        "2": {
+          "texto": "Fazer, nos limites de sua competência, o acompanhamento fisico dos trabalhos programados pela Administração, oferecendo sugestões oportunas;"
+        },
+        "3": {
+          "texto": "Cuidar do contencioso do Condomínio e coordenar o encaminhamento das questões jurídicas e políticas de interesse comunitário, à falta do síndico;"
+        },
+        "4": {
+          "texto": "Substituir o síndico nas ausências ou impedimentos temporários, mediante indicação dos demais subsíndicos das torres. Para fim de ausência ou impedimento temporário, será considerado o prazo mínimo de 5 (cinco) dias corridos;"
+        },
+        "5": {
+          "texto": "Atender solicitações de informações quanto à regularidade de determinados procedimentos administrativos;"
+        },
+        "6": {
+          "texto": "Solicitar, formalmente, ao síndico, convocação de Assembleia Extraordinária, visando atender grupo de interessados, em número mínimo de 1/4 (um quarto) dos apartamentos da sua torre;"
+        },
+        "7": {
+          "texto": "Comunicar formalmente ao síndico, com antecedência mínima de 72 (setenta e duas) horas, suas ausências ou impedimentos temporários em período superior a 5 (cinco) dias corridos;"
+        },
+        "8": {
+          "texto": "Promover confraternizações de interesse dos condôminos do bloco deste subsíndico, visando integração, união e participação, podendo criar comissões específicas. Para esses eventos, haverá isenção de no máximo 3 (três) taxas por ano de apenas um espaço por evento, sendo 1 (um) para o final de semana e 2 (dois) durante a semana;"
+        },
+        "9": {
+          "texto": "Participar das negociações contratuais do Condomínio, até a assinatura dos contratos, podendo assinar como testemunha ou não."
+        }
+      },
+      "paragrafos": {
+        "unico": {
+          "texto": "Poderá se candidatar ao cargo de subsíndico o proprietário que seja morador, adimplente e de acordo com os requisitos citados na convenção e não for dono, administrador, funcionário, parceiro (esposo ou esposa) ou sócio de empresas que prestam algum serviço ao Condomínio. Caso o morador esteja no cargo do subsíndico e em desacordo com este artigo e com os outros requisitos, ele terá 30 (trinta) dias para sair do cargo."
+        }
+      }
+    },
+    "8": {
+      "capitulo": 3,
+      "texto": "A eleição ao cargo de Conselho Fiscal e Consultivo obedece aos seguintes critérios:",
+      "incisos": {
+        "1": {
+          "texto": "Para participar como candidato às eleições de conselheiro fiscal e consultivo faz-se necessário que seja proprietário e morador de uma unidade do Condomínio;"
+        },
+        "2": {
+          "texto": "Não ser dono, administrador, funcionário, parceiro (esposo ou esposa) ou sócio de empresas que prestam algum serviço ao Condomínio;"
+        },
+        "3": {
+          "texto": "Estar adimplente."
+        }
+      }
+    },
+    "9": {
+      "capitulo": 3,
+      "texto": "É de competência do Conselho:",
+      "incisos": {
+        "1": {
+          "texto": "Elaborar e apresentar mensalmente aos condôminos parecer relativos à fiscalização dos atos e contas da administração do síndico e dos subsíndicos;"
+        },
+        "2": {
+          "texto": "Exercer a função de fiscal dos balancetes contábeis;"
+        },
+        "3": {
+          "texto": "Levar ao conhecimento dos condôminos, em Assembleia Geral, toda e qualquer irregularidade por ele observada, devendo estar munido de todas as provas necessárias à elucidação de cada irregularidade, para que, em Assembleia, seja dado o direito de ampla defesa ao síndico e aos subsíndicos, desde que antes dê a estes a ciência formal da irregularidade para justificativa;"
+        },
+        "4": {
+          "texto": "Autorizar compromisso ou despesas assumidas pelo síndico em nome do Condomínio, a partir de 4 (quatro) salários mínimos vigentes, até o teto de 20 (vinte) salários mínimos vigentes."
+        }
+      }
+    },
+    "10": {
+      "capitulo": 3,
+      "texto": "O Conselho Consultivo e Fiscal conta com 3 (três) titulares e 3 (três) suplentes, os quais assumem o cargo em caso de vacância no referido Conselho."
+    },
+    "11": {
+      "capitulo": 4,
+      "texto": "As reclamações e/ou as sugestões de condôminos e moradores deverão ser formuladas por escrito, utilizando-se do Livro de Registro de Ocorrência disponível na portaria do Condomínio em horário integral, ou por sistema informatizado. Apenas serão consideradas as reclamações registradas com a identificação do morador reclamante, unidade, data e hora, e explanação dos fatos."
+    },
+    "12": {
+      "capitulo": 4,
+      "texto": "É de responsabilidade do síndico e do subsíndico o acompanhamento do Livro de Registro de Ocorrências e do sistema informatizado a ser disponibilizado, competentes aos seus respectivos blocos e áreas comuns, tendo o síndico o prazo de até 7 (sete) dias para dar retorno e iniciar a tomada das providências cabíveis, de acordo com cada caso."
+    },
+    "13": {
+      "capitulo": 5,
+      "texto": "Entradas, passeios, passagens, escadas, corredores e outras dependências de uso comum deverão permanecer livres de qualquer objeto ou presença de veículo e mantidas limpas. (Infração catalogada na letra \"A\")"
+    },
+    "14": {
+      "capitulo": 5,
+      "texto": "É vedado a qualquer condômino, proprietário, locador ou visitante:",
+      "incisos": {
+        "1": {
+          "texto": "Estender, limpar, sacudir ou torcer roupas, tapetes ou outros objetos nas janelas, corredores ou terraços do prédio; (Infração catalogada na letra \"A\")"
+        },
+        "2": {
+          "texto": "Jogar lixo, varreduras, cinzas, pedaços de cigarro, restos de material de construção ou quaisquer detritos ou objetos pelas janelas, nos corredores, no hall, nas garagens e demais áreas comuns do prédio; (Infração catalogada na letra \"A\")"
+        },
+        "3": {
+          "texto": "Jogar qualquer tipo de excremento fisiológico pelas janelas, corredores, escadas ou áreas comuns; (Infração catalogada na letra \"C\")"
+        },
+        "4": {
+          "texto": "Fumar nas áreas comuns do empreendimento conforme a Lei nº 12.546/11; (Infração catalogada na letra \"A\")"
+        },
+        "5": {
+          "texto": "Estacionar em vaga de terceiros; (Infração catalogada na letra \"C\")"
+        },
+        "6": {
+          "texto": "Realizar obras em sua unidade que comprometam a segurança da edificação ou alterem sua fachada. (Infração catalogada na letra \"F\")"
+        }
+      }
+    },
+    "15": {
+      "capitulo": 5,
+      "texto": "O lixo deverá ser acondicionado em sacos plásticos e depositado pelos próprios condôminos nas lixeiras de cada pavimento, respeitando a separação de lixo seco (saco azul) e orgânico (saco preto). As caixas de papelão deverão ser desmontadas e organizadas. (Infração catalogada na letra \"A\")"
+    },
+    "16": {
+      "capitulo": 6,
+      "texto": "Os condôminos e seus respectivos inquilinos deverão providenciar junto à Administração do Condomínio o preenchimento de formulário específico, no qual serão solicitadas as informações que irão compor seu cadastro junto ao Condomínio. (Infração catalogada na letra \"A\")",
+      "paragrafos": {
+        "unico": {
+          "texto": "Deverão ser entregues à Administração do Condomínio cópias da documentação que comprove a propriedade e/ou locação do imóvel. (Infração catalogada na letra \"A\")"
+        }
+      }
+    },
+    "17": {
+      "capitulo": 6,
+      "texto": "O morador (inquilino ou proprietário) deverá indicar os veículos, com registro da placa e modelo, que ocupará a vaga de garagem a que tem direito. (Infração catalogada na letra \"A\")",
+      "incisos": {
+        "1": {
+          "texto": "O morador que estacionar na vaga de terceiros será multado, sem notificação prévia; (Infração catalogada na letra \"C\")"
+        },
+        "2": {
+          "texto": "Se o morador/proprietário/locador trocar de veículo, a informação constante no caput deste artigo se fará com antecedência ou no prazo de 3 (três) dias consecutivos da mencionada troca, sob pena de ser impedido a adentrar no empreendimento com o referido veículo. (Infração catalogada na letra \"A\")"
+        }
+      }
+    },
+    "18": {
+      "capitulo": 6,
+      "texto": "O morador ou proprietário deverá manter seu cadastro atualizado, comunicando inclusive as eventuais alterações de titularidade dos imóveis e eventuais mudanças do cadastro de veículos (Infração catalogada na letra \"A\")"
+    },
+    "19": {
+      "capitulo": 7,
+      "texto": "O morador ou proprietário que tenha interesse em executar qualquer obra em seu apartamento/unidade autônoma, deverá encaminhar, por escrito, a descrição dos serviços e/ou projetos de instalação elétrica, hidráulica, pluvial, esgoto, mecânica, engenharia etc., à Administração do Condomínio para emissão de parecer de aprovação. (Infração catalogada na letra \"C\")",
+      "paragrafos": {
+        "1": {
+          "texto": "A título exemplificativo, são consideradas obras que causam reflexo na estrutura aquelas que incluem remoção ou inclusão, mesmo que parcial, de pisos, gessos, colocação/retirada de portais e congêneres, serviços de edificação ou demolição de qualquer monta. Em vigor desde 18 de abril de 2014, a nova norma da Associação Brasileira de Normas Técnicas ABNT, nº 16.280, regulamenta as reformas em edificações, tanto na parte das unidades como nas áreas externas."
+        },
+        "2": {
+          "texto": "Por lei é obrigatório, ao morador ou proprietário, providenciar e apresentar à Administração Condominial a Anotação de Responsabilidade Técnica ART e/ou Registro de Responsabilidade Técnica - RRT, homologada junto ao Conselho Regional de Engenharia e Agronomia do Distrito Federal (CREA/DF). (Infração catalogada na letra \"D\")"
+        },
+        "3": {
+          "texto": "Caso a obra se inicie e seja constatada a ausência da ART do profissional competente, a obra será embargada imediatamente. No caso de continuidade, o proprietário ou locatário serão multados, sem necessidade de notificação prévia."
+        }
+      }
+    },
+    "20": {
+      "capitulo": 7,
+      "texto": "De posse do projeto, a Administração do Condomínio fará o exame das eventuais interferências nas áreas comuns, considerando as questões estruturais, estéticas (fachadas e paredes compartilhadas), das redes hidráulicas (água e esgoto), elétrica, incêndio, telefonia, bem como toda e qualquer interferência nas instalações prediais comuns, e responderá a solicitação em até 10 (dez) dias corridos, emitindo parecer com procedimentos e recomendações a serem seguidas se forem o caso."
+    },
+    "21": {
+      "capitulo": 7,
+      "texto": "Após autorização da Administração do Condomínio, o início das obras deverá ser formalmente comunicado, com antecedência mínima de 48 (quarenta e oito) horas, para que sejam tomadas as providências operacionais de apoio necessárias. (Infração catalogada na letra \"A\")"
+    },
+    "22": {
+      "capitulo": 7,
+      "texto": "De segunda a sexta-feira, no horário das 8h às 18h, respeitando o intervalo do almoço compreendido das 12h às 14h, e aos sábados, das 8h às 14h, é permitido a realização de obras. Já aos sábados após às 14h, domingos e feriados em qualquer horário, é terminantemente proibida a realização de obras de qualquer espécie, bem como quebrar ou bater pisos e paredes ou realizar qualquer tipo de ruído ou movimentação que venha a incomodar os demais moradores do Condomínio, bem como fazer uso de produtos que exalem cheiro forte. (Infração catalogada na letra \"C\")",
+      "paragrafos": {
+        "unico": {
+          "texto": "A entrada e a saída de materiais e equipamentos destinados a obras e reformas dar-se-ão nos seguintes horários: de segunda a sexta-feira das 08h às 18h e aos sábados das 08hàs 14h, vedado em qualquer horário aos sábados após às 14h e aos domingos e feriados. (Infração catalogada na letra \"A\")"
+        }
+      }
+    },
+    "23": {
+      "capitulo": 7,
+      "texto": "Para fechamento de prumadas de água potável, acesso aos shafts ou a quaisquer outras dependências ou instalações de uso comum ou coletivo, o morador ou proprietário deverá formalizar solicitação à Administração do Condomínio (por carta ou e-mail), com pelo menos 48 (quarenta e oito) horas de antecedência, especificando o motivo da solicitação e o tempo estimado de duração da intervenção, exceto os casos emergenciais. (Infração catalogada na letra \"A\")"
+    },
+    "24": {
+      "capitulo": 7,
+      "texto": "Não é permitido o uso das áreas comuns do Condomínio pelos prestadores de serviços contratados pelos moradores ou proprietários. (Infração catalogada na letra \"A\")"
+    },
+    "25": {
+      "capitulo": 7,
+      "texto": "Cada morador ou proprietário será responsável por quaisquer perdas e danos que tenham sido causados por terceiros ou fornecedores por ele contratados, a quaisquer equipamentos e instalações do Condomínio e/ou ao patrimônio de outros moradores ou proprietários, decorrentes de erros ou falhas na execução dos serviços de reparos, obras ou reformas na unidade autônoma. (Infração catalogada na letra \"A\")",
+      "paragrafos": {
+        "unico": {
+          "texto": "O prazo para a reparação do dano causado dependerá da gravidade e/ou necessidade do Condomínio, o qual será avaliado e estipulado pela Administração Condominial e registrado via notificação."
+        }
+      }
+    },
+    "26": {
+      "capitulo": 7,
+      "texto": "Todas as taxas, os impostos e os emolumentos necessários à regularização da obra em questão são de responsabilidade do morador ou proprietário interessado. (Infração catalogada na letra \"A\")"
+    },
+    "27": {
+      "capitulo": 7,
+      "texto": "Todos os materiais e os equipamentos de grande porte serão transportados, exclusivamente, pelas escadas e ou elevadores do Condomínio que estiverem devidamente equipados com a capa de proteção, geralmente o de serviço. (Infração catalogada na letra \"B\")",
+      "paragrafos": {
+        "1": {
+          "texto": "Todo material deverá ser transportado sobre carro de carga, com rodas de borracha, que será providenciado pelo proprietário ou pelo inquilino. É vedado o uso de carro de mão convencional que não tenha rodas de borracha. (Infração catalogada na letra \"A\")"
+        },
+        "2": {
+          "texto": "Materiais como areia, brita, cimento, entulho e afins deverão ser transportados devidamente ensacados. (Infração catalogada na letra \"A\")"
+        },
+        "3": {
+          "texto": "No recebimento, o material deverá ser transportado direto do caminhão ou veículo utilitário para o carrinho, através de entrada de serviço, se existir, ou pelo acesso veicular. (Infração catalogada na letra \"A\")"
+        }
+      }
+    },
+    "28": {
+      "capitulo": 7,
+      "texto": "O morador ou proprietário deverá prover a destinação do entulho (resto de obras) de forma apropriada e regular, ou realizar a contratação de caçamba. A Administração do Condomínio determinará o local onde a referida caçamba poderá permanecer enquanto a obra estiver em andamento. Caso o Condomínio seja notificado/penalizado por qualquer destinação irregular de entulho, as multas impostas por órgãos competentes ou qualquer prejuízo financeiro serão de responsabilidade do morador ou proprietário. (Infração catalogada na letra \"A\")",
+      "paragrafos": {
+        "unico": {
+          "texto": "Na saída de materiais ou entulho, estes deverão ser transportados por carrinho de carga até o caminhão ou caçamba de entulho, posicionada em local previamente determinado pela Administração do Condomínio. (Infração catalogada na letra \"A\")"
+        }
+      }
+    },
+    "29": {
+      "capitulo": 7,
+      "texto": "Não serão permitidos o acúmulo de materiais, restos de obras, mobiliários ou equipamentos, em áreas de uso comum, lixeiras e corredores dos andares, calçadas e estacionamento de veículos, garagens, mesmo que eventualmente, para que posteriormente se proceda ao seu transporte para a unidade autônoma ou seu descarte. (Infração catalogada na letra \"B\")"
+    },
+    "30": {
+      "capitulo": 7,
+      "texto": "O morador ou proprietário, quando ausente no momento da realização dos serviços, deverá informar previamente à Administração Condominial, em formulário próprio, o nome da empresa e a relação de pessoas autorizadas a entrar em seu apartamento para a execução de obras de reforma ou instalação de móveis e equipamentos, com antecedência mínima de 24 (vinte e quatro) horas de início das atividades. (Infração catalogada na letra \"A\")"
+    },
+    "31": {
+      "capitulo": 7,
+      "texto": "Não será permitido arrastar ou jogar caixas ou qualquer outro volume durante sua movimentação nas dependências do Condomínio. (Infração catalogada na letra \"A\")"
+    },
+    "32": {
+      "capitulo": 7,
+      "texto": "A Administração do Condomínio não se responsabilizará pelo recebimento de materiais e equipamentos relativos à execução de obra.",
+      "paragrafos": {
+        "unico": {
+          "texto": "Os empregados do Condomínio estão proibidos de receber quaisquer materiais e equipamentos relativos à execução da obra."
+        }
+      }
+    },
+    "33": {
+      "capitulo": 7,
+      "texto": "É permitida a instalação de redes de proteção e tela mosqueteira nas janelas dos apartamentos, uma vez que se trata de um dispositivo de segurança e saúde.",
+      "paragrafos": {
+        "unico": {
+          "texto": "A rede de proteção e telas a serem instaladas deverão respeitar o padrão estabelecido em Assembleia. (Infração catalogada na letra \"B\")"
+        }
+      }
+    },
+    "34": {
+      "capitulo": 7,
+      "texto": "De acordo com Assembleia realizada no dia 26 de junho de 2016, seguem padrões estabelecidos de fachada e área comum: (Infração catalogada na letra \"B\")",
+      "incisos": {
+        "1": {
+          "texto": "Portas e Soleiras:",
+          "alineas": {
+            "a": {
+              "texto": "A porta de entrada de cada apartamento faz parte da área comum do Condomínio, devendo seguir as seguintes regras: em caso de troca, a porta deverá ser da cor e tonalidade do alisar original, o modelo deverá seguir o padrão original e a placa de identificação não poderá ser alterada; a soleira deverá ser na mesma cor/tonalidade e material original e padrão;"
+            },
+            "b": {
+              "texto": "O olho mágico deve ser no padrão convencional analógico, liso, e instalado centralizado horizontalmente;"
+            },
+            "c": {
+              "texto": "A maçaneta, em caso de troca, deve seguir a cor e o modelo padrão original."
+            }
+          }
+        },
+        "2": {
+          "texto": "Rede de Proteção ou Tela Mosqueteira:",
+          "alineas": {
+            "a": {
+              "texto": "Rede de proteção e Tela Mosqueteira na cor branca ou bege."
+            }
+          }
+        },
+        "3": {
+          "texto": "Películas para janelas:",
+          "alineas": {
+            "a": {
+              "texto": "Película na cor fumê preta 70% (setenta por cento);"
+            },
+            "b": {
+              "texto": "Devem ser observadas as normas de segurança e ABNT para tal instalação."
+            }
+          }
+        }
+      }
+    },
+    "35": {
+      "capitulo": 7,
+      "texto": "Não será permitida a instalação de dispositivos de segurança fora das especificações estipuladas pelo Condomínio. (Infração catalogada na letra \"B\")"
+    },
+    "36": {
+      "capitulo": 7,
+      "texto": "É proibida a instalação de equipamentos condicionadores de ar (unidade condensadora) na fachada do edificio. (Infração catalogada na letra \"D\")"
+    },
+    "37": {
+      "capitulo": 7,
+      "texto": "É proibida a instalação de antenas na cobertura do edificio, a não ser aquelas destinadas à recepção/transmissão coletiva, nos locais aprovados pela Administração do Condomínio. Da mesma forma, é proibida a instalação de antenas nas coberturas, janela ou na fachada do edificio. (Infração catalogada na letra \"C\")."
+    },
+    "38": {
+      "capitulo": 7,
+      "texto": "O não cumprimento das normas e procedimentos descritos no Capítulo VII, poderá acarretar o embargo da obra pela Administração do Condomínio, até a plena regularização e conformidade da obra com as normas deste Regimento e da convenção."
+    },
+    "39": {
+      "capitulo": 8,
+      "texto": "As mudanças serão permitidas nos seguintes dias e horários: de segunda à sexta-feira de 8h as 18h e aos sábados de 8h as 14h. Não será permitida a execução de mudanças aos sábados após às 14h e aos domingos e feriados. (Infração catalogada na letra \"C\")",
+      "paragrafos": {
+        "1": {
+          "texto": "Os veículos de transporte de mudanças deverão estacionar nos locais indicados pela Administração Condominial. (Infração catalogada na letra \"A\")"
+        },
+        "2": {
+          "texto": "As mudanças, bem como entregas ou retiradas de grandes volumes de materiais e objetos, deverão ser comunicadas à Administração do Condomínio com 24 (vinte e quatro) horas de antecedência, para que sejam dadas as orientações necessárias. (Infração catalogada na letra \"A\")"
+        }
+      }
+    },
+    "40": {
+      "capitulo": 8,
+      "texto": "As mudanças deverão ser realizadas exclusivamente pelas escadas e ou elevadores que estiverem devidamente equipados com a capa de proteção. Fica proibida a utilização dos elevadores que não estejam devidamente adequados para este fim. (Infração catalogada na letra \"C\")"
+    },
+    "41": {
+      "capitulo": 8,
+      "texto": "Qualquer dano, devidamente comprovado, causado pela movimentação de materiais ou de mudanças será de inteira responsabilidade do morador ou proprietário solicitante. A Administração do Condomínio realizará uma vistoria nos locais por onde a mudança circulou e qualquer irregularidade encontrada será levada ao conhecimento do morador ou proprietário para que ele possa providenciar os reparos necessários em até 5 (cinco) dias úteis.",
+      "paragrafos": {
+        "unico": {
+          "texto": "Caso os reparos não sejam efetuados no prazo estipulado no caput deste artigo, sem justificativa plausível, a Administração do Condomínio levantará 3 (três) orçamentos quando possível e providenciará os consertos necessários, e os custos serão levados a débito da unidade causadora dos danos, juntamente com o boleto de lançamento do valor na taxa condominial. (Infração catalogada na letra \"D\")."
+        }
+      }
+    },
+    "42": {
+      "capitulo": 9,
+      "texto": "O Condomínio conta com sistema de identificação para controlar o acesso dos moradores, funcionários das empresas contratadas, visitantes, prestadores de serviços e demais usuários, devendo ser de total responsabilidade do morador a realização de cadastro de identificação junto à Administração Condominial, sob pena de negativação do acesso."
+    },
+    "43": {
+      "capitulo": 9,
+      "texto": "Os funcionários de empresas prestadoras de serviços (carregadores, empreiteiros e outros) só terão acesso ao prédio pela portaria dos fundos. A entrada destes prestadores somente será permitida se autorizada pelo morador. Ao final do serviço, o morador é obrigado a cancelar o acesso do prestador. Se tais funcionários forem encontrados dentro do Condomínio e não estiverem sido liberados conforme este caput, o proprietário será responsável pela infração. (Infração catalogada na letra \"A\")",
+      "paragrafos": {
+        "1": {
+          "texto": "É permitido o acesso de entregadores (pizzas, farmácia e demais serviços delivery) ao interior do Condomínio, desde que autorizado previamente pelo condômino, ficando este responsável por quaisquer danos causados no interior do Condomínio pelo entregador ao qual autorizou a entrada."
+        },
+        "2": {
+          "texto": "É proibido o acesso ao interior do Condomínio de vendedores, pedintes, propagandistas e angariadores de donativos nas áreas comuns do prédio."
+        },
+        "3": {
+          "texto": "É permitida a entrada de prestadores de serviço voltados para a assistência técnica (internet, TV e telefonia) desde que a manutenção seja no interior do apartamento. Caso o prestador necessite fazer alguma manutenção ou ajuste nos corredores e/ou shafts, esse acesso só será permitido com acompanhamento de um membro da Administração. Esse atendimento é permitido de segunda a sexta de 8h às 18h e sábado de 8h às 16h. (Infração catalogada na letra \"C\")"
+        }
+      }
+    },
+    "44": {
+      "capitulo": 10,
+      "texto": "A vaga de garagem, localizada no subsolo, térreo ou mezanino, destina-se ao estacionamento de veículos de passeio, utilitários, reboques, motocicletas, bicicletas, exclusivamente na área delimitada pelas faixas pintadas no chão e correspondente ao número do apartamento, conforme previsto na planta de garagem, registrada no Memorial de Incorporação.",
+      "paragrafos": {
+        "1": {
+          "texto": "A altura máxima dos acessos às garagens é de 2 (dois) metros para o térreo e o semienterrado."
+        },
+        "2": {
+          "texto": "A garagem e suas vagas são de uso exclusivo dos moradores, proprietários ou visitantes autorizados. (Infração catalogada na letra \"C\")"
+        },
+        "3": {
+          "texto": "O Condomínio não possui responsabilidade sobre os veículos e/ou objetos deixados em seu interior e, ainda, não possui qualquer responsabilidade no caso de roubos, furtos, danos e afins nos veículos estacionados no Condomínio."
+        }
+      }
+    },
+    "45": {
+      "capitulo": 10,
+      "texto": "Não será permitida, no interior da garagem e nas demais áreas comuns do edificio, a execução de serviços de mecânica e lavagem de veículos de passeio. utilitários, motocicletas, bicicletas, tapetes, objetos e similares, ou outro tipo de serviço de qualquer natureza, salvo em caráter emergencial, previamente autorizado, e o veículo deverá estar em condições de ser retirado do local. (Infração catalogada na letra \"B\")"
+    },
+    "46": {
+      "capitulo": 10,
+      "texto": "Caberá ao condômino, caso lesado em seus bens, solicitar filmagens e registro disponível no Condomínio para identificar o(s) autor(es) dos danos."
+    },
+    "47": {
+      "capitulo": 10,
+      "texto": "O veículo que estiver estacionado fora de sua vaga de garagem, assim como dois carros na mesma vaga impedindo a passagem de um ou mais e/ou obstruindo a normal circulação das pessoas e de outros veículos tanto nas garagens quanto nas pequenas rotas de acesso às entradas do edificio, situadas na calçada, estará sujeito a aplicação de multa sem prévia notificação. (Infração catalogada na letra \"D\")"
+    },
+    "48": {
+      "capitulo": 10,
+      "texto": "Não será permitido acumular lixo, materiais, vasilhames descartáveis, combustíveis, entulhos de obra, mobiliários ou equipamentos, ainda que a título provisório, nas vagas de garagem, mesmo que eventualmente, para que se proceda mais tarde ao seu transporte para a unidade autônoma ou ao seu descarte. (Infração catalogada na letra \"B\")"
+    },
+    "49": {
+      "capitulo": 10,
+      "texto": "Cada vaga de estacionamento somente poderá ser utilizada por veículo pertencente a moradores ou proprietários e seus visitantes autorizados, sendo proibida a locação ou cessão, a qualquer título, a terceiros não-condôminos. (Infração catalogada na letra \"E\")"
+    },
+    "50": {
+      "capitulo": 10,
+      "texto": "Os danos pessoais e/ou materiais causados aos bens de outros moradores ou proprietários, decorrentes de manobras de veículos nas garagens, é de exclusiva responsabilidade dos causadores do ato, e serão resolvidos entre as partes envolvidas.",
+      "paragrafos": {
+        "1": {
+          "texto": "Caso o dano causado seja a um bem do Condomínio, o morador ou proprietário responsável será comunicado formalmente acerca da gravidade do dano, a fim de que possa providenciar o reparo no prazo a ser determinado em notificação estipulado pelo Conselho Fiscal."
+        },
+        "2": {
+          "texto": "Caso os reparos não sejam efetuados no prazo estipulado na notificação ao qual se refere o parágrafo anterior, a Administração do Condomínio levantará 3 (três) orçamentos, quando e se possível, e providenciará os consertos necessários e os custos serão levados a débito da unidade causadora dos danos, por meio de lançamento do valor na taxa condominial. O morador cometerá infração categorizada na letra \"D\" em caso de não cumprimento do prazo estabelecido para a realização do reparo. Essa infração não isenta o custo da referida manutenção."
+        }
+      }
+    },
+    "51": {
+      "capitulo": 10,
+      "texto": "É vedado ao (s) morador (s), proprietário (s) ou visitante (s):",
+      "incisos": {
+        "1": {
+          "texto": "Usar buzina (salvo para evitar acidente), som automotivo e aceleração que provoque ruídos excessivos ou quaisquer equipamentos que causem poluição sonora e que possam perturbar o sossego dos moradores ou proprietários; (Infração catalogada na letra \"A\")"
+        },
+        "2": {
+          "texto": "Estacionar mais de um veículo, ultrapassando os limites de demarcações da vaga de garagem; (Infração catalogada na letra \"B\")"
+        },
+        "3": {
+          "texto": "Ingressar na garagem com veículos que apresentem anormalidades, tais como queima de óleo, freios com defeito, vazamentos, descarga aberta e outras que venham a se revelar prejudiciais à segurança, à tranquilidade e à saúde dos condôminos; (Infração catalogada na letra \"B\")"
+        },
+        "4": {
+          "texto": "Permitir a permanência de crianças, jogos com bolas, bem como outros esportes ou brincadeiras infantis nas vagas de garagem; (Infração catalogada na letra \"A\")"
+        },
+        "5": {
+          "texto": "Trafegar em velocidade superior a 15 (quinze) km/hora no interior do Condomínio; (Infração catalogada na letra \"A\")"
+        },
+        "6": {
+          "texto": "Transitar em sentido contrário ao que está sinalizado nas placas de trânsito do Condomínio, salvo nos casos de força maior, ou autorizados previamente; (Infração catalogada na letra \"B\")"
+        },
+        "7": {
+          "texto": "Adentrar com veículos de grande porte como camionetes com carrocerias tipo 3/4, vans, ônibus, caminhões ou similares, que não sejam passíveis de adentrar ou estacionar ultrapassando o limite da vaga de propriedade do condômino; (Infração catalogada na letra \"B\")."
+        },
+        "8": {
+          "texto": "Circular com veículos pelas rampas de acesso ou pistas das garagens fora da mão de direção indicadas pela sinalização existente; (Infração catalogada na letra \"A\")"
+        },
+        "9": {
+          "texto": "Circular andando pelas rampas internas e portões de acesso da garagem (exceto nos casos de mudança ou quando não houver percurso alternativo); (Infração catalogada na letra \"A\")"
+        },
+        "10": {
+          "texto": "Entrar na garagem de veículo não pertencente a moradores, exceto carros de bombeiro, polícia, ambulância particular e SAMU; (Infração catalogada na letra \"C\")"
+        },
+        "11": {
+          "texto": "Circular com bicicletas, velocípedes, patins, skates, carrinhos de rolimā, patinete ou qualquer outro veículo ou brinquedo nas garagens, caminhos de pedestres e pilotis, salvo o tempo necessário para retirá-los ou guardá-los. (Infração catalogada na letra \"A\")"
+        }
+      }
+    },
+    "52": {
+      "capitulo": 10,
+      "texto": "A entrada de veículo na garagem será feita por controle de acesso automatizado; na falta deste, só será permitida a entrada após identificação do condutor e do veículo na portaria do Condomínio.",
+      "paragrafos": {
+        "1": {
+          "texto": "Nas torres A e B, será disponibilizada uma vaga rotativa para carga e descarga de materiais, equipamentos, compras, entre outros, com permanência máxima de 15 (quinze) minutos, mediante prévia autorização retirada pelo morador ou proprietário na Administração do Condomínio ou com o fiscal de piso."
+        },
+        "2": {
+          "texto": "Ao adentrar no Condomínio no período noturno, o motorista do veículo deverá utilizar farol baixo ao passar pela portaria."
+        }
+      }
+    },
+    "53": {
+      "capitulo": 11,
+      "texto": "A utilização da área comum será permitida de terça-feira a domingo. As áreas serão fechadas para fins de limpeza, manutenção e tratamento de água às segundas-feiras, exceto quando coincidir com feriado, neste caso, a limpeza será realizada no dia útil seguinte, ficando, portanto, proibida a sua utilização. (Infração catalogada na letra \"A\")."
+    },
+    "54": {
+      "capitulo": 11,
+      "texto": "A Administração do Condomínio, por necessidade, poderá modificar os dias e horários de funcionamento das áreas comuns, cabendo-lhe divulgar previamente ou posteriormente, a depender da urgência."
+    },
+    "55": {
+      "capitulo": 11,
+      "texto": "As áreas de uso comum deverão ser utilizadas até as 22 (vinte e duas) horas em qualquer dia da semana, exceto o horário de utilização individual de cada ambiente definido neste Regimento, devendo em todo caso ser respeitada a Lei do Silêncio. (Infração catalogada na letra \"C\")",
+      "paragrafos": {
+        "unico": {
+          "texto": "A Administração poderá utilizar outras medidas necessárias para fazer valer o artigo."
+        }
+      }
+    },
+    "56": {
+      "capitulo": 11,
+      "texto": "Os eventos promovidos pelo Condomínio poderão ser agendados a qualquer tempo, desde que não exista reserva prévia de unidade autônoma."
+    },
+    "57": {
+      "capitulo": 11,
+      "texto": "Quaisquer danos causados aos equipamentos e dependência da área de lazer serão ressarcidos ao Condomínio, pelo condômino e/ou proprietário que deu causa. O síndico procederá com a devida notificação de reparação do dano concedendo prazo para ressarcimento ou manutenção. Caso o morador não se pronuncie, o Condomínio poderá fazer até 3 (três) orçamentos e o valor para sua manutenção ou substituição será debitado juntamente com o boleto de lançamento da taxa condominial, do mês subsequente ao mês de uso, em única parcela. O Condomínio não se responsabiliza por danos causados às pessoas no uso das áreas de lazer."
+    },
+    "58": {
+      "capitulo": 11,
+      "texto": "Durante a utilização dos espaços de uso comum, é vedado(a):",
+      "incisos": {
+        "1": {
+          "texto": "A permanência de visitantes desacompanhados de um morador ou proprietário; (Infração catalogada na letra \"A\")"
+        },
+        "2": {
+          "texto": "A permanência de animais; (Infração catalogada na letra \"A\")"
+        },
+        "3": {
+          "texto": "A utilização para festas com cobrança de ingresso, festas abertas ao público, ensaios de grupos musicais e promoção de jogos de azar; (Infração catalogada na letra \"D\")"
+        },
+        "4": {
+          "texto": "A cessão de utilização para pessoas não residentes no Condomínio, bem como para reuniões políticas, comércio ou para atividades ilícitas; (Infração catalogada na letra \"D\")"
+        },
+        "5": {
+          "texto": "A remoção dos equipamentos de propriedade do Condomínio (mesas, cadeiras, freezer, TV, fogão, micro-ondas e outros), mesmo que temporariamente; (Infração catalogada na letra \"C\")"
+        },
+        "6": {
+          "texto": "A fixação de pregos, fitas adesivas e similares nas paredes; (Infração catalogada na letra \"A\")"
+        },
+        "7": {
+          "texto": "O uso de aparelhos sonoros nas áreas comuns, exceto salão de festa adulto e infantil, churrasqueiras, espaço gourmet, quadras de esportes e área da piscina, conforme norma específica para cada espaço. O som automotivo é proibido em qualquer área do Condomínio; (Infração catalogada na letra \"A\")"
+        },
+        "8": {
+          "texto": "A promoção de algazarras de qualquer espécie ou atitudes que contrariem a civilidade: perturbar os demais usuários; fumar; atirar papéis, lixos ou quaisquer objetos no chão; abandonar artigos, objetos, toalhas ou sandálias nos ambientes; (Infração catalogada na letra \"C\")"
+        },
+        "9": {
+          "texto": "A permissão de convidados que terão acesso às churrasqueiras, salões de festas e espaço gourmet. Estes não poderão usufruir de outras dependências de uso comum como piscinas, sala de jogos e afins. Com exceção dos convidados que estiverem devidamente identificados e autorizados dentro da cota de utilização das piscinas, sauna e espaço zen. A sala de jogos e afins segue a regra de reservas; (Infração catalogada na letra \"A\")"
+        },
+        "10": {
+          "texto": "A ingestão de bebidas alcoólicas no playground, nas quadras de esporte, nas escadas de acesso ao mezanino, arquibancadas, brinquedoteca, sauna, salão de jogos, academia, na área da piscina e no gazebo de frente ao parque infantil. Nas demais dependências e áreas comuns do Condomínio, a ingestão de bebidas alcoólicas será permitida. (Infração catalogada na letra \"B\")."
+        }
+      }
+    },
+    "59": {
+      "capitulo": 11,
+      "texto": "O traje de banho será permitido apenas na área das piscinas, churrasqueiras, espaço gourmet e na área do espaço zen e sauna. É proibido o traje de banho, transitar sem camisa ou molhado nas demais áreas do Condomínio, inclusive em elevadores e escadas, e no percurso que compreende de entrada/saída desses locais até demais espaços de uso comum ou apartamentos. (Infração catalogada na letra \"A\")"
+    },
+    "60": {
+      "capitulo": 11,
+      "texto": "O Condomínio não se responsabilizará por possíveis acidentes, incidentes, furtos ou danos a bens particulares ou qualquer outra situação julgada prejudicial pelo condômino."
+    },
+    "61": {
+      "capitulo": 11,
+      "texto": "O Condomínio não se responsabiliza por objetos pessoais esquecidos nos recintos das áreas aqui mencionadas."
+    },
+    "62": {
+      "capitulo": 11,
+      "texto": "A utilização das áreas listadas nas categorias 02 e 03 serão regidas pelas seguintes regras:",
+      "incisos": {
+        "1": {
+          "texto": "Nas áreas da categoria 03, cada unidade autônoma terá direito ao total de no máximo 4 (quatro) reservas anuais para cada espaço;"
+        },
+        "2": {
+          "texto": "As datas reservadas de terça a quinta-feira não serão contabilizadas nas cotas acima mencionadas. Neste caso, apenas será possível a realização de outra reserva caso o morador tenha utilizado a reserva realizada anteriormente, também compreendido para datas de segunda a quinta-feira;"
+        },
+        "3": {
+          "texto": "O morador ou proprietário deverá fazer o agendamento, primeiramente, pelo portal disponibilizado pelo Condomínio e, na ausência ou indisponibilidade deste, o agendamento será feito, pessoalmente, na Administração, oportunidade em que será ratificado o conhecimento dos Termos de Uso do espaço e dos móveis, equipamentos e utensílios, além de assinatura de check list de recebimento e entrega do espaço;"
+        },
+        "4": {
+          "texto": "As reservas serão disponibilizadas com antecedência máxima de 90 (noventa) dias para as áreas da categoria 03, e de 30 (trinta) dias para as áreas da categoria 02, exceto o salão de jogos, por ordem de agendamento, desde que sejam protocoladas na Administração do Condomínio ou por meio de outras opções disponibilizadas pelo Condomínio. As reservas das áreas incluídas na categoria 03, somente obedecerão a ordem de chegada desde que emitida autorização pela Administradora Condominial no ato do agendamento ou disponibilizada pelo sistema;"
+        },
+        "5": {
+          "texto": "Uma vez feita a reserva dos espaços da categoria 03, haverá inclusão da taxa de uso no boleto de taxa condominial do solicitante, no mês subsequente ao da data de realização do evento;"
+        },
+        "6": {
+          "texto": "Não havendo reservas para as datas de sexta a domingo com antecedência de 48 (quarenta e oito) horas, o morador ou proprietário adimplente poderá efetuar a reserva do espaço sem computar ao direito de 04 (quatro) reservas anuais por unidade autônoma;"
+        },
+        "7": {
+          "texto": "As reservas referem-se ao dia cheio para os espaços da categoria 03 e não serão subdivididas em horários fracionados. As áreas da categoria 02, que necessitem de reserva, respeitarão os horários de reserva estipuladas nos artigos da própria área;"
+        },
+        "8": {
+          "texto": "Eventuais cancelamentos de reservas das áreas pagas deverão ser feitos com antecedência mínima de 7 (sete) dias corridos, a fim de não acarretar ônus ao morador ou proprietário interessado;"
+        },
+        "9": {
+          "texto": "O cancelamento da reserva realizado com antecedência inferior a 7 (sete) dias corridos implicará na cobrança de 50% (cinquenta por cento) do valor da taxa de uso;"
+        },
+        "10": {
+          "texto": "A não utilização do espaço na data reservada e não cancelada não dará direito ao ressarcimento de qualquer valor;"
+        },
+        "11": {
+          "texto": "Os pagamentos deverão ser realizados, única e exclusivamente, por meio de inclusão em taxa condominial."
+        }
+      },
+      "paragrafos": {
+        "unico": {
+          "texto": "Todas as receitas advindas da locação dos espaços de uso comum serão destinadas ao fundo de reserva criado especificamente para manutenção, conservação e melhorias da área de lazer, depositado em conta específica."
+        }
+      }
+    },
+    "63": {
+      "capitulo": 11,
+      "texto": "O uso da piscina, sauna e espaço zen é privativo dos moradores, proprietários e convidados, sendo este número limitado até o limite de 6 (seis) moradores por unidade, respeitando a capacidade máxima de utilização do espaço. (Infração catalogada na letra \"A\")",
+      "paragrafos": {
+        "1": {
+          "texto": "Somente será permitida a presença de convidados devidamente identificados por pulseira a ser repassada pela Administração do Condomínio. Cada condômino terá direito a 32 (trinta e duas) pulseiras anualmente para seus convidados, podendo ser utilizadas até 4 (quatro) pulseiras por dia. Terá ainda cada condômino o direito a 5 (cinco) pulseiras especiais anuais para hóspedes previamente cadastrados na Administração do Condomínio, tendo as pulseiras especiais a validade de 15 (quinze) dias corridos. (Infração catalogada na letra \"A\")"
+        },
+        "2": {
+          "texto": "As pulseiras serão fornecidas pela Administração por cotas diárias limitadas a 4 (quatro) pulseiras por unidade, até o limite anual da unidade solicitante."
+        }
+      }
+    },
+    "64": {
+      "capitulo": 12,
+      "texto": "O uso dos salões de festas adulto e infantil é exclusivo dos moradores e proprietários e seus convidados e não poderá ser cedido ou alugado a terceiros, sob pena de multa. A sua utilização será permitida mediante agendamento prévio e pagamento de taxa de uso até as 23h59min do dia do evento, tendo o som que ser desligado ou reduzido a níveis mínimos após as 22h. (infração catalogada na letra \"C\")."
+    },
+    "65": {
+      "capitulo": 12,
+      "texto": "A taxa de uso será correspondente a 15% (quinze por cento) do valor da menor taxa condominial vigente no período da reserva, para cada evento diário, a partir das 10 (dez) horas."
+    },
+    "66": {
+      "capitulo": 12,
+      "texto": "A lotação máxima permitida é de 60 (sessenta) pessoas no salão adulto e 50 (cinquenta) no salão infantil, e a lista de convidados deverá ser disponibilizada, primeiramente, no portal online do Condomínio e, na ausência deste, entregue na Administração e impressa em 0 (duas) vias no momento de recebimento das chaves, podendo ser alterada a qualquer momento pelo morador ou proprietário. (Infração catalogada na letra \"A\")",
+      "paragrafos": {
+        "unico": {
+          "texto": "Para fins de segurança do Condomínio, o controle da lotação máxima será a lista de convidados que ficará na portaria central e só serão liberadas as entradas dos convidados listados. Caso seja necessário, um funcionário fará uma contagem no local do evento. (Infração catalogada na letra \"C\")."
+        }
+      }
+    },
+    "67": {
+      "capitulo": 12,
+      "texto": "Na ausência do sistema online (Portal do morador), a Administração do Condomínio manterá o controle de uma lista de espera para os moradores ou proprietários que desejarem alugar o espaço reservado, caso haja desistência, respeitando a respectiva ordem de inscrição na referida lista."
+    },
+    "68": {
+      "capitulo": 12,
+      "texto": "Os convidados que terão acesso ao salão de festas não poderão usufruir de outras dependências de uso comum. (Infração catalogada na letra \"A\")"
+    },
+    "69": {
+      "capitulo": 12,
+      "texto": "É de responsabilidade do morador ou proprietário requisitante o recolhimento e a remoção de resíduos remanescentes do evento, inclusive a remoção de móveis, utensílios e pertences pessoais até às 23h59min do dia do evento. (Infração catalogada na letra \"C\")",
+      "paragrafos": {
+        "unico": {
+          "texto": "A não retirada do material em momento oportuno pelo responsável do uso do salão isentará o usuário seguinte e a Administração do Condomínio de quaisquer responsabilidades da destinação e danos do material ora remanescente."
+        }
+      }
+    },
+    "70": {
+      "capitulo": 12,
+      "texto": "A Administração do Condomínio fará a entrega e o recebimento do espaço ao morador ou proprietário da unidade autônoma solicitante, por meio de formulário específico (termo de recebimento e termo de entrega), após vistoria das instalações feita por um funcionário da Administração. Eventuais danos causados ao mobiliário, eletrodomésticos, eletroeletrônicos e demais utensílios pertencentes ao Salão de Festas, serão de responsabilidade do morador ou proprietário solicitante, que será notificado a providenciar o reparo do dano no prazo definido em notificação. (Infração catalogada na letra \"A\")"
+    },
+    "71": {
+      "capitulo": 13,
+      "texto": "A utilização da churrasqueira e do espaço gourmet será permitida mediante agendamento prévio."
+    },
+    "72": {
+      "capitulo": 13,
+      "texto": "A taxa de uso será correspondente a 12% (doze por cento) do valor da menor taxa condominial vigente no período da reserva, para cada evento diário, a partir das 10 (dez) horas."
+    },
+    "73": {
+      "capitulo": 13,
+      "texto": "A lotação máxima permitida é de 20 (vinte) pessoas para as churrasqueiras e 30 (trinta) pessoas no espaço gourmet e a lista de convidados deve ser apresentada com antecedência de 1 (um) dia útil, podendo ser alterada a qualquer momento pelo morador ou proprietário. (Infração catalogada na letra \"A\")",
+      "paragrafos": {
+        "unico": {
+          "texto": "Para fins de segurança do Condomínio, o controle da lotação máxima será a lista de convidados que ficará na portaria central e só serão liberadas as entradas dos convidados listados. Caso seja necessário, um funcionário fará a contagem no local do evento."
+        }
+      }
+    },
+    "74": {
+      "capitulo": 13,
+      "texto": "O morador ou proprietário deverá fazer o agendamento primeiramente, pelo Portal disponibilizado pelo Condomínio e, na ausência ou indisponibilidade deste, o agendamento será feito, pessoalmente na Administração do Condomínio ou por meio de outras opções disponibilizadas pelo Condomínio, oportunidade em que será ratificado o conhecimento dos Termos de Uso do espaço e dos móveis, equipamentos e utensílios."
+    },
+    "75": {
+      "capitulo": 13,
+      "texto": "A Administração do Condomínio manterá o controle de uma lista de espera para os moradores ou proprietários que desejarem alugar o espaço reservado, caso haja desistência, respeitando a respectiva ordem de inscrição na referida lista, caso as reservas sejam manuais."
+    },
+    "76": {
+      "capitulo": 13,
+      "texto": "É de responsabilidade do morador ou proprietário requisitante o recolhimento de móveis, utensílios e pertences pessoais até as 22h59min do dia do evento, respeitando o silêncio durante os recolhimentos e as remoções dos pertences. (Infração catalogada na letra \"B\")",
+      "paragrafos": {
+        "unico": {
+          "texto": "A não retirada do material em momento oportuno pelo responsável do uso da churrasqueira isentará o usuário seguinte e a Administração Condominial de quaisquer responsabilidades da destinação e danos do material ora remanescente."
+        }
+      }
+    },
+    "77": {
+      "capitulo": 13,
+      "texto": "A Administração do Condomínio fará a entrega e o recebimento do espaço ao morador ou proprietário da unidade autônoma solicitante, por meio de formulário específico (Termo de Recebimento e Termo de Entrega), após vistoria das instalações efetuada pelo funcionário disponível da Administração. Eventuais danos causados ao mobiliário, eletrodomésticos, eletroeletrônicos e demais utensílios pertencentes à churrasqueira e ao espaço gourmet serão de responsabilidade do morador ou proprietário solicitante, o qual será notificado a providenciar o reparo do dano no prazo definido pelo síndico em notificação. (Infração catalogada na letra \"A\"). No caso de ausência do reparo, a Administração procederá aos consertos e cobrará do morador."
+    },
+    "78": {
+      "capitulo": 13,
+      "texto": "A Administração do Condomínio disponibilizará um sistema de som para o espaço. O aparelho de som disponibilizado pela administração deverá ser desligado às 22h. (Infração catalogada na letra \"C\").",
+      "paragrafos": {
+        "unico": {
+          "texto": "É proibida a utilização de qualquer aparelho de som não fornecido pela Administração, instrumentos musicais, e/ou música ao vivo nas churrasqueiras e espaço gourmet. (Infração catalogada na letra \"C\")."
+        }
+      }
+    },
+    "79": {
+      "capitulo": 13,
+      "texto": "Caso o morador ultrapasse o limite de som permitido na Lei do Silêncio ao utilizar este ambiente, o fiscal de piso deverá notificar o morador verbalmente. Se ainda continuar com o barulho, o fiscal deverá apresentar um documento para o registro de notificação escrita, caso o morador não queira assinar o documento, duas testemunhas poderão fazê-lo, registrando também no Livro de Ocorrência. Se mesmo assim o barulho continuar, o morador será multado. (Infração catalogada na letra \"A\")"
+    },
+    "80": {
+      "capitulo": 14,
+      "texto": "É proibido o uso da piscina por pessoas que apresentem ferimentos expostos e/ou portadores de curativos, dermatoses e/ou doenças transmissíveis. (Infração catalogada na letra \"D\")"
+    },
+    "81": {
+      "capitulo": 14,
+      "texto": "É proibido barbear ou depilar partes do corpo, bem como a utilização de produtos químicos, como descolorantes, óleo de bronzeamento, tinturas de cabelos, cremes para hidratação de cabelos etc., ou qualquer produto similar que possa prejudicar o correto funcionamento das bombas e filtros existentes, bem como é proibido o uso da área para higiene pessoal. (Infração catalogada na letra \"A\")",
+      "paragrafos": {
+        "unico": {
+          "texto": "Os usuários da piscina devem passar pelo chuveiro antes de entrar na água. (Infração catalogada na letra \"A\")"
+        }
+      }
+    },
+    "82": {
+      "capitulo": 14,
+      "texto": "Nas piscinas não é permitido fumar, consumir bebidas, alimentos ou similares, bem como a permanência de todo e qualquer recipiente ou embalagens. (Infração catalogada na letra \"A\")",
+      "paragrafos": {
+        "unico": {
+          "texto": "A utilização de recipientes para a armazenagem de bebidas, tais como cooler, caixas de isopor e similares, somente será permitida nas áreas externas à piscina, delimitadas pelas grades. (Infração catalogada na letra \"A\")"
+        }
+      }
+    },
+    "83": {
+      "capitulo": 14,
+      "texto": "É expressamente vedada a utilização de garrafas e/ou outros utensílios de vidro nas dependências da piscina e ou suas imediações. (Infração catalogada na letra \"A\")"
+    },
+    "84": {
+      "capitulo": 14,
+      "texto": "É proibida a prática de jogos esportivos nas piscinas, tais como frescobol, peteca, bola e similares, ficando ainda proibida a prática de brincadeiras como pular, empurrar ou qualquer tipo de brincadeira agressiva que venha interferir no sossego, na segurança e no bem-estar dos demais usuários, salvo quando promovidas pela Administração do Condomínio, ou autorizadas por esta. É também proibido o uso de pranchas e boias que representem perigo aos demais usuários. (Infração catalogada na letra \"A\")"
+    },
+    "85": {
+      "capitulo": 14,
+      "texto": "É proibida a entrada na área das piscinas por menores de 12 (doze) anos desacompanhados de pais ou responsáveis. (Infração catalogada na letra \"A\")",
+      "paragrafos": {
+        "unico": {
+          "texto": "O acompanhante responsável por criança menor de 12 (doze) anos deve permanecer na área da piscina enquanto a criança estiver usando o local. (Infração catalogada na letra \"A\")"
+        }
+      }
+    },
+    "86": {
+      "capitulo": 14,
+      "texto": "O horário de utilização das piscinas será das 8h às 22h. (Infração catalogada na letra \"D\")"
+    },
+    "87": {
+      "capitulo": 14,
+      "texto": "Os móveis e os utensílios de propriedade do Condomínio localizados nas piscinas (cadeiras, mesas, espreguiçadeiras e outros) não poderão ser removidos e nem utilizados para fins diversos daqueles a que se destinam, mesmo que temporariamente. Estes materiais são de uso rotativo, não sendo permitido reservá-los. (Infração catalogada na letra \"A\")"
+    },
+    "88": {
+      "capitulo": 14,
+      "texto": "Para frequência à piscina, será necessário: (Infração catalogada na letra \"A\")",
+      "incisos": {
+        "1": {
+          "texto": "Passar pelo chuveiro e pelo lava-pés existentes no local antes de entrar nas piscinas;"
+        },
+        "2": {
+          "texto": "Utilizar trajes adequados para o banho, tais como sungas, biquinis, maiôs (tactel, lycra ou dry fit)."
+        }
+      }
+    },
+    "89": {
+      "capitulo": 14,
+      "texto": "É obrigatória a apresentação do atestado médico para ter acesso à área da piscina, que terá validade de 6 (seis) meses para os moradores e 3 (três) meses para os convidados. (Infração catalogada na letra \"C\")."
+    },
+    "90": {
+      "capitulo": 14,
+      "texto": "Crianças com idade inferior a 5 (cinco) anos, seja moradora ou convidada, não precisa apresentar atestado médico para entrar na piscina. Em caso de dúvida em relação à idade, o fiscal de piso (ou piscineiro) pode solicitar algum documento que comprove a idade da criança para autorizar a entrada. (Infração catalogada na letra \"C\")."
+    },
+    "91": {
+      "capitulo": 15,
+      "texto": "O horário de funcionamento será das 9h às 22h, sendo necessária a comunicação de utilização com 30 (trinta) minutos de antecedência, caso se encontre desligada. (Infração catalogada na letra \"A\")"
+    },
+    "92": {
+      "capitulo": 15,
+      "texto": "Caso não haja pedido de utilização, a sauna não será ligada, para evitar consumo de energia e manutenção."
+    },
+    "93": {
+      "capitulo": 15,
+      "texto": "No horário das 8h às 9h, todos os dias, a sauna estará fechada para limpeza e manutenção."
+    },
+    "94": {
+      "capitulo": 15,
+      "texto": "O usuário deverá solicitar o desligamento da sauna na Administração após sua saída, caso não tenha nenhum outro condômino utilizando o espaço (Infração catalogada na letra \"A\")."
+    },
+    "95": {
+      "capitulo": 15,
+      "texto": "É proibido barbear ou depilar partes do corpo, bem como a utilização de produtos químicos, tipo: descolorantes, óleo de bronzeamento, tinturas de cabelos, cremes para hidratação de cabelos, etc. assim como fazer uso da área para higiene pessoal. (Infração catalogada na letra \"A\")."
+    },
+    "96": {
+      "capitulo": 15,
+      "texto": "É vedado levar ao recinto frascos, copos e garrafas de vidro, porcelana, latas ou material similar sujeito à quebra, que possam atentar à segurança física dos usuários. É proibido o consumo de bebidas alcoólicas no interior da sauna. (Infração catalogada na letra \"A\")"
+    },
+    "97": {
+      "capitulo": 15,
+      "texto": "É proibida a entrada de menores de 14 (quatorze) anos sem a presença dos pais ou responsáveis. Os maiores de 14 (quatorze) anos e menores de 18 (dezoito) anos só poderão entrar com autorização prévia por escrito dos pais ou responsáveis, a ser entregue na Administração do Condomínio. (Infração catalogada na letra \"A\")"
+    },
+    "98": {
+      "capitulo": 16,
+      "texto": "O espaço zen funcionará por meio de reserva de terça a domingo, em dois horários: manhã (11h às 15h) e tarde (18h às 22h). (Infração catalogada na letra \"A\")",
+      "paragrafos": {
+        "unico": {
+          "texto": "As reservas serão realizadas com antecedência máxima de 30 (trinta) dias, sem custo pela reserva, e a não utilização do espaço reservado sem o devido cancelamento da reserva em até 48 (quarenta e oito) horas de antecedência, estará sujeito à penalidade deste parágrafo. Uma nova reserva só poderá ser realizada após a utilização ou cancelamento do espaço reservado anteriormente. (Infração catalogada na letra \"A\")."
+        }
+      }
+    },
+    "99": {
+      "capitulo": 16,
+      "texto": "Caso não haja pedido de utilização, a banheira de hidromassagem não será ligada, para evitar consumo de energia e manutenção."
+    },
+    "100": {
+      "capitulo": 16,
+      "texto": "No horário das 8h às 11h e das 15h às 18h, a banheira de hidromassagem estará fechada para limpeza e manutenção."
+    },
+    "101": {
+      "capitulo": 16,
+      "texto": "O usuário deverá solicitar o desligamento da banheira de hidromassagem na Administração, caso se ausente do local antes do final de seu horário reservado. (Infração catalogada na letra \"A\")"
+    },
+    "102": {
+      "capitulo": 16,
+      "texto": "É proibido o uso de qualquer tipo de aparelhos barbeadores na banheira de hidromassagem e suas dependências. (Infração catalogada na letra \"A\")"
+    },
+    "103": {
+      "capitulo": 16,
+      "texto": "É vedado levar ao recinto frascos, copos e garrafas de vidro, porcelana, latas ou material similar sujeito à quebra, que possam atentar à segurança física dos usuários. É proibido o consumo de bebidas alcoólicas no recinto. (Infração catalogada na letra \"A\")"
+    },
+    "104": {
+      "capitulo": 16,
+      "texto": "É proibida a entrada de menores de 14 (quatorze) anos sem a presença dos pais ou responsáveis. Os maiores de 14 (quatorze) anos e menores de 18 (dezoito) anos só poderão entrar com autorização prévia por escrito dos pais ou responsáveis, a ser entregue na Administração do Condomínio. (Infração catalogada na letra \"A\")"
+    },
+    "105": {
+      "capitulo": 16,
+      "texto": "Os empregados do Condomínio e/ou terceiros contratados, não poderão permanecer no recinto da área aqui mencionada, exceto os funcionários devidamente autorizados, para guarda, manutenção ou limpeza."
+    },
+    "106": {
+      "capitulo": 16,
+      "texto": "O Condomínio não será responsabilizado pela ocorrência de danos aos condôminos usuários do espaço zen, em face de fatos advindos da desobediência aos artigos 102, 103 e 104 deste Regimento."
+    },
+    "107": {
+      "capitulo": 17,
+      "texto": "A quadra poliesportiva é de uso exclusivo dos moradores, sendo permitida a frequência de visitantes."
+    },
+    "108": {
+      "capitulo": 17,
+      "texto": "A quadra tem por finalidade a prática dos esportes específicos a ela. Não será permitida a simples patinação, circulação de bicicletas, velotrois, patinetes ou qualquer outro similar na quadra, a menos que ela esteja desocupada. (Infração catalogada na letra \"A\")"
+    },
+    "109": {
+      "capitulo": 17,
+      "texto": "Fica estabelecido o horário das 8h às 22h para utilização da quadra de esportes. (Infração catalogada na letra \"A\")"
+    },
+    "110": {
+      "capitulo": 17,
+      "texto": "Havendo incompatibilidade de uso da quadra poliesportiva, por faixa etária, modalidade esportiva ou qualquer outro motivo, aqueles que estiverem fazendo o uso no momento serão comunicados do interesse de uso por outros moradores e terão 60 (sessenta) minutos a partir de então para cederem o uso. (Infração catalogada na letra \"A\")"
+    },
+    "111": {
+      "capitulo": 17,
+      "texto": "Não haverá a possibilidade de reserva das quadras por parte dos condôminos.",
+      "paragrafos": {
+        "unico": {
+          "texto": "A Administração poderá fazer reserva de horários para atividades comuns esportivas e/ou lúdicas, destinadas à utilização de todos os condôminos, sem restrição."
+        }
+      }
+    },
+    "112": {
+      "capitulo": 17,
+      "texto": "É proibido qualquer atividade particular ou coletiva que tenha fins comerciais ou que seja cobrada alguma taxa para participação. (Infração catalogada na letra \"B\")"
+    },
+    "113": {
+      "capitulo": 17,
+      "texto": "O síndico geral poderá, a pedido de um grupo mínimo de 20 (vinte) moradores, fazer a liberação de atividades coletivas cobradas com horário programado, fazer a divulgação da referida atividade no Condomínio, não ultrapassando 60 (sessenta) minutos por atividade conforme as regras a seguir:",
+      "incisos": {
+        "1": {
+          "texto": "O profissional deverá trazer um projeto da modalidade e apresentar ao síndico e aos subsíndicos para apreciação;"
+        },
+        "2": {
+          "texto": "O profissional não precisa ser morador do Condomínio Miami Beach;"
+        },
+        "3": {
+          "texto": "O profissional deverá trazer certificados, diplomas e/ou cartas de referências de acordo com sua modalidade;"
+        },
+        "4": {
+          "texto": "Os horários possíveis para as aulas são de segunda a sexta, das 21h às 22h, somente na quadra de vôlei;"
+        },
+        "5": {
+          "texto": "O profissional em questão deverá entregar na administração uma lista com os alunos devidamente identificados (nome, torre e apartamento) para eventuais conferências. Caso o professor não atenda o requisito mínimo de quantidade de alunos, o sindico e os subsíndicos, ao final de cada mês, reservar-se-ão ao direito de suspender ou não a referida atividade, com prévio aviso."
+        }
+      }
+    },
+    "114": {
+      "capitulo": 17,
+      "texto": "É permitido o consumo de bebidas em recipientes plásticos, exceto bebidas alcoólicas, sendo vedado o consumo de alimentos sólidos de qualquer natureza. (Infração catalogada na letra \"A\")"
+    },
+    "115": {
+      "capitulo": 18,
+      "texto": "Destina-se ao uso exclusivo dos condôminos, sendo vedada a sua utilização por parte de visitantes, funcionários e convidados, e, funcionará de segunda a domingo das 6h às 23h59min. Personal Trainner não se enquadra na vedação desde que apresentem documento atestando a profissão para a administração."
+    },
+    "116": {
+      "capitulo": 18,
+      "texto": "O usuário do Espaço Fitness deverá seguir as seguintes regras após seu uso: (Infração catalogada na letra \"A\")",
+      "incisos": {
+        "1": {
+          "texto": "Desligar os aparelhos;"
+        },
+        "2": {
+          "texto": "Colocar os pesos em seus devidos lugares;"
+        },
+        "3": {
+          "texto": "Recolocar as barras do aparelho de musculação em seus devidos lugares;"
+        },
+        "4": {
+          "texto": "Fechar a janela após o uso do Espaço Fitness;"
+        },
+        "5": {
+          "texto": "Desligar as luzes ao sair;"
+        },
+        "6": {
+          "texto": "Usar obrigatoriamente toalha própria para evitar o respingo de suor nos aparelhos."
+        }
+      }
+    },
+    "117": {
+      "capitulo": 18,
+      "texto": "O usuário deverá frequentar o Espaço Fitness com roupas e calçados adequados à utilização deste. (Infração catalogada na letra \"A\")."
+    },
+    "118": {
+      "capitulo": 18,
+      "texto": "O Condomínio não é responsável por quaisquer consequências que decorram de treinos efetuados no espaço fitness, a exemplo de mal súbito, lesões ou qualquer atividade que provoque sequelas ou morte."
+    },
+    "119": {
+      "capitulo": 18,
+      "texto": "É vedado o uso dos aparelhos do espaço fitness por menores de 18 (dezoito) anos desacompanhados de seus pais ou responsáveis, salvo se com autorização por escrito, contendo declaração de total responsabilidade por qualquer ocorrência decorrente do uso dos equipamentos. (Infração catalogada na letra \"A\")"
+    },
+    "120": {
+      "capitulo": 18,
+      "texto": "É vedado levar ao recinto frascos, copos e garrafas de vidro, porcelana, latas ou material similar sujeito à quebra, que possam atentar à segurança fisica dos usuários. É proibido o consumo de bebidas alcoólicas ou não e alimentos no recinto, exceto água. (Infração catalogada na letra \"A\")."
+    },
+    "121": {
+      "capitulo": 19,
+      "texto": "O morador solicitará à Administração sua utilização para acesso ao local o qual será mantido fechado quando não houver utilização. O morador solicitará ainda o fechamento do acesso ao espaço junto à Administração após sua utilização caso não haja outro condômino no espaço. Havendo outro condômino, após a utilização e a liberação do espaço, o morador deverá informar à Administração que deixou o espaço com outro condômino."
+    },
+    "122": {
+      "capitulo": 19,
+      "texto": "A utilização dos computadores será limitada a 60 (sessenta) minutos de forma sistematizada, podendo este tempo ser estendido, caso não haja interesse de uso por outras pessoas. (Infração catalogada na letra \"A\")"
+    },
+    "123": {
+      "capitulo": 19,
+      "texto": "Recomenda-se a utilização de pendrives ou similares, evitando-se salvar arquivos pessoais no hard disc (HD) dos computadores de uso coletivo. O Condomínio não se responsabilizará por prejuízos causados aos usuários em decorrência do descarte de arquivos gravados no HD dos computadores ou uso indevido por terceiros de informações inseridas nos equipamentos."
+    },
+    "124": {
+      "capitulo": 19,
+      "texto": "É vedado o uso do espaço web aos menores de 14 (quatorze) anos desacompanhados de seus responsáveis. Os maiores de 14 (quatorze) anos e menores de 18 (dezoito) anos apenas poderão frequentar o espaço com autorização escrita e prévia de seus responsáveis, fazendo constar irrestrita responsabilização pelo uso, material pesquisado e demais ocorrências advindas da utilização dos equipamentos. (Infração catalogada na letra \"A\")"
+    },
+    "125": {
+      "capitulo": 19,
+      "texto": "É expressamente proibido o acesso a páginas com conteúdos pornográficos, de ódio e demais crimes virtuais, sendo o usuário responsável cível e criminalmente por suas ações. (Infração catalogada na letra \"C\")"
+    },
+    "126": {
+      "capitulo": 19,
+      "texto": "É vedado levar ao recinto frascos, copos e garrafas de vidro, porcelana, latas ou material similar sujeito à quebra, que possam atentar à segurança física dos usuários. É proibido o consumo de bebidas alcoólicas e quaisquer tipos de alimento no recinto. (Infração catalogada na letra \"B\")"
+    },
+    "127": {
+      "capitulo": 19,
+      "texto": "É proibido promover algazarras de qualquer espécie ou manter atitudes que contrariam a moral e a civilidade, perturbar os demais usuários; atirar papéis, lixos ou quaisquer objetos no chão. (Infração catalogada na letra \"A\")"
+    },
+    "128": {
+      "capitulo": 19,
+      "texto": "É proibido o uso de aparelhos sonoros, exceto a utilização de aparelhos individuais, como fones de ouvido. (Infração catalogada na letra \"A\")"
+    },
+    "129": {
+      "capitulo": 20,
+      "texto": "Horário de funcionamento será das 9h às 22h, de segunda a domingo, podendo ser fechado a qualquer tempo para manutenção. Não sendo permitido fumar, consumir bebidas, alimentos ou similares, bem como a permanência de todo e qualquer recipiente ou embalagens. (Infração catalogada na letra \"C\")",
+      "paragrafos": {
+        "unico": {
+          "texto": "Os visitantes poderão permanecer neste espaço apenas acompanhado pelo condômino responsável. (Infração catalogada na letra \"A\")"
+        }
+      }
+    },
+    "130": {
+      "capitulo": 20,
+      "texto": "Os móveis e os utensílios de propriedade do Condomínio localizados na sala de jogos não poderão ser removidos e nem utilizados para fins diversos daqueles a que se destinam, mesmo que temporariamente. Esses materiais são de uso rotativo, não sendo permitido reservá-los. (Infração catalogada na letra \"A\")"
+    },
+    "131": {
+      "capitulo": 20,
+      "texto": "Os materiais/peças assessórias (tacos, bolas, peças de tabuleiro, etc.) deverão ser retirados na Administração apenas pelos condôminos e mediante preenchimento de formulário de recebimento e devolução destes.",
+      "paragrafos": {
+        "unico": {
+          "texto": "A não devolução, extravio ou danos aos materiais do salão de jogos implicará em penalidades e ressarcimento destes. (Infração catalogada na letra \"C\")"
+        }
+      }
+    },
+    "132": {
+      "capitulo": 20,
+      "texto": "As crianças menores de 16 (dezesseis) anos não poderão frequentar o espaço desacompanhadas de seu(s) responsável(is); os menores compreendidos entre 16 (dezesseis) e 18 (dezoito) anos somente com autorização por escrito dos responsáveis, devendo esta conter declaração de total responsabilidade por qualquer ocorrência decorrente da utilização dos equipamentos. (Infração catalogada na letra \"C\")"
+    },
+    "133": {
+      "capitulo": 21,
+      "texto": "O Espaço denominado Home Cinema funcionará de terça a domingo, nos seguintes horários: manhã, das 8h às 12h; tarde, das 13h às 17h; noite, das 18h às 22h. Fechará nas segundas-feiras ou primeiro dia útil da semana para manutenção geral."
+    },
+    "134": {
+      "capitulo": 21,
+      "texto": "Toda exibição deverá obedecer às programações autorizadas por Lei para sua exposição, sendo expressamente proibida qualquer reprodução de conteúdos adultos (filmes pornográficos) e/ou de incitação ao ódio. (Infração catalogada na letra \"C\")"
+    },
+    "135": {
+      "capitulo": 21,
+      "texto": "A utilização é individualizada pelo morador requerente e seus convidados no prazo máximo de 4 (quatro) horas de utilização e mediante prévio agendamento. (Infração catalogada na letra \"A\")",
+      "paragrafos": {
+        "unico": {
+          "texto": "As reservas serão realizadas com antecedência máxima de 30 (trinta) dias sem custo e a não utilização do espaço reservado sem o devido cancelamento da reserva em até 48 (quarenta e oito) horas de antecedência, estará sujeito à penalidade categorizada neste parágrafo. Uma nova reserva só poderá ser realizada após a utilização ou cancelamento do espaço reservado anteriormente. (Infração catalogada na letra \"A\")"
+        }
+      }
+    },
+    "136": {
+      "capitulo": 21,
+      "texto": "As crianças menores de 14 (quatorze) anos não poderão frequentar o espaço, desacompanhadas de maior responsável, mesmo que este autorize sua permanência no local. (Infração catalogada na letra \"A\")"
+    },
+    "137": {
+      "capitulo": 21,
+      "texto": "É vedado levar ao recinto frascos, copos e garrafas de vidro, porcelana ou material similar sujeito à quebra, que possam atentar à segurança física dos usuários. É proibido fumar no recinto. (Infração catalogada na letra \"B\")"
+    },
+    "138": {
+      "capitulo": 22,
+      "texto": "A utilização deverá ser limitada aos moradores do horário das 08h às 22h, ficando a chave na Administração. Sua retirada será registrada no Livro de Controle de Chaves, devendo estar presente um responsável legal, sendo de uso exclusivo de crianças de 0 (zero) a 6 (seis) anos. (Infração catalogada na letra \"A\")"
+    },
+    "139": {
+      "capitulo": 22,
+      "texto": "É permitida a presença de crianças acompanhadas por um responsável maior de 18 (dezoito) anos."
+    },
+    "140": {
+      "capitulo": 22,
+      "texto": "O espaço será utilizado somente para finalidade de brinquedoteca, sendo vetado o seu uso para quaisquer tipos de atividades contrárias à moral e à civilidade."
+    },
+    "141": {
+      "capitulo": 22,
+      "texto": "O Condomínio não se responsabilizará pela segurança, lesões corporais decorrentes da utilização inadequada de qualquer brinquedo, objeto ou equipamento integrante da brinquedoteca."
+    },
+    "142": {
+      "capitulo": 22,
+      "texto": "É proibido o consumo de alimentos no interior da brinquedoteca. (Infração catalogada na letra \"C\")"
+    },
+    "143": {
+      "capitulo": 22,
+      "texto": "É proibido retirar os brinquedos de dentro do espaço denominado brinquedoteca. (Infração catalogada na letra \"C\")"
+    },
+    "144": {
+      "capitulo": 22,
+      "texto": "Deverá o responsável pela criança organizar o espaço após seu uso. (Infração catalogada na letra \"A\")"
+    },
+    "145": {
+      "capitulo": 23,
+      "texto": "Os elevadores sociais são destinados aos moradores e visitantes, não sendo permitido o trânsito com animais domésticos, salvo em casos excepcionais. (Infração catalogada na letra \"A\")"
+    },
+    "146": {
+      "capitulo": 23,
+      "texto": "O elevador de serviço é destinado, mas não se limitando, ao transporte de cargas, lixo, ferramentas, prestadores de serviço uniformizados, portando objetos ou materiais de trabalho, compras, carrinhos, mudanças e transporte de animais domésticos.",
+      "paragrafos": {
+        "unico": {
+          "texto": "O elevador social somente poderá ser utilizado para este fim em caso de interdição do elevador de serviço. (Infração catalogada na letra \"C\")."
+        }
+      }
+    },
+    "147": {
+      "capitulo": 23,
+      "texto": "O elevador de serviço somente poderá ser utilizado para mudanças e cargas, desde que devidamente protegidos com capa protetora a ser solicitada previamente à Administração. (Infração catalogada na letra \"C\")"
+    },
+    "148": {
+      "capitulo": 23,
+      "texto": "Os elevadores de serviço e social 2 são os únicos permitidos para transporte de pets. Na falta das duas opções, o morador terá que fazer uso da escada de emergência, sendo vedado se valer de outro elevador. (Infração catalogada na letra \"C\")"
+    },
+    "149": {
+      "capitulo": 23,
+      "texto": "É proibido colocar qualquer tipo de objeto para manter a porta do elevador aberta. Caso o equipamento venha ser danificado em virtude deste ato, a unidade arcará com os custos de reparo. (Infração catalogada na letra \"C\")"
+    },
+    "150": {
+      "capitulo": 23,
+      "texto": "O usuário deverá obrigatoriamente respeitar a carga máxima permitida de cada elevador, estipulada pela empresa fornecedora deste equipamento. (Infração catalogada na letra \"D\")"
+    },
+    "151": {
+      "capitulo": 23,
+      "texto": "Não será permitida a utilização dos elevadores trajando apenas roupas de banho, sem camisa ou qualquer vestimenta molhada. (Infração catalogada na letra \"B\")."
+    },
+    "152": {
+      "capitulo": 24,
+      "texto": "As instalações/manutenções de quaisquer tipos deverão ser realizadas de segunda a sexta-feira das 08h às 18h e sábado das 08h às 16h, sendo o condômino solicitante responsabilizado por eventuais danos aos shafts e fiação de antena coletiva e de demais unidades particulares ou nas áreas comuns. (Infração catalogada na letra \"C\").",
+      "paragrafos": {
+        "unico": {
+          "texto": "Toda e qualquer instalação deverá ser previamente autorizada pela administração. (Infração catalogada na letra \"E\")"
+        }
+      }
+    },
+    "153": {
+      "capitulo": 25,
+      "texto": "Os moradores e proprietários poderão manter em seus apartamentos animais domésticos que não ameacem a integridade física dos moradores, proprietários e visitantes. (Infração catalogada na letra \"A\")",
+      "paragrafos": {
+        "unico": {
+          "texto": "Os moradores e proprietários possuidores de animais domésticos deverão cadastrá-los na Administração do Condomínio. Após notificado por falta de cadastro, o morador terá o prazo de 1 (uma) semana para cadastrar o animal, caso não o faça, será considerado reincidente nos termos do Art. 187 deste Regimento. (Infração catalogada na letra \"B\")"
+        }
+      }
+    },
+    "154": {
+      "capitulo": 25,
+      "texto": "A circulação de animais de estimação pelas áreas comuns do bloco é permitida apenas pelos elevadores de serviço, social 2 e/ou escadas, acompanhados de seus donos, ou pessoas por ele designadas que possuam capacidade física para o domínio destes animais domésticos. Todos os cães/gatos deverão usar coleira/guia. Os cães de grande porte e de raças destinadas à guarda ou ao ataque usarão também focinheira conforme estabelecido na Lei Distrital nº 2.095/1998. (Infração catalogada na letra \"B\")",
+      "paragrafos": {
+        "unico": {
+          "texto": "Não será permitida, em qualquer hipótese, a circulação e/ou permanência de animais domésticos na área de lazer. (Infração catalogada na letra \"B\")."
+        }
+      }
+    },
+    "155": {
+      "capitulo": 25,
+      "texto": "Os animais domésticos não deverão fazer suas necessidades fisiológicas (urina, fezes e outros) nas áreas comuns do Condomínio, bem como toda a área ao redor do bloco A, quadra de esportes, arquibancadas, academia livre, espirobol, quadra de futebol, pergolados, ao redor da piscina, áreas que antecedem os vidros das churrasqueiras, espaço gourmet e ao seu redor, salão de festas, pilastras e muros dos blocos e todos os gramados dentro do Condomínio. Caberá ao dono ou tutor do animal providenciar imediatamente a limpeza, caso o animal venha a sujá-las. (Infração catalogada na letra \"C\").",
+      "paragrafos": {
+        "unico": {
+          "texto": "Ao usar a área pública, externa ao Condomínio, mas mantida por este, tais como jardins, calçadas e estacionamentos, as fezes dos animais deverão ser recolhidas pelo seu proprietário. (Infração catalogada na letra \"A\")"
+        }
+      }
+    },
+    "156": {
+      "capitulo": 25,
+      "texto": "Os animais não deverão emitir sons ou odores que incomodem ou que perturbem o sossego e a tranquilidade dos demais moradores e proprietários. (Infração catalogada na letra \"B\")"
+    },
+    "157": {
+      "capitulo": 25,
+      "texto": "O proprietário do animal ou responsável deverá apresentar certificado de vacinação em dia (e sempre que solicitado pelo Condomínio). Fica o proprietário ou responsável pelo animal obrigado a cumprir as condições deste parágrafo em 30 (trinta) dias, sob pena de proibição da circulação no interior do Condomínio (Infração catalogada na letra \"D\")"
+    },
+    "158": {
+      "capitulo": 26,
+      "texto": "É proibido fumar nas áreas cobertas comuns do Condomínio e áreas de lazer, bem como no interior dos banheiros das unidades autônomas, tendo em vista a propagação de fumaça e mau cheiro através do shaft de ventilação. Em respeito à Lei Antifumo nº 12.546/2011 (Infração catalogada na letra \"A\")"
+    },
+    "159": {
+      "capitulo": 26,
+      "texto": "É proibido atirar pelas janelas e sacadas objetos, líquidos e pontas/tocos de cigarros ou qualquer outro item que possa ferir um morador, visitante ou funcionário (Infração catalogada na letra \"C\")"
+    },
+    "160": {
+      "capitulo": 27,
+      "texto": "Os proprietários e moradores deverão verificar rotineiramente sua caixa de correspondência. Caso a caixa de correspondência esteja cheia por falta de retirada, impossibilitando a colocação de novas correspondências, o Condomínio não será responsabilizado por eventuais extravios."
+    },
+    "161": {
+      "capitulo": 27,
+      "texto": "As correspondências registradas serão entregues ao endereçado, mediante protocolo virtual ou escrito. Correspondências não retiradas no prazo de 8 (oito) dias após a ciência da chegada do mesmo serão passíveis de devolução a empresas transportadoras e/ou entregadoras.",
+      "paragrafos": {
+        "unico": {
+          "texto": "As correspondências de que trata o caput do artigo acima são aquelas dentro dos limites de dimensões e de pesos estabelecidos pela Empresa Brasileira de Correios e Telégrafos."
+        }
+      }
+    },
+    "162": {
+      "capitulo": 28,
+      "texto": "É proibido utilizar os empregados do Condomínio para serviços particulares durante sua jornada de trabalho, inclusive no seu intervalo de descanso, assim como utilizar os serviços de portaria para outros fins que não aqueles a que foi destinada. (Infração catalogada na letra \"A\")"
+    },
+    "163": {
+      "capitulo": 28,
+      "texto": "É proibido estender nas janelas, áreas técnicas e no peitoril das sacadas do prédio: roupas, calçados de qualquer espécie, tapetes, letreiros, placas, cartazes, vasos de planta, garrafas, copos, fios de antena, gambiarras e quaisquer outros objetos que venham a causar poluição visual, ou risco a segurança dos outros moradores. A responsabilidade civil decorrente de danos porventura causados é exclusiva do morador. (Infração catalogada na letra \"D\")",
+      "paragrafos": {
+        "1": {
+          "texto": "São proibidas quaisquer aplicações de qualquer material nos vidros de janelas e sacadas, tais como madeiras, grades, folhas de jornais, papelões, papéis laminados, enfeites, bandeiras, faixas e afins, exceto películas e redes protetoras de características técnicas definidas em Assembleia. (Infração catalogada na letra \"B\")"
+        },
+        "2": {
+          "texto": "A Administração pode a qualquer tempo por meio de informativos autorizar temporariamente exceções à regra do §1º deste caput (ex: bandeiras em período de copa e enfeites natalinos)."
+        }
+      }
+    },
+    "164": {
+      "capitulo": 28,
+      "texto": "Os moradores e proprietários deverão comunicar à Administração do Condomínio quaisquer avarias ou mau funcionamento das instalações internas (elétrica, hidráulica e gás) das suas unidades autônomas que, por motivo de força maior, não possam ser imediatamente reparadas e que possam causar avarias ou transtornos em outras unidades autônomas ou nas áreas comuns do Condomínio. (Infração catalogada na letra \"C\")"
+    },
+    "165": {
+      "capitulo": 28,
+      "texto": "É proibido jogar nos vasos sanitários das unidades autônomas, áreas comuns, pias e tanques, objetos que possam causar o seu entupimento. (Infração catalogada na letra \"C\")."
+    },
+    "166": {
+      "capitulo": 28,
+      "texto": "É proibido guardar ou depositar, em qualquer dependência do Condomínio, explosivos, inflamáveis ou agentes químicos corrosivos susceptíveis de afetar a saúde, a segurança ou a tranquilidade dos moradores e proprietários, bem como provocar o aumento da taxa de seguro. (Infração catalogada na letra \"D\")"
+    },
+    "167": {
+      "capitulo": 28,
+      "texto": "É proibido alterar o sistema elétrico, hidráulico e de antena de TV e CFTV das áreas comuns do Condomínio. (Infração catalogada na letra \"A\")"
+    },
+    "168": {
+      "capitulo": 28,
+      "texto": "É proibido aos moradores e proprietários, bem como seus hóspedes e demais visitantes, remover, em qualquer hipótese, os equipamentos de segurança contra incêndio do Condomínio. Estes somente serão removidos para fins de recarga, pela própria Administração do Condomínio. (Infração catalogada na letra \"C\")"
+    },
+    "169": {
+      "capitulo": 28,
+      "texto": "É proibido aos moradores e proprietários entrar nas dependências reservadas aos equipamentos e instalações de funcionamento e segurança que guarneçam o Condomínio, tais como: casa de máquinas, bombas d'água, medidores de luz e gás, hidrômetros, etc., sem autorização da Administração do Condomínio. (Infração catalogada na letra \"C\")"
+    },
+    "170": {
+      "capitulo": 28,
+      "texto": "É proibido praticar atos obscenos, libidinosos e/ou atentatórios à moral, aos bons costumes e a dignidade dos moradores no hall, corredores e demais dependências comuns. (Infração catalogada na letra \"C\")"
+    },
+    "171": {
+      "capitulo": 28,
+      "texto": "Mesmo no período compreendido entre 8h e 22h, quando não vigente a Lei do Silêncio, fica proibida a emissão de sons ou ruídos contínuos que ultrapassem os limites sonoros legais e que incomodem ou perturbem o sossego dos demais moradores. (Infração catalogada na letra \"A\")"
+    },
+    "172": {
+      "capitulo": 28,
+      "texto": "O condômino é responsável pelo fiel cumprimento deste Regimento. Não sendo aceitos, em qualquer hipótese, agressões verbais ou físicas aos funcionários da Administração Condominial, bem como a síndico e subsíndicos. (Infração catalogada na letra \"D\")"
+    },
+    "173": {
+      "capitulo": 28,
+      "texto": "É proibido proferir palavras de baixo calão, rixas, ou qualquer manifesto violento, individualmente ou em grupos ou entre moradores nas dependências comuns do Condomínio. (Infração catalogada na letra \" \")"
+    },
+    "174": {
+      "capitulo": 28,
+      "texto": "É proibido qualquer ato de vandalismo individual ou em grupo, seja por condômino, morador ou visitantes, contra as dependências do Condomínio e suas unidades particulares. (Infração catalogada na letra \"D\")"
+    },
+    "175": {
+      "capitulo": 28,
+      "texto": "São proibidos o uso e o manuseio de drogas ilícitas dentro das dependências do Condomínio, seja por condôminos, moradores ou visitantes e de acordo com a legislação penal vigente. (Infração catalogada na letra \"F\")"
+    },
+    "176": {
+      "capitulo": 29,
+      "texto": "O Condomínio está equipado com um sistema de segurança denominado Circuito Fechado de Televisão e Controle de Acesso CFTV que funciona durante as 24 (vinte e quatro) horas do dia, ininterruptamente, filmando e gravando o movimento de entrada, circulação e saída de pessoas e veículos. Todo monitoramento fica na Sala de Operações localizada no Condomínio."
+    },
+    "177": {
+      "capitulo": 29,
+      "texto": "O sistema CFTV é único e privado ao Condomínio sendo vedado qualquer tipo de exposição de fotos ou imagens do mesmo sem autorização da Administração. (Infração catalogada na letra \"C\")"
+    },
+    "178": {
+      "capitulo": 29,
+      "texto": "Só terão direito a solicitar filmagens aqueles moradores que tiverem sofrido algum tipo de prejuízo, lesão, crime ou denúncia, sendo vedada a solicitação para qualquer outro desejo excluso aos citados."
+    },
+    "179": {
+      "capitulo": 29,
+      "texto": "Nenhum morador pode ter acesso ao técnico de monitoramento do CFTV uma vez que seu isolamento conserva a isonomia e a imparcialidade perante as pessoas. (Infração catalogada na letra \"B\") Em caso excepcionais poderá ser liberado desde que seja acompanhado por alguém da Administração."
+    },
+    "180": {
+      "capitulo": 29,
+      "texto": "Os Relatórios do Controle de Acesso de usuários, visitantes e veículos permanecerão em arquivo por 120 (cento e vinte dias). Não sendo solicitados por interessados, serão apagados."
+    },
+    "181": {
+      "capitulo": 29,
+      "texto": "A solicitação de imagens gravadas pelo CFTV deverá ser solicitada aos subsíndicos e/ou na Administração pelo proprietário/morador ou seu representante legal, por meio do preenchimento de formulário específico ou através de meios eletrônicos se for disponibilizada essa opção pelo Condominio.",
+      "incisos": {
+        "1": {
+          "texto": "Na solicitação de imagem deve constar o período (data e hora inicial e final) e o motivo."
+        },
+        "2": {
+          "texto": "O síndico geral terá o prazo de 72 (setenta e duas) horas úteis para deferir ou não a disponibilização das imagens. Caso a solicitação seja negada, deve ser retornado o motivo ao solicitante. Se for liberado, o morador deverá comparecer à sala de operações, acompanhado por algum membro da Administração para assistir o trecho pertinente ao fato. Para levar filmagens, o morador terá que disponibilizar uma mídia (CD, DVD, pendrive, HD Externo) que permita a cópia da imagem e ter uma solicitação oficial escrita (judicial ou policial)."
+        },
+        "3": {
+          "texto": "Só terão acesso direto à sala de operações: síndico, encarregado geral, mais um membro da Administração e subsíndicos desde que convocados pelo síndico ou encarregado geral"
+        },
+        "4": {
+          "texto": "As imagens gravadas pelo sistema de CFTV permanecerão em arquivo por 60 (sessenta) dias."
+        }
+      }
+    },
+    "182": {
+      "capitulo": 30,
+      "texto": "Os bicicletários existentes, um em cada torre, é um espaço cedido pelo Condomínio para facilitar o armazenamento e uso das bicicletas não sendo, portanto, obrigação do Condomínio oferecer tal espaço."
+    },
+    "183": {
+      "capitulo": 30,
+      "texto": "A pessoa terá que ir até à Administração, comprovar que é morador, preencher um protocolo, pegar a chave correspondente ao bicicletário para retirar o item. Logo em seguida, o morador deverá devolver a chave para dar baixa. (Infração catalogada na letra \"B\")"
+    },
+    "184": {
+      "capitulo": 30,
+      "texto": "Não é permitido repassar a chave para terceiros com intuito de retirar a bicicleta, caso o mesmo não tenha preenchido o protocolo de chave. (Infração catalogada na letra \"B\")"
+    },
+    "185": {
+      "capitulo": 30,
+      "texto": "Só moradores acima de 18 (dezoito) anos está autorizado a pegar a chave para retirada de bicicleta. Caso a Administração suspeite da idade da pessoa, poderá solicitar um documento de identificação com foto. (Infração catalogada na letra \"B\")"
+    },
+    "186": {
+      "capitulo": 30,
+      "texto": "Cabe ao morador guardar adequadamente sua bicicleta dentro do espaço cedido para evitar arranhões ou danos às outras bicicletas. Uma vez que o Condomínio não se responsabiliza pelos danos causados no interior do bicicletário, nem mesmo as bicicletas e demais objetos deixados no local."
+    },
+    "187": {
+      "capitulo": 31,
+      "texto": "Os atos cometidos em desacordo com as regras destas normas de funcionamento sujeitarão o infrator ou seu responsável à advertência por escrito, quando a infração for de categoria \"A\" e \"B\". Quando não acatada a advertência formalizada pela Administração, será aplicada a multa correspondente. Nos casos de incidências de infrações enquadradas nas categorias \"C\", \"D\", \"E\" e \"F\", não serão passíveis de prévia advertência escrita, mas sim de uma notificação de que foi multado.",
+      "paragrafos": {
+        "1": {
+          "texto": "Considera-se não acatada a advertência quando reiterada a conduta, após comunicação formal pela Administração."
+        },
+        "2": {
+          "texto": "As multas aplicadas a qualquer unidade autônoma serão cobradas com base na menor taxa condominial ordinária vigente, à época da infração, nas seguintes proporções:",
+          "incisos": {
+            "1": {
+              "texto": "Infrações catalogadas na letra \"A\" 50% (cinquenta por cento) da menor taxa condominial ordinária;"
+            },
+            "2": {
+              "texto": "Infrações catalogadas na letra \"B\" - 75% (setenta e cinco por cento) da menor taxa condominial ordinária;"
+            },
+            "3": {
+              "texto": "Infrações catalogadas na letra \"C\" 100% (cem por cento) da menor taxa condominial ordinária;"
+            },
+            "4": {
+              "texto": "Infrações catalogadas na letra \"D\" - 150% (cento e cinquenta por cento) da menor taxa condominial ordinária;"
+            },
+            "5": {
+              "texto": "Infrações catalogadas na letra \"E\" - Multa de até 5 (cinco) vezes o valor da menor taxa condominial ordinária:"
+            },
+            "6": {
+              "texto": "Infrações catalogadas na letra \"F\" - Multa de até 10 (dez) vezes o valor da menor taxa condominial ordinária."
+            }
+          }
+        },
+        "3": {
+          "texto": "No caso da primeira reincidência, será aplicada a multa da infração catalogada com a letra seguinte a da infração cometida, e assim sucessivamente. Depois de atingido o percentual da maior multa e em caso de novas reincidências, será aplicada a maior multa em valor dobrado, nos limites que a lei permitir."
+        },
+        "4": {
+          "texto": "Será considerado reincidente aquele que praticar nova infração de mesma natureza da primeira dentro de um prazo de 2 (dois) anos."
+        },
+        "5": {
+          "texto": "Após o comunicado da aplicação de advertência ou multa que envolver a área comum, o infrator terá 5 (cinco) dias úteis para apresentar, por escrito, sua defesa ao Conselho Consultivo e Fiscal que deverá se pronunciar em até 15 (quinze) dias corridos. Os casos de defesa que envolverem as torres, devem ser entregues na Administração para que, após isso, os conselheiros deem seus pareceres em até 15 (quinze) dias corridos."
+        },
+        "6": {
+          "texto": "Na hipótese de ser mantida a multa, o infrator será comunicado a recolhê-la juntamente com a primeira taxa condominial subsequente à data da decisão, no mesmo prazo de vencimento, ambas devidamente especificadas em cotas condominiais, sob pena de atualização monetária do débito, cobrança de juros, multa e honorários advocatícios e demais cobranças."
+        },
+        "7": {
+          "texto": "O morador terá o prazo de 48 (quarenta e oito) horas para realizar a devida correção ou providência no intuito de sanar o descumprimento do Regimento. Após este período, caso mantenha o descumprimento, poderá ser aplicada uma nova multa. No caso de apresentação de defesa ao Conselho, se esta for deferida como válida, a segunda multa seguirá o formato do parágrafo § 3º deste caput."
+        }
+      }
+    },
+    "188": {
+      "capitulo": 31,
+      "texto": "A responsabilidade pelo pagamento das multas é do proprietário de cada unidade autônoma, independentemente de estar ocupada ou não, alugada ou cedida a terceiros a qualquer título."
+    },
+    "189": {
+      "capitulo": 31,
+      "texto": "A aplicação de quaisquer das penalidades previstas no presente regulamento não isenta o infrator ou seu responsável do dever de ressarcimento ou indenização de danos materiais ou morais eventualmente causados ao Condomínio, a outros moradores e proprietários, ou a terceiros, nos termos da legislação vigente."
+    },
+    "190": {
+      "capitulo": 32,
+      "texto": "Este Regimento interno poderá ser modificado pela Assembleia dos condôminos, convocada e instalada na forma prevista na Convenção Condominial, desde que deliberado por 2/3 (dois terços) dos votantes presentes."
+    },
+    "191": {
+      "capitulo": 32,
+      "texto": "As Assembleias Extraordinárias para modificações ou alterações deste Regimento Interno serão convocadas exclusivamente para este fim, sendo vedada a inclusão de qualquer outro assunto."
+    },
+    "192": {
+      "capitulo": 33,
+      "texto": "Os atos cometidos em desacordo com as regras destas normas de funcionamento e da Convenção do Condomínio causem reiterados transtornos aos moradores e proprietários, após advertência, sujeitarão o infrator ou seu responsável à multa com base no valor das que não possuam penalidade de multa expressa e que infrações catalogadas na letra \"А\".",
+      "paragrafos": {
+        "unico": {
+          "texto": "Na hipótese de reincidência, aplica-se o §3º do Art. 187 deste Regimento."
+        }
+      }
+    },
+    "193": {
+      "capitulo": 33,
+      "texto": "Os condôminos poderão usar e gozar das partes comuns do edifício até onde não impeçam idêntico uso ou gozo por parte dos demais condôminos."
+    },
+    "194": {
+      "capitulo": 33,
+      "texto": "Fica o morador ou proprietário obrigado a dar conhecimento das normas da Regimento Interno e destas Normas de Funcionamento aos seus dependentes, familiares, locatários, serviçais em geral e demais pessoas residentes ou hospedadas no Condomínio, bem como cumpri-las e exigir que sejam cumpridas por todos aqueles que estiverem no Condomínio sob sua dependência ou a seu convite.",
+      "paragrafos": {
+        "unico": {
+          "texto": "Caso uma infração seja cometida por um dependente, familiar, hóspede, visitante, locatário ou serviçal em geral de morador ou proprietário, este será responsável pelo pagamento das multas correspondentes, bem como por quaisquer danos causados ao Condomínio."
+        }
+      }
+    },
+    "195": {
+      "capitulo": 33,
+      "texto": "É dever de todos os condôminos, ou seus prepostos, respeitar a Lei do Silêncio e cumprir as normas estabelecidas pela Convenção e pelo Regimento Interno, os quais deverão ser parte integrante dos contratos de locação, vendas, de promessa de compra e venda, ou de quaisquer outros que importem na cessão de propriedade, sob pena de ficarem sujeitos, conforme o caso, a uma das penalidades previstas neste Regimento Interno."
+    },
+    "196": {
+      "capitulo": 33,
+      "texto": "Todas as demais regras que não estejam compreendidas neste Regimento sujeitar-se-ão ao Código Civil Brasileiro e demais leis vigentes no País."
+    }
+  }
+}

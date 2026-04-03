@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Notação do Regimento</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <main>
+        <h1>Gerador de Notação do Regimento</h1>
+        <p>Use o campo abaixo para encontrar e selecionar os trechos do regimento que fundamentam o seu parecer.</p>
+
+        <div class="search-wrapper">
+            <label for="searchInput">Buscar termo no regimento:</label>
+            <input type="text" id="searchInput" placeholder="Digite 'piscina', 'multa', 'animal'..." autocomplete="off">
+            
+            <div id="resultsContainer"></div>
+        </div>
+
+        <div class="output-container">
+            <label for="notationOutput">Notações Selecionadas (para salvar no sistema):</label>
+            <input type="text" id="notationOutput" placeholder="As notações selecionadas aparecerão aqui...">
+        </div>
+
+        <!-- NOVA SEÇÃO: Resultado da Consulta -->
+        <div class="result-container">
+            <label for="notationResult">Resultado da Consulta:</label>
+            <textarea id="notationResult" placeholder="O texto completo das notações selecionadas aparecerá aqui..." readonly></textarea>
+        </div>
+
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
