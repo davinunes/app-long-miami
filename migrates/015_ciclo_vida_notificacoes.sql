@@ -17,19 +17,21 @@ ON DUPLICATE KEY UPDATE nome = VALUES(nome);
 
 -- 3. Novos campos na tabela notificacoes para suportar o ciclo de vida
 ALTER TABLE notificacoes 
-    ADD COLUMN data_lavratura DATETIME DEFAULT NULL,
-    ADD COLUMN lavrada_por INT DEFAULT NULL,
-    ADD COLUMN data_ciencia DATETIME DEFAULT NULL,
-    ADD COLUMN ciencia_por VARCHAR(100) DEFAULT NULL,
-    ADD COLUMN tem_recurso BOOLEAN DEFAULT FALSE,
-    ADD COLUMN data_recurso DATETIME DEFAULT NULL,
-    ADD COLUMN prazo_recurso_expira DATE DEFAULT NULL,
-    ADD COLUMN recurso_texto TEXT DEFAULT NULL,
-    ADD COLUMN recurso_status VARCHAR(20) DEFAULT NULL,
-    ADD COLUMN encerrada BOOLEAN DEFAULT FALSE,
-    ADD COLUMN data_encerramento DATETIME DEFAULT NULL,
-    ADD COLUMN motivo_encerramento VARCHAR(50) DEFAULT NULL,
-    ADD CONSTRAINT fk_lavrada_por FOREIGN KEY (lavrada_por) REFERENCES usuarios(id);
+    ADD COLUMN IF NOT EXISTS data_lavratura DATETIME DEFAULT NULL,
+    ADD COLUMN IF NOT EXISTS lavrada_por INT DEFAULT NULL,
+    ADD COLUMN IF NOT EXISTS data_ciencia DATETIME DEFAULT NULL,
+    ADD COLUMN IF NOT EXISTS ciencia_por VARCHAR(100) DEFAULT NULL,
+    ADD COLUMN IF NOT EXISTS tem_recurso BOOLEAN DEFAULT FALSE,
+    ADD COLUMN IF NOT EXISTS data_recurso DATETIME DEFAULT NULL,
+    ADD COLUMN IF NOT EXISTS prazo_recurso_expira DATE DEFAULT NULL,
+    ADD COLUMN IF NOT EXISTS recurso_texto TEXT DEFAULT NULL,
+    ADD COLUMN IF NOT EXISTS recurso_status VARCHAR(20) DEFAULT NULL,
+    ADD COLUMN IF NOT EXISTS encerrada BOOLEAN DEFAULT FALSE,
+    ADD COLUMN IF NOT EXISTS data_encerramento DATETIME DEFAULT NULL,
+    ADD COLUMN IF NOT EXISTS motivo_encerramento VARCHAR(50) DEFAULT NULL;
+
+-- 3.1. Adicionar constraint separadamente se necessário (pode falhar se já existir, mas o sistema segue)
+ALTER TABLE notificacoes ADD CONSTRAINT fk_lavrada_por FOREIGN KEY IF NOT EXISTS (lavrada_por) REFERENCES usuarios(id);
 
 -- 4. Criar tabela de histórico de fases da notificação (Timeline)
 CREATE TABLE IF NOT EXISTS notificacao_fase_log (
