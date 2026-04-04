@@ -117,20 +117,18 @@ $podeMudarFase = temAlgumPapel(['promotor', 'admin', 'dev']);
     </style>
 </head>
 <body>
-    <div class="simple-header">
-        <div>
-            <a href="ocorrencias.php"><i class="material-icons">arrow_back</i> Voltar para Ocorrências</a>
-        </div>
-        <div class="simple-nav">
-            <a href="lista.php">Notificações</a>
-            <a href="usuarios.php">Usuários</a>
-            <a href="logout.php">Sair</a>
-        </div>
-    </div>
+    <header>
+        <?php include '_partials/menu.php'; ?>
+    </header>
+
+    <a href="#" data-target="slide-out" class="sidenav-trigger mobile-menu-btn">
+        <i class="material-icons">menu</i>
+    </a>
 
     <main class="main-content">
         <div class="container">
             <div class="header">
+                <a href="ocorrencias.php" class="back-link"><i class="material-icons">arrow_back</i> Voltar para Ocorrências</a>
                 <h1 id="page-title">Ocorrência</h1>
             </div>
             
@@ -160,12 +158,21 @@ const ocorrenciaId = urlParams.get('id');
 const podeMudarFase = <?php echo $podeMudarFase ? 'true' : 'false'; ?>;
 
 $(document).ready(async function() {
+    $('.sidenav').sidenav({edge: 'left'});
+    
+    $('#user-name').text('<?php echo htmlspecialchars($usuario['nome']); ?>');
+    $('#user-email').text('<?php echo htmlspecialchars($usuario['email']); ?>');
+    
     if (!ocorrenciaId) {
         $('#ocorrencia-content').html('<p style="color: red;">ID da ocorrência não fornecido.</p>');
         return;
     }
     await carregarOcorrencia();
 });
+
+function fazerLogout() {
+    window.location.href = 'logout.php';
+}
 
 async function carregarOcorrencia() {
     try {

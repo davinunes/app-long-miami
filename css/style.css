@@ -203,7 +203,7 @@ body {
     min-height: 100vh;
 }
 
-#dashboard-container header {
+header {
     position: fixed;
     left: 0;
     top: 0;
@@ -212,7 +212,17 @@ body {
     z-index: 997;
 }
 
-.sidenav {
+header nav.sidenav {
+    background-color: #1e293b;
+    width: 280px !important;
+    height: 100vh;
+    position: fixed !important;
+    left: 0;
+    top: 0;
+    transform: translateX(0) !important;
+}
+
+header .sidenav {
     background-color: #1e293b;
     width: 280px !important;
     height: 100vh;
@@ -260,11 +270,12 @@ body {
     border-left: 3px solid #667eea;
 }
 
-#main-content {
+#main-content, main.main-content {
     margin-left: 280px;
     min-height: 100vh;
     flex: 1;
     background: #f0f2f5;
+    overflow-x: hidden;
 }
 
 /* --- 3. ESTILOS DE CONTEÚDO CARREGADO VIA AJAX --- */
@@ -367,8 +378,9 @@ main#main-content .header p { margin: 5px 0 0; color: #ccc; }
     .content { grid-template-columns: 1fr; }
     .form-section { border-right: none; border-bottom: 2px solid #e9ecef; }
     
-    #dashboard-container header {
+    header {
         width: 0;
+        overflow: hidden;
     }
     
     .sidenav {
@@ -380,7 +392,7 @@ main#main-content .header p { margin: 5px 0 0; color: #ccc; }
         transform: translateX(0) !important;
     }
     
-    #main-content {
+    #main-content, main.main-content {
         margin-left: 0;
     }
     
