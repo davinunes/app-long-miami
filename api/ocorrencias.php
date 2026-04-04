@@ -439,10 +439,10 @@ function mudarFase($pdo, $dados, $usuario) {
     
     // Verificar permissão baseada na transição
     $transicoesPermitidas = [
-        'nova' => ['em_analise' => 'colocar_em_analise'],
-        'em_analise' => ['pronta' => 'marcar_pronta', 'recusada' => 'recusar'],
-        'pronta' => ['homologada' => 'homologar', 'recusada' => 'recusar'],
-        'recusada' => ['em_analise' => 'retornar_analise'],
+        'nova' => ['em_analise' => 'ocorrencia.colocar_em_analise'],
+        'em_analise' => ['pronta' => 'ocorrencia.marcar_pronta', 'recusada' => 'ocorrencia.recusar'],
+        'pronta' => ['homologada' => 'ocorrencia.homologar', 'recusada' => 'ocorrencia.recusar'],
+        'recusada' => ['em_analise' => 'ocorrencia.retornar_analise'],
     ];
     
     // Admin/dev tem todas as permissões
