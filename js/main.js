@@ -375,15 +375,7 @@ async function inicializarFormularioEdicao() {
                 
                 const evidenciasSection = document.getElementById('evidencias_ocorrencia_section');
                 const evidenciasContainer = document.getElementById('evidencias-ocorrencia');
-                if (data.evidencias_vinculadas && data.evidencias_vinculadas.length > 0) {
-                    evidenciasSection.style.display = 'block';
-                    evidenciasContainer.innerHTML = data.evidencias_vinculadas.map(img => `
-                        <div class="img-preview-item">
-                            <img src="${img.url}" alt="${img.nome_original}" style="max-width: 150px; max-height: 150px; cursor: pointer;" onclick="window.open('${img.url}', '_blank')">
-                            <small>${img.nome_original}</small>
-                        </div>
-                    `).join('');
-                } else if (data.todas_evidencias_ocorrencia && data.todas_evidencias_ocorrencia.length > 0) {
+                if (data.todas_evidencias_ocorrencia && data.todas_evidencias_ocorrencia.length > 0) {
                     evidenciasSection.style.display = 'block';
                     evidenciasContainer.innerHTML = data.todas_evidencias_ocorrencia.map(img => `
                         <div class="img-preview-item">
@@ -394,6 +386,11 @@ async function inicializarFormularioEdicao() {
                 } else {
                     evidenciasSection.style.display = 'none';
                 }
+            } else {
+                document.getElementById('ocorrencia_id').value = '';
+                document.getElementById('ocorrencia_info').style.display = 'none';
+                document.getElementById('ocorrencia_busca_section').style.display = 'block';
+                document.getElementById('evidencias_ocorrencia_section').style.display = 'none';
             }
             
             setTimeout(function() {
@@ -412,14 +409,16 @@ async function inicializarFormularioEdicao() {
             const previewContainer = document.getElementById('preview-container');
             if (data.imagens && data.imagens.length > 0) {
                 data.imagens.forEach(img => {
-                    const imageUrl = `/uploads/imagens/${img.caminho_arquivo}`;
+                    const imageUrl = img.ocorrencia_id 
+                        ? `/${img.caminho_arquivo}` 
+                        : `/uploads/imagens/${img.caminho_arquivo}`;
                     const item = document.createElement('div');
                     item.className = 'img-preview-item existing-image';
                     item.id = `imagem-salva-${img.id}`;
                     
                     if (img.ocorrencia_id) {
                         item.innerHTML = `
-                            <img src="${imageUrl}" alt="${img.nome_original}">
+                            <img src="${imageUrl}" alt="${img.nome_original}" style="max-width: 150px; max-height: 150px; cursor: pointer;" onclick="window.open('${imageUrl}', '_blank')">
                             <small>Evidência da Ocorrência</small>
                         `;
                     } else {

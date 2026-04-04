@@ -41,7 +41,9 @@ switch ($metodo) {
     case 'POST':
         $dados = json_decode(file_get_contents("php://input"));
         
-        if (isset($dados->deletar_imagem)) {
+        if (isset($dados->action) && $dados->action === 'sincronizar_evidencias') {
+            sincronizarEvidencias($pdo, $dados, $usuario);
+        } elseif (isset($dados->deletar_imagem)) {
             deletarImagem($pdo, $dados, $usuario);
         } elseif (isset($dados->vincular_evidencias)) {
             vincularEvidencias($pdo, $dados, $usuario);
@@ -443,6 +445,59 @@ function criarNotificacao($pdo, $dados, $usuario) {
         $pdo->rollBack();
         http_response_code(500);
         echo json_encode(['message' => 'Erro ao criar notificação: ' . $e->getMessage()]);
+    }
+}
+
+function sincronizarEvidencias($pdo, $dados, $usuario) {
+    try {
+        $notificacao_id = (int)$dados->notificacao_id;
+        $ocorrencia_id = (int)$dados->ocorrencia_id;
+        
+        $stmt_check = $pdo->prepare("SELECT id FROM notificacoes WHERE id = ? AND ocorrencia_id = ?");
+        $stmt_check->execute([$notificacao_id, $ocorrencia_id]);
+        if (!$stmt_check->fetch()) {
+            throw new Exception("Notificação não está vinculada a esta ocorrência.");
+        }
+        
+        $stmt_anexos = $pdo->prepare("SELECT * FROM ocorrencia_anexos WHERE ocorrencia_id = ? AND tipo = 'imagem' AND inactive = 0");
+        $stmt_anexos->execute([$ocorrencia_id]);
+        $anexos = $stmt_anexos->fetchAll();
+        
+        $stmt_existente = $pdo->prepare("SELECT anexo_ocorrencia_id FROM notificacao_imagens WHERE notificacao_id = ? AND anexo_ocorrencia_id IS NOT NULL");
+        $stmt_existente->execute([$notificacao_id]);
+        $ja_vinculados = array_column($stmt_existente->fetchAll(), 'anexo_ocorrencia_id');
+        
+        $sql_img = "INSERT INTO notificacao_imagens (notificacao_id, caminho_arquivo, nome_original, ocorrencia_id, anexo_ocorrencia_id) VALUES (?, ?, ?, ?, ?)";
+        $stmt_img = $pdo->prepare($sql_img);
+        
+        $sql_evidencia = "INSERT IGNORE INTO evidencia_compartilhada (ocorrencia_anexo_id, notificacao_id) VALUES (?, ?)";
+        $stmt_evidencia = $pdo->prepare($sql_evidencia);
+        
+        $count = 0;
+        foreach ($anexos as $anexo) {
+            if (in_array($anexo['id'], $ja_vinculados)) {
+                continue;
+            }
+            
+            $caminho_relativo = ltrim($anexo['url'], '/');
+            
+            $stmt_img->execute([
+                $notificacao_id,
+                $caminho_relativo,
+                $anexo['nome_original'],
+                $ocorrencia_id,
+                $anexo['id']
+            ]);
+            
+            $stmt_evidencia->execute([$anexo['id'], $notificacao_id]);
+            $count++;
+        }
+        
+        http_response_code(200);
+        echo json_encode(['message' => 'Evidências sincronizadas com sucesso!', 'images_count' => $count]);
+    } catch (Exception $e) {
+        http_response_code(500);
+        echo json_encode(['message' => 'Erro ao sincronizar evidências: ' . $e->getMessage()]);
     }
 }
 ?>

@@ -83,6 +83,8 @@ requireLogin();
             
             if (OCORRENCIA_ID) {
                 await carregarOcorrenciaVinculada(OCORRENCIA_ID);
+            } else {
+                document.getElementById('ocorrencia_busca_section').style.display = 'block';
             }
             
             $('#btnSalvar').on('click', salvarNotificacao);
@@ -99,6 +101,8 @@ requireLogin();
                 document.getElementById('ocorrencia_titulo').textContent = 'Ocorrência #' + ocorrenciaData.id + ': ' + ocorrenciaData.titulo;
                 document.getElementById('ver_ocorrencia_link').href = 'ocorrencia_detalhe.php?id=' + ocorrenciaData.id;
                 document.getElementById('ocorrencia_info').style.display = 'block';
+                document.getElementById('ocorrencia_busca_section').style.display = 'none';
+                document.getElementById('evidencias_ocorrencia_section').style.display = ocorrenciaData.anexos && ocorrenciaData.anexos.filter(a => a.tipo === 'imagem').length > 0 ? 'block' : 'none';
                 
                 const unidade = ocorrenciaData.unidades && ocorrenciaData.unidades.length > 0 
                     ? ocorrenciaData.unidades[0] 

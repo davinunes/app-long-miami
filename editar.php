@@ -163,7 +163,7 @@ requireLogin();
                 
                 renderEvidenciasOcorrencia(ocorrenciaVinculadaData.anexos || []);
                 
-                M.toast({html: 'Ocorrência vinculada!', classes: 'green'});
+                M.toast({html: 'Ocorrência vinculada! Use "Sincronizar Evidências" para adicionar as fotos.', classes: 'green'});
                 
             } catch (error) {
                 M.toast({html: 'Erro ao vincular ocorrência', classes: 'red'});
@@ -192,6 +192,59 @@ requireLogin();
                     <small>${img.nome_original}</small>
                 </div>
             `).join('');
+        }
+
+        let sincronizando = false;
+
+        async function sincronizarEvidencias() {
+            const ocorrenciaId = document.getElementById('ocorrencia_id').value;
+            const notificacaoId = NOTIFICACAO_ID;
+            
+            if (!ocorrenciaId || !notificacaoId) {
+                M.toast({html: 'Ocorrencia ou notificação não encontrada.', classes: 'red'});
+                return;
+            }
+            
+            if (sincronizando) {
+                M.toast({html: 'Sincronização já em andamento.', classes: 'orange'});
+                return;
+            }
+            
+            sincronizando = true;
+            const btn = document.getElementById('btn_sincronizar_evidencias');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="material-icons" style="font-size: 16px; vertical-align: middle;">sync</i> Sincronizando...';
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE_URL_PHP}/notificacoes.php`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'sincronizar_evidencias',
+                        notificacao_id: parseInt(notificacaoId),
+                        ocorrencia_id: parseInt(ocorrenciaId)
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    M.toast({html: `Sincronizado! ${result.images_count || 0} imagem(ns) vinculada(s). Recarregue a página para ver as imagens.`, classes: 'green'});
+                } else {
+                    M.toast({html: 'Erro: ' + (result.message || 'Falha na sincronização'), classes: 'red'});
+                }
+            } catch (error) {
+                M.toast({html: 'Erro de conexão ao sincronizar.', classes: 'red'});
+                console.error(error);
+            } finally {
+                sincronizando = false;
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="material-icons" style="font-size: 16px; vertical-align: middle;">sync</i> Sincronizar Evidências';
+                }
+            }
         }
     </script>
 </body>
