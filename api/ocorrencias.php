@@ -172,7 +172,7 @@ function listarMinhas($pdo, $usuario) {
         GROUP BY o.id
         ORDER BY o.data_criacao DESC
     ");
-    $stmt->execute([$usuario->id]);
+    $stmt->execute([$usuario->userId]);
     
     http_response_code(200);
     echo json_encode($stmt->fetchAll());
@@ -230,7 +230,7 @@ function criarOuAtualizar($pdo, $dados, $usuario) {
                 INSERT INTO ocorrencias (titulo, descricao_fato, data_fato, created_by, fase) 
                 VALUES (?, ?, ?, ?, 'nova')
             ");
-            $stmt->execute([$dados->titulo, $dados->descricao_fato, $dados->data_fato, $usuario->id]);
+            $stmt->execute([$dados->titulo, $dados->descricao_fato, $dados->data_fato, $usuario->userId]);
             $id = $pdo->lastInsertId();
             
             if (!empty($dados->unidades)) {
@@ -241,7 +241,7 @@ function criarOuAtualizar($pdo, $dados, $usuario) {
             }
             
             $stmt = $pdo->prepare("INSERT INTO ocorrencia_fase_log (ocorrencia_id, fase_anterior, fase_nova, observacao, usuario_id) VALUES (?, NULL, 'nova', 'Criação da ocorrência', ?)");
-            $stmt->execute([$id, $usuario->id]);
+            $stmt->execute([$id, $usuario->userId]);
             
             http_response_code(201);
             echo json_encode(['message' => 'Ocorrência criada com sucesso!', 'id' => $id]);
@@ -285,7 +285,7 @@ function adicionarMensagem($pdo, $dados, $usuario) {
         ");
         $stmt->execute([
             $dados->ocorrencia_id,
-            $usuario->id,
+            $usuario->userId,
             $dados->mensagem,
             $dados->eh_evidencia ?? false,
             $dados->tipo_anexo ?? null,
@@ -348,7 +348,7 @@ function mudarFase($pdo, $dados, $usuario) {
     $stmt->execute([$dados->nova_fase, $dados->id]);
     
     $stmt = $pdo->prepare("INSERT INTO ocorrencia_fase_log (ocorrencia_id, fase_anterior, fase_nova, observacao, usuario_id) VALUES (?, ?, ?, ?, ?)");
-    $stmt->execute([$dados->id, $faseAnterior, $dados->nova_fase, $dados->observacao ?? null, $usuario->id]);
+    $stmt->execute([$dados->id, $faseAnterior, $dados->nova_fase, $dados->observacao ?? null, $usuario->userId]);
     
     http_response_code(200);
     echo json_encode(['message' => "Fase alterada de '$faseAnterior' para '$dados->nova_fase'."]);
@@ -428,7 +428,7 @@ function fazerUpload($pdo, $usuario) {
             INSERT INTO ocorrencia_anexos (ocorrencia_id, usuario_id, tipo, url, nome_original, tamanho_bytes, mime_type)
             VALUES (?, ?, ?, ?, ?, ?, ?)
         ");
-        $stmt->execute([$ocorrenciaId, $usuario->id, $input['tipo'], $url, $input['nome_original'], $tamanho, $mimeType]);
+        $stmt->execute([$ocorrenciaId, $usuario->userId, $input['tipo'], $url, $input['nome_original'], $tamanho, $mimeType]);
         
         http_response_code(201);
         echo json_encode(['message' => 'Anexo salvo.', 'id' => $pdo->lastInsertId(), 'url' => $url]);
