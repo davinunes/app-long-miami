@@ -435,7 +435,8 @@ app-long-miami/
 ## Tarefas Pendentes
 
 - [ ] Função de **editar mensagem** (não implementada)
-- [ ] FASE 4: Notificações melhoradas
+- [ ] Migrar para sistema de permissões (ver `docs/permissões.md`)
+- [ ] FASE 4: Notificações melhoradas (ver `docs/ciclo_vida_notificação.md`)
 - [ ] FASE 5: Sistema de Despacho
 - [ ] FASE 6: API para Conselho
 
@@ -447,3 +448,32 @@ app-long-miami/
 - [x] Pré-preenchimento de notificação com dados da ocorrência
 - [x] Exibição de evidências da ocorrência na notificação
 - [x] Cópia de imagens da ocorrência para notificação (criarNotificacao atualizada)
+
+---
+
+## Documentação Detalhada
+
+Consulte os arquivos em `docs/` para informações detalhadas:
+
+| Arquivo | Descrição |
+|---------|-----------|
+| `permissões.md` | Sistema de permissões granular proposto |
+| `ciclo_vida_ocorrencia.md` | Ciclo de vida completo das ocorrências |
+| `ciclo_vida_notificação.md` | Ciclo de vida completo das notificações |
+
+### Resumo do Sistema de Permissões
+
+O novo sistema substitui o controle por **papeis** por **permissões** mais granulares:
+
+- Cada ação do sistema é uma permissão específica (ex: `ocorrencia.criar`, `notificacao.lavrar`)
+- Papéis são apenas "pacotes" de permissões pré-definidos
+- Usuários podem ter permissões individuais extras
+- `dev` é o modo deus (todas as permissões)
+
+### Próximos Passos para Migração de Permissões
+
+1. Criar tabelas `permissoes`, `papel_permissoes`, `usuario_permissoes`
+2. Popular com permissões e mapeamentos
+3. Criar função `temPermissao()` em `auth.php`
+4. Substituir gradualmente `requirePapel()` por `requirePermissao()`
+5. Atualizar frontends para usar `temPermissao()`
