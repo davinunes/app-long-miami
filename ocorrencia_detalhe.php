@@ -4,6 +4,7 @@ requirePapel(['protocolar', 'diligente', 'promotor', 'admin', 'dev']);
 
 $usuario = getUsuario();
 $podeMudarFase = temAlgumPapel(['promotor', 'admin', 'dev']);
+$isAdmin = temAlgumPapel(['admin', 'dev']);
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -156,6 +157,9 @@ const API_BASE_URL_PHP = window.location.origin + '/api';
 const urlParams = new URLSearchParams(window.location.search);
 const ocorrenciaId = urlParams.get('id');
 const podeMudarFase = <?php echo $podeMudarFase ? 'true' : 'false'; ?>;
+const isAdmin = <?php echo $isAdmin ? 'true' : 'false'; ?>;
+const usuarioId = <?php echo $usuario['id']; ?>;
+let ocorrenciaData = null;
 
 $(document).ready(async function() {
     $('.sidenav').sidenav({edge: 'left'});
@@ -181,8 +185,8 @@ async function carregarOcorrencia() {
             const err = await response.json();
             throw new Error(err.message || 'Erro ao carregar.');
         }
-        const occ = await response.json();
-        renderOcorrencia(occ);
+        ocorrenciaData = await response.json();
+        renderOcorrencia(ocorrenciaData);
     } catch (error) {
         $('#ocorrencia-content').html('<p style="color: red;">Erro: ' + error.message + '</p>');
     }
@@ -190,6 +194,8 @@ async function carregarOcorrencia() {
 
 function renderOcorrencia(occ) {
     var faseLabel = occ.fase.replace('_', ' ');
+    var podeEditar = (occ.fase !== 'homologada') && (isAdmin || occ.created_by === usuarioId);
+    
     $('#page-title').text('Ocorrência #' + occ.id);
     $('#fase-container').html('<span class="fase-badge fase-' + occ.fase + '">' + faseLabel + '</span>');
     
@@ -250,22 +256,32 @@ function renderOcorrencia(occ) {
         
         '<div class="section-card">' +
         '<div class="section-title">Mensagens e Evidências</div>' +
-        '<div id="mensagens-container" style="max-height: 400px; overflow-y: auto;">' + renderMensagens(occ.mensagens || []) + '</div>' +
-        '<hr style="margin: 15px 0; border: none; border-top: 1px solid #eee;">' +
+        '<div id="mensagens-container" style="max-height: 400px; overflow-y: auto;">' + renderMensagens(occ.mensagens || [], podeEditar) + '</div>';
+    
+    if (podeEditar) {
+        html += '<hr style="margin: 15px 0; border: none; border-top: 1px solid #eee;">' +
         '<div style="display: flex; gap: 10px; align-items: center;">' +
         '<input type="text" id="nova-mensagem" placeholder="Digite uma mensagem..." style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">' +
         '<label style="display: flex; align-items: center; gap: 5px;"><input type="checkbox" id="msg-evidencia"><span>Evidência</span></label>' +
         '<button class="btn blue" onclick="enviarMensagem()">Enviar</button>' +
-        '</div></div>' +
+        '</div>';
+    }
+    
+    html += '</div>' +
         
         '<div class="section-card">' +
         '<div class="section-title">Anexos</div>' +
-        '<div class="anexo-lista" id="anexos-container">' + renderAnexos(occ.anexos || []) + '</div>' +
-        '<hr style="margin: 15px 0; border: none; border-top: 1px solid #eee;">' +
+        '<div class="anexo-lista" id="anexos-container">' + renderAnexos(occ.anexos || [], podeEditar) + '</div>';
+    
+    if (podeEditar) {
+        html += '<hr style="margin: 15px 0; border: none; border-top: 1px solid #eee;">' +
         '<div style="display: flex; gap: 10px; align-items: center;">' +
         '<input type="file" id="anexo-file" accept="image/*,.pdf,.doc,.docx" style="flex: 1;">' +
         '<button class="btn blue" onclick="uploadAnexo()">Anexar</button>' +
-        '</div></div>' +
+        '</div>';
+    }
+    
+    html += '</div>' +
         
         '<div class="section-card">' +
         '<div class="section-title">Histórico de Alterações</div>' +
@@ -275,24 +291,37 @@ function renderOcorrencia(occ) {
     $('#ocorrencia-content').html(html);
 }
 
-function renderMensagens(mensagens) {
+function podeExcluirMsg(usuarioIdMsg) {
+    return podeEditar && (isAdmin || usuarioIdMsg === usuarioId);
+}
+
+function podeExcluirAnexo(usuarioIdAnexo) {
+    return podeEditar && (isAdmin || usuarioIdAnexo === usuarioId);
+}
+
+function renderMensagens(mensagens, podeEditarLocal) {
     if (!mensagens || mensagens.length === 0) {
         return '<p style="color: #999; text-align: center; padding: 20px;">Nenhuma mensagem.</p>';
     }
     return mensagens.map(function(m) {
+        var podeExcluir = podeEditarLocal && (isAdmin || m.usuario_id === usuarioId);
+        var btnExcluir = podeExcluir ? '<button class="btn-floating btn-small red" onclick="excluirMensagem(' + m.id + ')" title="Excluir"><i class="material-icons" style="font-size: 18px;">delete</i></button>' : '';
         return '<div class="mensagem-chat ' + (m.eh_evidencia ? 'evidencia' : '') + '">' +
             '<span class="msg-autor">' + (m.autor_nome || 'Sistema') + '</span>' +
             '<span class="msg-hora">' + formatDateTime(m.created_at) + '</span>' +
-            '<p>' + m.mensagem + '</p>' +
-            '</div>';
+            '<div style="display: flex; align-items: center; gap: 10px; margin-top: 5px;">' +
+            '<p style="flex: 1; margin: 0;">' + m.mensagem + '</p>' +
+            btnExcluir +
+            '</div></div>';
     }).join('');
 }
 
-function renderAnexos(anexos) {
+function renderAnexos(anexos, podeEditarLocal) {
     if (!anexos || anexos.length === 0) {
         return '<p style="color: #999;">Nenhum anexo.</p>';
     }
     return anexos.map(function(a) {
+        var podeExcluir = podeEditarLocal && (isAdmin || a.usuario_id === usuarioId);
         var conteudo = '';
         if (a.tipo === 'imagem') {
             conteudo = '<div style="margin-top: 10px;"><img src="' + a.url + '" alt="' + a.nome_original + '" style="max-width: 100%; max-height: 300px; border-radius: 6px; cursor: pointer;" onclick="window.open(\'' + a.url + '\', \'_blank\')"></div>';
@@ -303,7 +332,8 @@ function renderAnexos(anexos) {
         } else {
             conteudo = '<a href="' + a.url + '" target="_blank" download="' + a.nome_original + '"><i class="material-icons">' + getIconeTipo(a.tipo) + '</i> ' + a.nome_original + '</a>';
         }
-        return '<div class="anexo-item">' + conteudo + '</div>';
+        var btnExcluir = podeExcluir ? '<button class="btn-floating btn-small red" onclick="excluirAnexo(' + a.id + ')" title="Excluir" style="margin-left: 10px;"><i class="material-icons" style="font-size: 18px;">delete</i></button>' : '';
+        return '<div class="anexo-item" style="flex: 1; justify-content: space-between;">' + conteudo + btnExcluir + '</div>';
     }).join('');
 }
 
@@ -375,6 +405,42 @@ async function uploadAnexo() {
         }
     };
     reader.readAsDataURL(file);
+}
+
+async function excluirMensagem(id) {
+    if (!confirm('Tem certeza que deseja excluir esta mensagem?')) return;
+    
+    try {
+        var response = await fetch(API_BASE_URL_PHP + '/ocorrencias.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ deletar_mensagem: true, id: id })
+        });
+        var result = await response.json();
+        if (!response.ok) throw new Error(result.message);
+        M.toast({html: 'Mensagem excluída.', classes: 'green'});
+        carregarOcorrencia();
+    } catch (error) {
+        M.toast({html: error.message, classes: 'red'});
+    }
+}
+
+async function excluirAnexo(id) {
+    if (!confirm('Tem certeza que deseja excluir este anexo? O arquivo será removido do disco.')) return;
+    
+    try {
+        var response = await fetch(API_BASE_URL_PHP + '/ocorrencias.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ deletar_anexo: true, id: id })
+        });
+        var result = await response.json();
+        if (!response.ok) throw new Error(result.message);
+        M.toast({html: 'Anexo excluído.', classes: 'green'});
+        carregarOcorrencia();
+    } catch (error) {
+        M.toast({html: error.message, classes: 'red'});
+    }
 }
 
 async function mudarFase() {

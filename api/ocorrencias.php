@@ -4,7 +4,7 @@
 
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
-header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
+header("Access-Control-Allow-Methods: POST, GET, DELETE, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
 if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
@@ -57,8 +57,24 @@ switch ($metodo) {
         elseif (isset($dados->gerar_notificacao)) {
             gerarNotificacao($pdo, $dados, $usuario);
         }
+        elseif (isset($dados->deletar_anexo)) {
+            deletarAnexo($pdo, $dados, $usuario);
+        }
+        elseif (isset($dados->deletar_mensagem)) {
+            deletarMensagem($pdo, $dados, $usuario);
+        }
         else {
             criarOuAtualizar($pdo, $dados, $usuario);
+        }
+        break;
+
+    case 'DELETE':
+        $dados = json_decode(file_get_contents("php://input"));
+        if (isset($dados->id)) {
+            deletarOcorrencia($pdo, $dados, $usuario);
+        } else {
+            http_response_code(400);
+            echo json_encode(['message' => 'ID da ocorrência é obrigatório.']);
         }
         break;
 
@@ -184,7 +200,7 @@ function listarMinhas($pdo, $usuario) {
         GROUP BY o.id
         ORDER BY o.data_criacao DESC
     ");
-    $stmt->execute([$usuario->userId]);
+    $stmt->execute([$usuario['id']]);
     
     http_response_code(200);
     echo json_encode($stmt->fetchAll());
@@ -211,7 +227,7 @@ function criarOuAtualizar($pdo, $dados, $usuario) {
         }
         
         if ($existing['fase'] !== 'nova' && $existing['fase'] !== 'em_analise') {
-            if (!in_array($usuario->role, ['admin', 'dev', 'promotor'])) {
+            if (!in_array($usuario['role'], ['admin', 'dev', 'promotor'])) {
                 http_response_code(403);
                 echo json_encode(['message' => 'Não é possível editar ocorrências nesta fase.']);
                 exit();
@@ -242,7 +258,7 @@ function criarOuAtualizar($pdo, $dados, $usuario) {
                 INSERT INTO ocorrencias (titulo, descricao_fato, data_fato, created_by, fase) 
                 VALUES (?, ?, ?, ?, 'nova')
             ");
-            $stmt->execute([$dados->titulo, $dados->descricao_fato, $dados->data_fato, $usuario->userId]);
+            $stmt->execute([$dados->titulo, $dados->descricao_fato, $dados->data_fato, $usuario['id']]);
             $id = $pdo->lastInsertId();
             
             if (!empty($dados->unidades)) {
@@ -252,8 +268,8 @@ function criarOuAtualizar($pdo, $dados, $usuario) {
                 }
             }
             
-            $stmt = $pdo->prepare("INSERT INTO ocorrencia_fase_log (ocorrencia_id, fase_anterior, fase_nova, observacao, usuario_id) VALUES (?, NULL, 'nova', 'Criação da ocorrência', ?)");
-            $stmt->execute([$id, $usuario->userId]);
+            $stmt = $pdo->prepare("INSERT INTO ocorrencia_fase_log (ocorrencia_id, fase_anterior, fase_nova, observacao, usuario_id) VALUES (?, NULL, 'nova', ?, ?)");
+            $stmt->execute([$id, 'Criação da ocorrência por ' . $usuario['nome'], $usuario['id']]);
             
             http_response_code(201);
             echo json_encode(['message' => 'Ocorrência criada com sucesso!', 'id' => $id]);
@@ -283,7 +299,7 @@ function adicionarMensagem($pdo, $dados, $usuario) {
     }
     
     if ($ocorrencia['fase'] === 'homologada') {
-        if (!in_array($usuario->role, ['admin', 'dev'])) {
+        if (!in_array($usuario['role'], ['admin', 'dev'])) {
             http_response_code(403);
             echo json_encode(['message' => 'Ocorrência homologada não aceita novas evidências.']);
             exit();
@@ -297,7 +313,7 @@ function adicionarMensagem($pdo, $dados, $usuario) {
         ");
         $stmt->execute([
             $dados->ocorrencia_id,
-            $usuario->userId,
+            $usuario['id'],
             $dados->mensagem,
             !empty($dados->eh_evidencia) ? 1 : 0,
             $dados->tipo_anexo ?? null,
@@ -338,7 +354,7 @@ function mudarFase($pdo, $dados, $usuario) {
         'homologada' => ['promotor', 'admin', 'dev']
     ];
     
-    if (!in_array($usuario->role, $papelPodeMudar[$dados->nova_fase])) {
+    if (!in_array($usuario['role'], $papelPodeMudar[$dados->nova_fase])) {
         http_response_code(403);
         echo json_encode(['message' => 'Você não tem permissão para definir esta fase.']);
         exit();
@@ -360,7 +376,7 @@ function mudarFase($pdo, $dados, $usuario) {
     $stmt->execute([$dados->nova_fase, $dados->id]);
     
     $stmt = $pdo->prepare("INSERT INTO ocorrencia_fase_log (ocorrencia_id, fase_anterior, fase_nova, observacao, usuario_id) VALUES (?, ?, ?, ?, ?)");
-    $stmt->execute([$dados->id, $faseAnterior, $dados->nova_fase, $dados->observacao ?? null, $usuario->userId]);
+    $stmt->execute([$dados->id, $faseAnterior, $dados->nova_fase, $dados->observacao ?? null, $usuario['id']]);
     
     http_response_code(200);
     echo json_encode(['message' => "Fase alterada de '$faseAnterior' para '$dados->nova_fase'."]);
@@ -406,7 +422,7 @@ function fazerUpload($pdo, $usuario) {
     }
     
     if ($ocorrencia['fase'] === 'homologada') {
-        if (!in_array($usuario->role, ['admin', 'dev'])) {
+        if (!in_array($usuario['role'], ['admin', 'dev'])) {
             http_response_code(403);
             echo json_encode(['message' => 'Ocorrência homologada não aceita novos anexos.']);
             exit();
@@ -440,7 +456,7 @@ function fazerUpload($pdo, $usuario) {
             INSERT INTO ocorrencia_anexos (ocorrencia_id, usuario_id, tipo, url, nome_original, tamanho_bytes, mime_type)
             VALUES (?, ?, ?, ?, ?, ?, ?)
         ");
-        $stmt->execute([$ocorrenciaId, $usuario->userId, $input['tipo'], $url, $input['nome_original'], $tamanho, $mimeType]);
+        $stmt->execute([$ocorrenciaId, $usuario['id'], $input['tipo'], $url, $input['nome_original'], $tamanho, $mimeType]);
         
         http_response_code(201);
         echo json_encode(['message' => 'Anexo salvo.', 'id' => $pdo->lastInsertId(), 'url' => $url]);
@@ -525,6 +541,140 @@ function gerarNotificacao($pdo, $dados, $usuario) {
     } catch (Exception $e) {
         http_response_code(500);
         echo json_encode(['message' => 'Erro ao gerar notificação: ' . $e->getMessage()]);
+    }
+}
+
+function deletarOcorrencia($pdo, $dados, $usuario) {
+    if (!in_array('admin', $usuario['papeis']) && !in_array('dev', $usuario['papeis'])) {
+        http_response_code(403);
+        echo json_encode(['message' => 'Apenas administradores podem excluir ocorrências.']);
+        exit();
+    }
+    
+    $id = (int)$dados->id;
+    
+    $stmt = $pdo->prepare("SELECT * FROM ocorrencias WHERE id = ?");
+    $stmt->execute([$id]);
+    $ocorrencia = $stmt->fetch();
+    
+    if (!$ocorrencia) {
+        http_response_code(404);
+        echo json_encode(['message' => 'Ocorrência não encontrada.']);
+        exit();
+    }
+    
+    try {
+        $stmt = $pdo->prepare("SELECT url FROM ocorrencia_anexos WHERE ocorrencia_id = ? AND url IS NOT NULL AND url != ''");
+        $stmt->execute([$id]);
+        $anexos = $stmt->fetchAll();
+        
+        foreach ($anexos as $anexo) {
+            $caminhoArquivo = dirname(__DIR__) . '/uploads/ocorrencias/' . basename($anexo['url']);
+            if (file_exists($caminhoArquivo)) {
+                unlink($caminhoArquivo);
+            }
+        }
+        
+        $pdo->prepare("DELETE FROM ocorrencia_fase_log WHERE ocorrencia_id = ?")->execute([$id]);
+        $pdo->prepare("DELETE FROM ocorrencia_mensagens WHERE ocorrencia_id = ?")->execute([$id]);
+        $pdo->prepare("DELETE FROM ocorrencia_anexos WHERE ocorrencia_id = ?")->execute([$id]);
+        $pdo->prepare("DELETE FROM ocorrencia_unidades WHERE ocorrencia_id = ?")->execute([$id]);
+        $pdo->prepare("DELETE FROM ocorrencia_notificacoes WHERE ocorrencia_id = ?")->execute([$id]);
+        $pdo->prepare("DELETE FROM ocorrencias WHERE id = ?")->execute([$id]);
+        
+        http_response_code(200);
+        echo json_encode(['message' => 'Ocorrência excluída com sucesso.']);
+        
+    } catch (Exception $e) {
+        http_response_code(500);
+        echo json_encode(['message' => 'Erro ao excluir ocorrência: ' . $e->getMessage()]);
+    }
+}
+
+function deletarAnexo($pdo, $dados, $usuario) {
+    $id = (int)$dados->id;
+    
+    $stmt = $pdo->prepare("SELECT oa.*, o.created_by, o.fase FROM ocorrencia_anexos oa JOIN ocorrencias o ON oa.ocorrencia_id = o.id WHERE oa.id = ?");
+    $stmt->execute([$id]);
+    $anexo = $stmt->fetch();
+    
+    if (!$anexo) {
+        http_response_code(404);
+        echo json_encode(['message' => 'Anexo não encontrado.']);
+        exit();
+    }
+    
+    $isAdmin = in_array('admin', $usuario['papeis']) || in_array('dev', $usuario['papeis']);
+    $isCriador = $anexo['created_by'] == $usuario['id'];
+    
+    if (!$isAdmin && !$isCriador) {
+        http_response_code(403);
+        echo json_encode(['message' => 'Você não tem permissão para excluir este anexo.']);
+        exit();
+    }
+    
+    if ($anexo['fase'] === 'homologada' && !$isAdmin) {
+        http_response_code(403);
+        echo json_encode(['message' => 'Ocorrência homologada. Apenas administradores podem excluir anexos.']);
+        exit();
+    }
+    
+    try {
+        if (!empty($anexo['url'])) {
+            $caminhoArquivo = dirname(__DIR__) . '/uploads/ocorrencias/' . basename($anexo['url']);
+            if (file_exists($caminhoArquivo)) {
+                unlink($caminhoArquivo);
+            }
+        }
+        
+        $pdo->prepare("DELETE FROM ocorrencia_anexos WHERE id = ?")->execute([$id]);
+        
+        http_response_code(200);
+        echo json_encode(['message' => 'Anexo excluído com sucesso.']);
+        
+    } catch (Exception $e) {
+        http_response_code(500);
+        echo json_encode(['message' => 'Erro ao excluir anexo: ' . $e->getMessage()]);
+    }
+}
+
+function deletarMensagem($pdo, $dados, $usuario) {
+    $id = (int)$dados->id;
+    
+    $stmt = $pdo->prepare("SELECT om.*, o.created_by, o.fase FROM ocorrencia_mensagens om JOIN ocorrencias o ON om.ocorrencia_id = o.id WHERE om.id = ?");
+    $stmt->execute([$id]);
+    $mensagem = $stmt->fetch();
+    
+    if (!$mensagem) {
+        http_response_code(404);
+        echo json_encode(['message' => 'Mensagem não encontrada.']);
+        exit();
+    }
+    
+    $isAdmin = in_array('admin', $usuario['papeis']) || in_array('dev', $usuario['papeis']);
+    $isCriador = $mensagem['usuario_id'] == $usuario['id'];
+    
+    if (!$isAdmin && !$isCriador) {
+        http_response_code(403);
+        echo json_encode(['message' => 'Você não tem permissão para excluir esta mensagem.']);
+        exit();
+    }
+    
+    if ($mensagem['fase'] === 'homologada' && !$isAdmin) {
+        http_response_code(403);
+        echo json_encode(['message' => 'Ocorrência homologada. Apenas administradores podem excluir mensagens.']);
+        exit();
+    }
+    
+    try {
+        $pdo->prepare("DELETE FROM ocorrencia_mensagens WHERE id = ?")->execute([$id]);
+        
+        http_response_code(200);
+        echo json_encode(['message' => 'Mensagem excluída com sucesso.']);
+        
+    } catch (Exception $e) {
+        http_response_code(500);
+        echo json_encode(['message' => 'Erro ao excluir mensagem: ' . $e->getMessage()]);
     }
 }
 ?>

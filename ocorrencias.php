@@ -150,6 +150,7 @@ requirePapel(['protocolar', 'diligente', 'promotor', 'admin', 'dev']);
         const API_BASE_URL_PHP = window.location.origin + '/api';
         let ocorrenciasData = [];
         let unidadesSelecionadas = [];
+        const isAdmin = <?php echo temPapel('admin') || temPapel('dev') ? 'true' : 'false'; ?>;
 
         $(document).ready(function() {
             $('.modal').modal();
@@ -171,7 +172,7 @@ requirePapel(['protocolar', 'diligente', 'promotor', 'admin', 'dev']);
 
         async function carregarOcorrencias() {
             const tbody = $('#ocorrencias-table-body');
-            tbody.html('<tr><td colspan="6" style="text-align: center;">Carregando...</td></tr>');
+            tbody.html('<tr><td colspan="7" style="text-align: center;">Carregando...</td></tr>');
             
             const fase = $('#filtro-fase').val();
             let url = API_BASE_URL_PHP + '/ocorrencias.php';
@@ -184,7 +185,7 @@ requirePapel(['protocolar', 'diligente', 'promotor', 'admin', 'dev']);
                 tbody.empty();
                 
                 if (ocorrenciasData.length === 0) {
-                    tbody.html('<tr><td colspan="6" style="text-align: center;">Nenhuma ocorrência encontrada.</td></tr>');
+                    tbody.html('<tr><td colspan="7" style="text-align: center;">Nenhuma ocorrência encontrada.</td></tr>');
                     return;
                 }
                 
@@ -192,6 +193,8 @@ requirePapel(['protocolar', 'diligente', 'promotor', 'admin', 'dev']);
                     const faseClass = 'fase-' + o.fase;
                     const faseLabel = o.fase.replace('_', ' ');
                     const unidades = o.unidades || '-';
+                    const excluirBtn = isAdmin ? 
+                        `<button class="btn-floating btn-small red" onclick="excluirOcorrencia(${o.id})" title="Excluir"><i class="material-icons">delete</i></button>` : '';
                     
                     tbody.append(`
                         <tr>
@@ -204,12 +207,33 @@ requirePapel(['protocolar', 'diligente', 'promotor', 'admin', 'dev']);
                                 <a href="ocorrencia_detalhe.php?id=${o.id}" class="btn-floating btn-small blue">
                                     <i class="material-icons">visibility</i>
                                 </a>
+                                ${excluirBtn}
                             </td>
                         </tr>
                     `);
                 });
             } catch (error) {
-                tbody.html('<tr><td colspan="6" style="color: red;">Erro: ' + error.message + '</td></tr>');
+                tbody.html('<tr><td colspan="7" style="color: red;">Erro: ' + error.message + '</td></tr>');
+            }
+        }
+
+        async function excluirOcorrencia(id) {
+            if (!confirm('Tem certeza que deseja excluir esta ocorrência? Esta ação não pode ser desfeita.')) return;
+            
+            try {
+                const response = await fetch(API_BASE_URL_PHP + '/ocorrencias.php', {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: id })
+                });
+                
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.message);
+                
+                M.toast({html: result.message, classes: 'green'});
+                carregarOcorrencias();
+            } catch (error) {
+                M.toast({html: error.message, classes: 'red'});
             }
         }
 
