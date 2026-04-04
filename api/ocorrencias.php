@@ -38,6 +38,11 @@ $podeCriarLink = $isAdminDev || temPermissao('ocorrencia.link.criar');
 
 require_once '../config.php';
 
+function registrarHistorico($pdo, $ocorrenciaId, $usuarioId, $tipo, $detalhes = '') {
+    $stmt = $pdo->prepare("INSERT INTO ocorrencia_fase_log (ocorrencia_id, fase_anterior, fase_nova, observacao, usuario_id) VALUES (?, NULL, ?, ?, ?)");
+    $stmt->execute([$ocorrenciaId, $tipo, $detalhes, $usuarioId]);
+}
+
 $metodo = $_SERVER['REQUEST_METHOD'];
 $pdo = getDbConnection();
 
@@ -400,6 +405,10 @@ function adicionarMensagem($pdo, $dados, $usuario) {
         
         $msgId = $pdo->lastInsertId();
         
+        $ehEvidencia = !empty($dados->eh_evidencia);
+        $tipoLog = $ehEvidencia ? 'evidencia_adicionada' : 'mensagem_adicionada';
+        registrarHistorico($pdo, $dados->ocorrencia_id, $usuario['id'], $tipoLog, $ehEvidencia ? 'Evidência adicionada' : 'Mensagem adicionada');
+        
         http_response_code(201);
         echo json_encode(['message' => 'Mensagem adicionada.', 'id' => $msgId]);
         
@@ -564,6 +573,8 @@ function fazerUpload($pdo, $usuario) {
             VALUES (?, ?, ?, ?, ?, ?, ?)
         ");
         $stmt->execute([$ocorrenciaId, $usuario['id'], $input['tipo'], $url, $input['nome_original'], $tamanho, $mimeType]);
+        
+        registrarHistorico($pdo, $ocorrenciaId, $usuario['id'], 'anexo_adicionado', 'Anexo adicionado: ' . $input['nome_original']);
         
         http_response_code(201);
         echo json_encode(['message' => 'Anexo salvo.', 'id' => $pdo->lastInsertId(), 'url' => $url]);
@@ -741,6 +752,8 @@ function deletarAnexo($pdo, $dados, $usuario) {
         
         $pdo->prepare("DELETE FROM ocorrencia_anexos WHERE id = ?")->execute([$id]);
         
+        registrarHistorico($pdo, $anexo['ocorrencia_id'], $usuario['id'], 'anexo_removido', 'Anexo removido: ' . ($anexo['nome_original'] ?? 'desconhecido'));
+        
         http_response_code(200);
         echo json_encode(['message' => 'Anexo excluído com sucesso.']);
         
@@ -780,6 +793,9 @@ function deletarMensagem($pdo, $dados, $usuario) {
     
     try {
         $pdo->prepare("DELETE FROM ocorrencia_mensagens WHERE id = ?")->execute([$id]);
+        
+        $tipoLog = !empty($mensagem['eh_evidencia']) ? 'evidencia_removida' : 'mensagem_removida';
+        registrarHistorico($pdo, $mensagem['ocorrencia_id'], $usuario['id'], $tipoLog, !empty($mensagem['eh_evidencia']) ? 'Evidência removida' : 'Mensagem removida');
         
         http_response_code(200);
         echo json_encode(['message' => 'Mensagem excluída com sucesso.']);

@@ -488,9 +488,36 @@ function renderHistorico(logs) {
     if (!logs || logs.length === 0) {
         return '<p style="color: #999;">Nenhum histórico.</p>';
     }
+    
+    var labelsFase = {
+        'nova': 'Nova',
+        'em_analise': 'Em Análise',
+        'pronta': 'Pronta',
+        'recusada': 'Recusada',
+        'homologada': 'Homologada'
+    };
+    
+    var labelsAcao = {
+        'mensagem_adicionada': '💬 Mensagem adicionada',
+        'evidencia_adicionada': '📎 Evidência adicionada',
+        'anexo_adicionado': '📎 Anexo adicionado',
+        'mensagem_removida': '🗑️ Mensagem removida',
+        'evidencia_removida': '🗑️ Evidência removida',
+        'anexo_removido': '🗑️ Anexo removido'
+    };
+    
     return logs.map(function(l) {
+        var titulo = '';
+        if (labelsFase[l.fase_nova]) {
+            titulo = (l.fase_anterior ? labelsFase[l.fase_anterior] + ' → ' : '') + labelsFase[l.fase_nova];
+        } else if (labelsAcao[l.fase_nova]) {
+            titulo = labelsAcao[l.fase_nova];
+        } else {
+            titulo = l.fase_nova;
+        }
+        
         return '<div class="historico-item">' +
-            '<div class="historico-fase">' + (l.fase_anterior ? l.fase_anterior + ' → ' : '') + l.fase_nova + (l.usuario_nome ? ' <span style="color:#666;font-weight:normal;">por ' + l.usuario_nome + '</span>' : '') + '</div>' +
+            '<div class="historico-fase">' + titulo + (l.usuario_nome ? ' <span style="color:#666;font-weight:normal;">por ' + l.usuario_nome + '</span>' : '') + '</div>' +
             (l.observacao ? '<div class="historico-obs">' + l.observacao + '</div>' : '') +
             '<div class="historico-data">' + formatDateTime(l.created_at) + '</div>' +
             '</div>';
