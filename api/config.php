@@ -79,9 +79,8 @@ try {
     $stmt_assuntos = $pdo->query("SELECT id, descricao FROM assuntos ORDER BY descricao ASC");
     $assuntos = $stmt_assuntos->fetchAll();
     
-    // Papéis legacy (manter para compatibilidade)
-    $stmt_papeis = $pdo->query("SELECT slug, nome, descricao FROM papeles ORDER BY nome ASC");
-    $papeis = $stmt_papeis->fetchAll();
+    // Papéis legacy (removido - substituído por permissões)
+    $papeis = [];
     
     // Grupos com permissões
     $stmt_grupos = $pdo->query("

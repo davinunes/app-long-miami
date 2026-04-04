@@ -15,6 +15,7 @@ require_once '../api/helpers.php';
 $usuario = requireApiLogin();
 
 require_once '../config.php';
+$pdo = getDbConnection();
 
 // Verificar permissões
 $isAdminDev = in_array($usuario['role'], ['admin', 'dev']);
