@@ -9,9 +9,44 @@ async function inicializarGerenciadorUsuarios() {
     }
     
     await carregarConfiguracoesUsuarios();
-    await carregarListaUsuarios();
-    await carregarListaGrupos();
+    
+    // Controlar visibilidade baseada em permissões
+    controlarVisibilidadeBotoes();
+    
+    // Se não tem permissões de gerenciamento, só carrega usuários se tiver permissão de listar
+    if (temAlgumaPermissao(['usuario.listar', 'usuario.ver_detalhes', 'admin', 'dev']) || EH_ADMIN_DEV) {
+        await carregarListaUsuarios();
+    }
+    
+    // Se tem permissão de gerenciar grupos
+    if (temAlgumaPermissao(['grupo.listar', 'grupo.criar', 'grupo.editar', 'grupo.excluir']) || EH_ADMIN_DEV) {
+        await carregarListaGrupos();
+    }
+    
     setupEventListenersUsuarios();
+    setupEventListenersMinhaConta();
+}
+
+function controlarVisibilidadeBotoes() {
+    // Botão Novo Usuário
+    if (temPermissao('usuario.criar') || EH_ADMIN_DEV) {
+        $('#btn-novo-usuario').show();
+    }
+    
+    // Botão Gerenciar Grupos
+    if (temAlgumaPermissao(['grupo.listar', 'grupo.criar', 'grupo.editar']) || EH_ADMIN_DEV) {
+        $('#btn-gerenciar-grupos').show();
+    }
+    
+    // Seção de usuários (se tem alguma permissão)
+    if (temAlgumaPermissao(['usuario.listar', 'usuario.ver_detalhes', 'usuario.editar', 'usuario.criar']) || EH_ADMIN_DEV) {
+        $('#usuarios-section').show();
+    }
+    
+    // Se não tem nenhuma permissão, esconde tudo exceto "Minha Conta"
+    if (!EH_ADMIN_DEV && PERMISSOES_USUARIO.length === 0) {
+        $('#page-description').text('Visualize e gerencie suas informações pessoais.');
+    }
 }
 
 async function carregarConfiguracoesUsuarios() {
@@ -53,6 +88,15 @@ function setupEventListenersUsuarios() {
     console.log('Event listeners configurados');
 }
 
+function setupEventListenersMinhaConta() {
+    $(document).on('click', '#btn-minha-conta', function(e) {
+        e.preventDefault();
+        $('#modal-minha-conta').modal('open');
+    });
+    
+    $(document).on('click', '#btn-salvar-minha-conta', salvarMinhaConta);
+}
+
 async function carregarListaUsuarios() {
     const tbody = $('#usuarios-table-body');
     tbody.html('<tr><td colspan="4" style="text-align: center;">Carregando...</td></tr>');
@@ -81,16 +125,26 @@ async function carregarListaUsuarios() {
                 ? user.grupos.map(g => `<span class="chip">${typeof g === 'string' ? g : g.nome}</span>`).join(' ') 
                 : '<span style="color: #999;">-</span>';
             
+            // Determinar ações disponíveis
+            const podeEditar = podeEditarUsuario(user.id);
+            
+            let acoesHtml = '';
+            if (podeEditar) {
+                acoesHtml = `
+                    <button class="btn-floating btn-small waves-effect waves-light blue modal-trigger" data-id="${user.id}" onclick="abrirModalUsuario(${user.id})">
+                        <i class="material-icons">edit</i>
+                    </button>
+                `;
+            } else {
+                acoesHtml = '<span style="color: #999; font-size: 12px;">Sem ação</span>';
+            }
+            
             const row = `
-                <tr>
+                <tr data-id="${user.id}">
                     <td>${user.nome}</td>
                     <td>${user.email}</td>
                     <td>${gruposDisplay}</td>
-                    <td>
-                        <button class="btn-floating btn-small waves-effect waves-light blue modal-trigger" data-id="${user.id}" onclick="abrirModalUsuario(${user.id})">
-                            <i class="material-icons">edit</i>
-                        </button>
-                    </td>
+                    <td>${acoesHtml}</td>
                 </tr>
             `;
             tbody.append(row);
@@ -100,6 +154,19 @@ async function carregarListaUsuarios() {
         console.error('Erro ao buscar usuários:', error);
         tbody.html(`<tr><td colspan="4" style="text-align: center; color: red;">Erro: ${error.message}</td></tr>`);
     }
+}
+
+function podeEditarUsuario(userId) {
+    // Admin/Dev pode editar qualquer um
+    if (EH_ADMIN_DEV) return true;
+    
+    // Pode editar qualquer usuário com permissão
+    if (temPermissao('usuario.editar')) return true;
+    
+    // Pode editar a si mesmo
+    if (parseInt(userId) === USUARIO_LOGADO_ID) return true;
+    
+    return false;
 }
 
 async function abrirModalUsuario(id) {
@@ -201,6 +268,64 @@ async function salvarUsuarioModal() {
         M.toast({html: result.message, classes: 'green'});
         M.Modal.getInstance($('#modal-usuario')).close();
         carregarListaUsuarios();
+        
+    } catch (error) {
+        M.toast({html: error.message, classes: 'red'});
+    }
+}
+
+async function salvarMinhaConta() {
+    const nome = $('#minha_nome').val().trim();
+    const email = $('#minha_email').val().trim();
+    const senhaNova = $('#minha_senha_nova').val();
+    const senhaAtual = $('#minha_senha_atual').val();
+    
+    if (!nome || !email) {
+        M.toast({html: 'Preencha nome e email.', classes: 'red'});
+        return;
+    }
+    
+    if (!senhaAtual) {
+        M.toast({html: 'Informe sua senha atual para confirmar as alterações.', classes: 'red'});
+        return;
+    }
+    
+    try {
+        const dados = {
+            id: USUARIO_LOGADO_ID,
+            nome: nome,
+            email: email,
+            senha_atual: senhaAtual
+        };
+        
+        if (senhaNova) {
+            dados.senha = senhaNova;
+            dados.confirmar_senha = senhaNova;
+        }
+        
+        const response = await fetch(`${API_BASE_URL_PHP}/usuarios.php`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(dados)
+        });
+        
+        const result = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(result.message || 'Erro ao salvar.');
+        }
+
+        M.toast({html: 'Dados atualizados com sucesso!', classes: 'green'});
+        M.Modal.getInstance($('#modal-minha-conta')).close();
+        
+        // Atualiza info na tela
+        $('#user-name').text(nome);
+        $('#info-nome').text(nome);
+        $('#info-email').text(email);
+        
+        // Limpa campos
+        $('#minha_senha_nova').val('');
+        $('#minha_senha_atual').val('');
         
     } catch (error) {
         M.toast({html: error.message, classes: 'red'});

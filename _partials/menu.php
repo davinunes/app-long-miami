@@ -15,7 +15,7 @@
    	
  	<li><a class="waves-effect ajax-link" href="usuarios.php"><i class="material-icons">people</i>Usuários</a></li>
     
-    <?php if (in_array('admin', getUsuarioPapeis()) || in_array('dev', getUsuarioPapeis())): ?>
+    <?php if (isAdmin()): ?>
     <li><div class="divider"></div></li>
     <li><a class="waves-effect ajax-link" href="configuracoes.php"><i class="material-icons">settings</i>Configurações</a></li>
     <?php endif; ?>

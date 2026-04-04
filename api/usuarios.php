@@ -1,6 +1,7 @@
 <?php
 // Endpoint: /api/usuarios.php
 // Métodos: GET, POST
+// Suporta tanto papéis (legacy) quanto permissões
 
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
@@ -13,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 }
 
 require_once '../api/helpers.php';
-requireApiPapel(['admin', 'dev']);
+$usuario = getApiUsuario();
 
 require_once '../config.php';
 
@@ -26,10 +27,25 @@ if (!$pdo) {
     exit();
 }
 
+// Verificar acesso
+$isAdminDev = in_array($usuario['role'], ['admin', 'dev']) || in_array('dev', $usuario['papeis'] ?? []) || in_array('admin', $usuario['papeis'] ?? []);
+$temPermissaoListar = $isAdminDev || temPermissao('usuario.listar');
+$temPermissaoEditar = $isAdminDev || temPermissao('usuario.editar');
+$temPermissaoCriar = $isAdminDev || temPermissao('usuario.criar');
+
 switch ($metodo) {
     case 'GET':
+        // Qualquer usuário logado pode ver a si mesmo
         if (isset($_GET['id'])) {
             $id = (int)$_GET['id'];
+            
+            // Verificar se pode ver outros usuários
+            if ($id !== $usuario['id'] && !$temPermissaoListar) {
+                http_response_code(403);
+                echo json_encode(['message' => 'Permissão insuficiente para ver outros usuários.']);
+                exit();
+            }
+            
             $stmt = $pdo->prepare("SELECT id, nome, email, role, grupo_principal_id FROM usuarios WHERE id = ?");
             $stmt->execute([$id]);
             $user = $stmt->fetch();
@@ -48,6 +64,13 @@ switch ($metodo) {
             echo json_encode($user);
         }
         else {
+            // Sem ID, listar - requer permissão
+            if (!$temPermissaoListar) {
+                http_response_code(403);
+                echo json_encode(['message' => 'Permissão insuficiente para listar usuários.']);
+                exit();
+            }
+            
             $stmt = $pdo->query("
                 SELECT u.id, u.nome, u.email, u.role, u.grupo_principal_id,
                        GROUP_CONCAT(DISTINCT g.id) as grupo_ids,
@@ -108,10 +131,41 @@ switch ($metodo) {
             // ATUALIZAR
             $id = (int)$dados->id;
             
+            // Verificar permissão: admin/dev ou tem permissão de editar ou é o próprio usuário
+            $isProprio = ($id === $usuario['id']);
+            if (!$isAdminDev && !$temPermissaoEditar && !$isProprio) {
+                http_response_code(403);
+                echo json_encode(['message' => 'Permissão insuficiente para editar usuário.']);
+                exit();
+            }
+            
+            // Se não for admin/dev e não tiver permissão, só pode editar nome/email (não grupos)
+            $podeEditarGrupos = $isAdminDev || $temPermissaoEditar;
+            $podeAlterarSenha = $isAdminDev || $temPermissaoEditar || $isProprio;
+            
+            // Se usuário próprio está mudando senha, verificar senha atual
+            if ($isProprio && !empty($dados->senha)) {
+                if (empty($dados->senha_atual)) {
+                    http_response_code(400);
+                    echo json_encode(['message' => 'Informe a senha atual para alterar.']);
+                    exit();
+                }
+                
+                $stmtCheck = $pdo->prepare("SELECT senha FROM usuarios WHERE id = ?");
+                $stmtCheck->execute([$id]);
+                $userData = $stmtCheck->fetch();
+                
+                if (!$userData || !password_verify($dados->senha_atual, $userData['senha'])) {
+                    http_response_code(401);
+                    echo json_encode(['message' => 'Senha atual incorreta.']);
+                    exit();
+                }
+            }
+            
             $sql = "UPDATE usuarios SET nome = ?, email = ?";
             $params = [$dados->nome, $dados->email];
             
-            if (!empty($dados->senha)) {
+            if (!empty($dados->senha) && $podeAlterarSenha) {
                 $sql .= ", senha = ?";
                 $params[] = password_hash($dados->senha, PASSWORD_DEFAULT);
             }
@@ -122,8 +176,8 @@ switch ($metodo) {
             $stmt = $pdo->prepare($sql);
             $stmt->execute($params);
             
-            // Atualiza grupos se fornecidos
-            if (isset($dados->grupos)) {
+            // Atualiza grupos se fornecidos e se tiver permissão
+            if ($podeEditarGrupos && isset($dados->grupos)) {
                 $pdo->prepare("DELETE FROM usuario_grupos WHERE usuario_id = ?")->execute([$id]);
                 if (is_array($dados->grupos)) {
                     $stmt = $pdo->prepare("INSERT INTO usuario_grupos (usuario_id, grupo_id) VALUES (?, ?)");
@@ -137,6 +191,13 @@ switch ($metodo) {
             echo json_encode(['message' => 'Usuário atualizado com sucesso!', 'id' => $id]);
 
         } else {
+            // CRIAR NOVO USUÁRIO - requer permissão
+            if (!$isAdminDev && !$temPermissaoCriar) {
+                http_response_code(403);
+                echo json_encode(['message' => 'Permissão insuficiente para criar usuário.']);
+                exit();
+            }
+            
             if (empty($dados->senha)) {
                 http_response_code(400);
                 echo json_encode(['message' => 'A senha é obrigatória para criar um novo usuário.']);

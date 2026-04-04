@@ -2,7 +2,7 @@
 require_once 'auth.php';
 requireLogin();
 
-if (!in_array('admin', getUsuarioPapeis()) && !in_array('dev', getUsuarioPapeis())) {
+if (!isAdmin()) {
     header('Location: lista.php');
     exit;
 }
