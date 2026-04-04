@@ -111,8 +111,14 @@ function temPermissao($permissao, $context = []) {
     
     $usuario = getUsuario();
     
-    // DEV sempre tem tudo (modo deus)
-    if (in_array('dev', $usuario['papeis'] ?? [])) {
+    // DEV e ADMIN sempre tem tudo (modo deus)
+    $role = $usuario['role'] ?? '';
+    if ($role === 'dev' || $role === 'admin') {
+        return true;
+    }
+    
+    // Verifica se tem nos papéis (sessão)
+    if (in_array('dev', $usuario['papeis'] ?? []) || in_array('admin', $usuario['papeis'] ?? [])) {
         return true;
     }
     
@@ -128,8 +134,23 @@ function temPermissao($permissao, $context = []) {
  * @return bool
  */
 function temAlgumaPermissao($permissoes) {
+    if (!estaLogado()) return false;
+    
+    $usuario = getUsuario();
+    
+    // DEV e ADMIN sempre têm todas as permissões
+    $role = $usuario['role'] ?? '';
+    if ($role === 'dev' || $role === 'admin') {
+        return true;
+    }
+    
+    if (in_array('dev', $usuario['papeis'] ?? []) || in_array('admin', $usuario['papeis'] ?? [])) {
+        return true;
+    }
+    
+    $permissoesUsuario = getPermissoesUsuario();
     foreach ($permissoes as $permissao) {
-        if (temPermissao($permissao)) return true;
+        if (in_array($permissao, $permissoesUsuario)) return true;
     }
     return false;
 }
@@ -222,7 +243,7 @@ function requireAlgumaPermissao($permissoes) {
 
 /**
  * Realiza o login do usuário
- * Carrega papéis E permissões na sessão
+ * Carrega permissões do grupo na sessão
  */
 function login($email, $senha) {
     $pdo = getDbConnection();
@@ -235,34 +256,30 @@ function login($email, $senha) {
         return ['success' => false, 'message' => 'Email ou senha incorretos.'];
     }
     
-    // Buscar papéis do usuário (legacy)
-    $stmtPapeis = $pdo->prepare("
-        SELECT DISTINCT papel_slug FROM (
-            SELECT papel_slug FROM usuario_papeis WHERE usuario_id = ?
-            UNION
-            SELECT gp.papel_slug FROM usuario_grupos ug 
-            JOIN grupo_papeis gp ON ug.grupo_id = gp.grupo_id 
-            WHERE ug.usuario_id = ?
-        ) AS todos_papeis
-    ");
-    $stmtPapeis->execute([$usuario['id'], $usuario['id']]);
-    $papeis = $stmtPapeis->fetchAll(PDO::FETCH_COLUMN);
-    
-    // Adiciona o role principal se não estiver na lista
-    if (!in_array($usuario['role'], $papeis)) {
+    // Papel principal do usuário (do campo 'role')
+    $papeis = [];
+    if ($usuario['role']) {
         $papeis[] = $usuario['role'];
     }
-    $papeis = array_unique($papeis);
     
-    // Buscar permissões do usuário
+    // Buscar papéis dos grupos que o usuário pertence
+    $stmtGruposPapeis = $pdo->prepare("
+        SELECT DISTINCT g.papel_principal 
+        FROM usuario_grupos ug 
+        JOIN grupos g ON ug.grupo_id = g.id 
+        WHERE ug.usuario_id = ? AND g.papel_principal IS NOT NULL
+    ");
+    $stmtGruposPapeis->execute([$usuario['id']]);
+    $papeisDosGrupos = $stmtGruposPapeis->fetchAll(PDO::FETCH_COLUMN);
+    $papeis = array_unique(array_merge($papeis, $papeisDosGrupos));
+    
+    // Buscar permissões do usuário (via grupos + diretas)
     $stmtPerm = $pdo->prepare("
         SELECT DISTINCT p.slug FROM (
-            -- Permissões do grupo
             SELECT gp.permissao_id FROM usuario_grupos ug 
             JOIN grupo_permissoes gp ON ug.grupo_id = gp.grupo_id 
             WHERE ug.usuario_id = ?
             UNION
-            -- Permissões diretas
             SELECT up.permissao_id FROM usuario_permissoes up 
             WHERE up.usuario_id = ?
         ) AS todas_permissoes
@@ -271,8 +288,15 @@ function login($email, $senha) {
     $stmtPerm->execute([$usuario['id'], $usuario['id']]);
     $permissoes = $stmtPerm->fetchAll(PDO::FETCH_COLUMN);
     
-    // DEV sempre tem todas as permissões (buscar do banco para consistência)
+    // DEV sempre tem todas as permissões
     if (in_array('dev', $papeis)) {
+        $stmtTodasPerm = $pdo->query("SELECT slug FROM permissoes");
+        $todasPermissoes = $stmtTodasPerm->fetchAll(PDO::FETCH_COLUMN);
+        $permissoes = array_unique(array_merge($permissoes, $todasPermissoes));
+    }
+    
+    // ADMIN também tem todas as permissões
+    if (in_array('admin', $papeis)) {
         $stmtTodasPerm = $pdo->query("SELECT slug FROM permissoes");
         $todasPermissoes = $stmtTodasPerm->fetchAll(PDO::FETCH_COLUMN);
         $permissoes = array_unique(array_merge($permissoes, $todasPermissoes));

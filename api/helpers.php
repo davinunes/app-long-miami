@@ -54,6 +54,17 @@ function requireApiPapel($papeis) {
 function requireApiPermissao($permissao, $context = []) {
     $usuario = getApiUsuario();
     
+    // DEV e ADMIN sempre têm todas as permissões
+    $role = $usuario['role'] ?? '';
+    if ($role === 'dev' || $role === 'admin') {
+        return true;
+    }
+    
+    // Verifica se tem nos papéis (sessão)
+    if (in_array('dev', $usuario['papeis'] ?? []) || in_array('admin', $usuario['papeis'] ?? [])) {
+        return true;
+    }
+    
     if (temPermissao($permissao, $context)) {
         return true;
     }
@@ -71,6 +82,16 @@ function requireApiPermissao($permissao, $context = []) {
  */
 function requireApiAlgumaPermissao($permissoes) {
     $usuario = getApiUsuario();
+    
+    // DEV e ADMIN sempre têm todas as permissões
+    $role = $usuario['role'] ?? '';
+    if ($role === 'dev' || $role === 'admin') {
+        return true;
+    }
+    
+    if (in_array('dev', $usuario['papeis'] ?? []) || in_array('admin', $usuario['papeis'] ?? [])) {
+        return true;
+    }
     
     if (temAlgumaPermissao($permissoes)) {
         return true;
