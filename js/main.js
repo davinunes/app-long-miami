@@ -331,6 +331,7 @@ async function inicializarFormularioEdicao() {
         dados.id = notificacaoId;
         dados.status_id = 1;
         dados.imagens_para_deletar = imagensParaDeletar;
+        dados.imagens_ocorrencia_desativar = window.getImagensDesativadas ? window.getImagensDesativadas() : [];
 
         showStatus('Atualizando notificação...', 'loading');
 
@@ -406,6 +407,26 @@ async function inicializarFormularioEdicao() {
                 addFato();
             }
 
+            let imagensDesativadas = [];
+
+            window.marcarImgOcorrenciaDesativada = function(imageId) {
+                const previewItem = document.getElementById(`imagem-salva-${imageId}`);
+                const jaDesativada = imagensDesativadas.includes(imageId);
+
+                if (jaDesativada) {
+                    imagensDesativadas = imagensDesativadas.filter(id => id !== imageId);
+                    previewItem.classList.remove('marcada-para-delecao');
+                } else {
+                    imagensDesativadas.push(imageId);
+                    previewItem.classList.add('marcada-para-delecao');
+                }
+                console.log("Imagens de ocorrência marcadas para desativar:", imagensDesativadas);
+            };
+
+            window.getImagensDesativadas = function() {
+                return imagensDesativadas;
+            };
+
             const previewContainer = document.getElementById('preview-container');
             if (data.imagens && data.imagens.length > 0) {
                 data.imagens.forEach(img => {
@@ -420,6 +441,7 @@ async function inicializarFormularioEdicao() {
                         item.innerHTML = `
                             <img src="${imageUrl}" alt="${img.nome_original}" style="max-width: 150px; max-height: 150px; cursor: pointer;" onclick="window.open('${imageUrl}', '_blank')">
                             <small>Evidência da Ocorrência</small>
+                            <button type="button" class="remove-btn-existing" onclick="marcarImgOcorrenciaDesativada(${img.id})" title="Desativar">&times;</button>
                         `;
                     } else {
                         item.innerHTML = `

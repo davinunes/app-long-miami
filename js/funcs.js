@@ -258,7 +258,7 @@ async function getExistingImagesForPDF() {
     const previewContainer = document.getElementById('preview-container');
     if (!previewContainer) return existingImages;
     
-    const imgElements = previewContainer.querySelectorAll('.existing-image img');
+    const imgElements = previewContainer.querySelectorAll('.existing-image:not(.marcada-para-delecao) img');
     for (const img of imgElements) {
         const src = img.src;
         if (src && !src.startsWith('data:')) {
