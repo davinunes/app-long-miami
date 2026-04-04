@@ -946,6 +946,8 @@ async function editarGrupo(id) {
         if (!response.ok) throw new Error('Erro ao buscar grupo.');
         
         const grupo = await response.json();
+        console.log('[EditarGrupo] Dados recebidos:', grupo);
+        console.log('[EditarGrupo] Permissões do grupo:', grupo.permissoes);
         
         $('#grupo_id').val(grupo.id);
         $('#grupo_nome').val(grupo.nome);
@@ -961,8 +963,12 @@ async function editarGrupo(id) {
             return;
         }
         
-        // Garantir que permissoes seja um array de strings (slugs)
-        const permissoesAtivas = (grupo.permissoes || []).map(p => String(p).trim());
+        // Garantir que permissoes seja um array de IDs numéricos
+        const permissoesAtivasIds = (grupo.permissoes || []).map(p => parseInt(p.id || p));
+        const permissoesAtivasSlugs = (grupo.permissoes || []).map(p => String(p.slug || p).trim());
+        
+        console.log('[EditarGrupo] IDs ativos:', permissoesAtivasIds);
+        console.log('[EditarGrupo] Slugs ativos:', permissoesAtivasSlugs);
         
         const modulos = Object.keys(configDataGlobal.permissoesPorModulo);
         
@@ -975,7 +981,10 @@ async function editarGrupo(id) {
                     <h6>${moduloIcone} ${formatarModulo(modulo)}</h6>
                     <div class="permissao-lista">
                         ${permissoes.map(p => {
-                            const isChecked = permissoesAtivas.includes(String(p.id)) || permissoesAtivas.includes(p.slug);
+                            const pId = parseInt(p.id);
+                            const pSlug = String(p.slug);
+                            const isChecked = permissoesAtivasIds.includes(pId) || permissoesAtivasSlugs.includes(pSlug);
+                            // console.log(`Permissão ${p.slug}: id=${pId}, isChecked=${isChecked}`);
                             return `
                                 <div class="permissao-item">
                                     <label>

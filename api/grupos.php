@@ -66,12 +66,12 @@ switch ($metodo) {
             
             // Busca permissões do grupo
             $stmt = $pdo->prepare("
-                SELECT p.* FROM grupo_permissoes gp 
+                SELECT p.id, p.slug FROM grupo_permissoes gp 
                 JOIN permissoes p ON gp.permissao_id = p.id 
                 WHERE gp.grupo_id = ?
             ");
             $stmt->execute([$id]);
-            $grupo['permissoes'] = $stmt->fetchAll();
+            $grupo['permissoes'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
             
             // Busca membros do grupo
             $stmt = $pdo->prepare("SELECT u.id, u.nome, u.email FROM usuarios u JOIN usuario_grupos ug ON u.id = ug.usuario_id WHERE ug.grupo_id = ?");
