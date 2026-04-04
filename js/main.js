@@ -269,23 +269,15 @@ async function fetchProximoNumero() {
 }
 
 async function salvarNotificacao() {
-    console.log("--- salvarNotificacao: INICIADA ---");
-    const dados = await getFormData(false);
-    console.log("--- salvarNotificacao: Dados recebidos do getFormData:", dados);
-
-    // --- LOGS DA VALIDAÇÃO ---
-    console.log("salvarNotificacao: Validando dados.numero:", dados.numero, `(!dados.numero = ${!dados.numero})`);
-    console.log("salvarNotificacao: Validando dados.unidade:", dados.unidade, `(!dados.unidade = ${!dados.unidade})`);
-    console.log("salvarNotificacao: Validando dados.assunto_id:", dados.assunto_id, `(!dados.assunto_id = ${!dados.assunto_id})`);
-    // --- FIM DOS LOGS ---
+    console.log("salvarNotificacao: INICIADA");
+    const dados = getFormData(false);
+    console.log("salvarNotificacao: Dados:", dados);
 
     if (!dados.numero || !dados.unidade || !dados.assunto_id) {
         showStatus('Preencha os campos obrigatórios: Número, Unidade e Assunto.', 'error');
-        console.error("--- salvarNotificacao: FALHA NA VALIDAÇÃO ---");
         return; 
     }
 
-    console.log("--- salvarNotificacao: Validação APROVADA. Enviando para a API... ---");
     showStatus('Salvando notificação...', 'loading');
     
     try {
@@ -308,79 +300,18 @@ async function salvarNotificacao() {
 }
 
 async function inicializarFormularioEdicao() {
-    // --- PARTE 1: LER O ID DA NOTIFICAÇÃO DA URL HASH ---
-    const hash = window.location.hash;
-    const queryStringIndex = hash.indexOf('?');
-    let notificacaoId = null;
-
-    if (queryStringIndex !== -1) {
-        const queryString = hash.substring(queryStringIndex + 1);
-        const urlParams = new URLSearchParams(queryString);
-        notificacaoId = urlParams.get('id');
-    }
-
+    const notificacaoId = NOTIFICACAO_ID;
+    
     if (!notificacaoId) {
         document.getElementById('main-content').innerHTML = "<h1>Erro: ID da notificação não fornecido na URL.</h1>";
-        console.error("Não foi possível encontrar o 'id' na URL hash:", hash);
+        console.error("ID não encontrado");
         return;
     }
 
-    console.log(`✅ Iniciando formulário de edição para o ID: ${notificacaoId}`);
+    console.log(`Iniciando formulário de edição para o ID: ${notificacaoId}`);
 
-    // --- PARTE 2: LÓGICA PORTADA DO ANTIGO 'editar.js' ---
-
-    // Variável para guardar IDs de imagens a serem deletadas
     let imagensParaDeletar = [];
 
-    // Função para preencher o formulário com os dados da API
-    function preencherFormulario(data) {
-        try {
-            document.getElementById('notificacao_id').value = data.id;
-            document.getElementById('numero').value = `${data.numero}/${data.ano}`;
-            document.getElementById('unidade').value = data.unidade;
-            document.getElementById('bloco').value = data.bloco || '';
-            document.getElementById('url_recurso').value = data.url_recurso || '';
-            document.getElementById('fundamentacao_legal').value = data.fundamentacao_legal || '';
-            document.getElementById('data_emissao').value = data.data_emissao;
-            document.getElementById('tipo_id').value = data.tipo_id;
-            document.getElementById('assunto_id').value = data.assunto_id;
-            
-            // Lógica dos fatos
-            const fatosContainer = document.getElementById('fatos-container');
-            fatosContainer.innerHTML = ''; // Limpa antes de adicionar
-            if (data.fatos && data.fatos.length > 0) {
-                data.fatos.forEach(fatoDescricao => addFato(fatoDescricao));
-            } else {
-                addFato(); // Adiciona um campo vazio se não houver fatos
-            }
-
-            // Lógica das imagens existentes
-            const previewContainer = document.getElementById('preview-container');
-            if (data.imagens && data.imagens.length > 0) {
-                data.imagens.forEach(img => {
-                    const imageUrl = `/uploads/imagens/${img.caminho_arquivo}`;
-                    const item = document.createElement('div');
-                    item.className = 'img-preview-item existing-image';
-                    item.id = `imagem-salva-${img.id}`;
-                    item.innerHTML = `
-                        <img src="${imageUrl}" alt="${img.nome_original}">
-                        <small>Salva</small>
-                        <button type="button" class="remove-btn-existing" onclick="marcarParaDeletar(${img.id})">&times;</button>
-                    `;
-                    previewContainer.appendChild(item);
-                });
-            }
-
-            // Força a atualização do campo de multa, caso seja necessário
-            toggleMultaField();
-            console.log("✅ Formulário preenchido com sucesso.");
-        } catch (error) {
-            console.error("❌ Erro ao preencher o formulário:", error);
-            showStatus("Ocorreu um erro ao exibir os dados no formulário.", "error");
-        }
-    }
-
-    // Função para marcar/desmarcar imagens para deleção
     window.marcarParaDeletar = function(imageId) {
         const previewItem = document.getElementById(`imagem-salva-${imageId}`);
         const jaMarcada = imagensParaDeletar.includes(imageId);
@@ -393,13 +324,12 @@ async function inicializarFormularioEdicao() {
             previewItem.classList.add('marcada-para-delecao');
         }
         console.log("Imagens marcadas para deletar:", imagensParaDeletar);
-    }
+    };
 
-    // Função para enviar os dados atualizados para a API
-    async function atualizarNotificacao() {
-        const dados = getFormData(false); // getFormData deve estar em funcs.js
+    window.atualizarNotificacaoGlobal = async function() {
+        const dados = getFormData(false);
         dados.id = notificacaoId;
-        dados.status_id = 1; // Você pode querer tornar isso dinâmico
+        dados.status_id = 1;
         dados.imagens_para_deletar = imagensParaDeletar;
 
         showStatus('Atualizando notificação...', 'loading');
@@ -420,36 +350,75 @@ async function inicializarFormularioEdicao() {
         } catch (error) {
             showStatus(`Erro de conexão: ${error.message}`, 'error');
         }
+    };
+
+    function preencherFormulario(data) {
+        try {
+            document.getElementById('notificacao_id').value = data.id;
+            document.getElementById('numero').value = `${data.numero}/${data.ano}`;
+            document.getElementById('unidade').value = data.unidade;
+            document.getElementById('bloco').value = data.bloco || '';
+            document.getElementById('url_recurso').value = data.url_recurso || '';
+            document.getElementById('fundamentacao_legal').value = data.fundamentacao_legal || '';
+            document.getElementById('data_emissao').value = data.data_emissao;
+            document.getElementById('tipo_id').value = data.tipo_id;
+            document.getElementById('assunto_id').value = data.assunto_id;
+            
+            const fatosContainer = document.getElementById('fatos-container');
+            fatosContainer.innerHTML = '';
+            if (data.fatos && data.fatos.length > 0) {
+                data.fatos.forEach(fatoDescricao => addFato(fatoDescricao));
+            } else {
+                addFato();
+            }
+
+            const previewContainer = document.getElementById('preview-container');
+            if (data.imagens && data.imagens.length > 0) {
+                data.imagens.forEach(img => {
+                    const imageUrl = `/uploads/imagens/${img.caminho_arquivo}`;
+                    const item = document.createElement('div');
+                    item.className = 'img-preview-item existing-image';
+                    item.id = `imagem-salva-${img.id}`;
+                    item.innerHTML = `
+                        <img src="${imageUrl}" alt="${img.nome_original}">
+                        <small>Salva</small>
+                        <button type="button" class="remove-btn-existing" onclick="marcarParaDeletar(${img.id})">&times;</button>
+                    `;
+                    previewContainer.appendChild(item);
+                });
+            }
+
+            toggleMultaField();
+            console.log("Formulário preenchido com sucesso.");
+        } catch (error) {
+            console.error("Erro ao preencher o formulário:", error);
+            showStatus("Ocorreu um erro ao exibir os dados no formulário.", "error");
+        }
     }
 
-    // --- PARTE 3: EXECUÇÃO E CONFIGURAÇÃO INICIAL ---
-
     try {
-        // Configura o botão principal para a ação de ATUALIZAR
         const btnSalvar = document.getElementById('btnSalvar');
-        btnSalvar.textContent = '💾 Atualizar Notificação';
-        btnSalvar.onclick = atualizarNotificacao;
+        if (btnSalvar) {
+            btnSalvar.textContent = '💾 Atualizar Notificação';
+            btnSalvar.onclick = window.atualizarNotificacaoGlobal;
+        }
 
-        // Mostra um status inicial
         showStatus('Carregando dados da notificação...', 'loading');
 
-        // Busca os dados da notificação específica
-        const response = await fetch(`${API_BASE_URL_PHP}/notificacoes.php?id=${notificacaoId}`, {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('accessToken')}` }
-        });
+        const response = await fetch(`${API_BASE_URL_PHP}/notificacoes.php?id=${notificacaoId}`);
         if (!response.ok) {
-            const errorData = await response.json();
+            const errorData = await response.json().catch(() => ({}));
             throw new Error(errorData.message || 'Notificação não encontrada.');
         }
         const data = await response.json();
 
-        // Finalmente, preenche o formulário com os dados recebidos
-        await fetchInitialData(); // Garante que os selects de tipo/assunto estejam prontos
+        await fetchInitialData();
+        $('select').formSelect();
         preencherFormulario(data);
         showStatus('Dados carregados. Pronto para edição.', 'success');
 
     } catch (error) {
-        console.error("❌ Erro crítico ao carregar dados da notificação:", error);
+        console.error("Erro ao carregar dados:", error);
         showStatus(error.message, 'error');
     }
 }

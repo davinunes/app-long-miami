@@ -211,3 +211,44 @@ function carregarListaNotificacoes() {
 function fazerLogout() {
     window.location.href = 'logout.php';
 }
+
+function getFormData(forPDF = false) {
+    const tipoSelect = document.getElementById('tipo_id');
+    const selectedTipoOption = tipoSelect.options[tipoSelect.selectedIndex];
+
+    const assuntoSelect = document.getElementById('assunto_id');
+    const selectedAssuntoOption = assuntoSelect.options[assuntoSelect.selectedIndex];
+
+    const dados = {
+        numero: document.getElementById('numero').value,
+        unidade: document.getElementById('unidade').value,
+        bloco: document.getElementById('bloco').value,
+        data_emissao: document.getElementById('data_emissao').value,
+        fundamentacao_legal: document.getElementById('fundamentacao_legal').value,
+        texto_descritivo: document.getElementById('texto_descritivo') ? document.getElementById('texto_descritivo').value : '',
+        fatos: Array.from(document.querySelectorAll('#fatos-container textarea')).map(input => input.value).filter(Boolean),
+        fotos_fatos: imageStore
+    };
+
+    if (forPDF) {
+        dados.tipo_notificacao = selectedTipoOption.text;
+        dados.tipo_penalidade = selectedTipoOption.text.toUpperCase();
+        dados.assunto = selectedAssuntoOption.text;
+        dados.url_recurso = document.getElementById('url_recurso').value;
+        if (selectedTipoOption.text.toLowerCase().includes('multa')) {
+            dados.valor_multa = document.getElementById('valor_multa').value;
+        }
+        dados.fotos_fatos = imageStore.map(img => img.b64);
+    } else {
+        dados.tipo_id = parseInt(selectedTipoOption.value);
+        dados.assunto_id = parseInt(selectedAssuntoOption.value);
+        dados.url_recurso = document.getElementById('url_recurso').value;
+        dados.cidade_emissao = "Taguatinga/DF";
+        dados.prazo_recurso = 5;
+        if (selectedTipoOption.text.toLowerCase().includes('multa')) {
+            dados.valor_multa = document.getElementById('valor_multa').value;
+        }
+    }
+    
+    return dados;
+}
