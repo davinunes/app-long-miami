@@ -207,3 +207,7 @@ function carregarListaNotificacoes() {
         tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: red;">Erro: ${error.message}</td></tr>`;
     });
 }
+
+function fazerLogout() {
+    window.location.href = 'logout.php';
+}

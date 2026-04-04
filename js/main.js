@@ -10,9 +10,7 @@ async function inicializarGerenciadorUsuarios() {
 
 async function carregarConfiguracoesUsuarios() {
     try {
-        const response = await fetch(`${API_BASE_URL_PHP}/config.php`, {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('accessToken')}` }
-        });
+        const response = await fetch(`${API_BASE_URL_PHP}/config.php`);
         if (!response.ok) throw new Error('Falha ao carregar configurações.');
         configDataGlobal = await response.json();
     } catch (error) {
@@ -32,9 +30,7 @@ async function carregarListaUsuarios() {
     tbody.html('<tr><td colspan="4" style="text-align: center;">Carregando...</td></tr>');
     
     try {
-        const response = await fetch(`${API_BASE_URL_PHP}/usuarios.php`, {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('accessToken')}` }
-        });
+        const response = await fetch(`${API_BASE_URL_PHP}/usuarios.php`);
         
         if (!response.ok) {
             const err = await response.json();
@@ -89,9 +85,7 @@ async function abrirModalUsuario(id) {
         $('#usuario_senha').prop('required', false);
 
         try {
-            const response = await fetch(`${API_BASE_URL_PHP}/usuarios.php?id=${id}`, {
-                headers: { 'Authorization': `Bearer ${localStorage.getItem('accessToken')}` }
-            });
+            const response = await fetch(`${API_BASE_URL_PHP}/usuarios.php?id=${id}`);
             if (!response.ok) throw new Error('Não foi possível carregar os dados do usuário.');
             
             const user = await response.json();
@@ -163,10 +157,7 @@ async function salvarUsuarioModal() {
     try {
         const response = await fetch(`${API_BASE_URL_PHP}/usuarios.php`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(dados)
         });
         
@@ -243,9 +234,7 @@ function carregarListaNotificacoes() {
 
 async function fetchProximoNumero() {
     try {
-        const response = await fetch(`${API_BASE_URL_PHP}/notificacoes.php?proximo_numero=true`, {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('accessToken')}` }
-        });
+        const response = await fetch(`${API_BASE_URL_PHP}/notificacoes.php?proximo_numero=true`);
         if (!response.ok) throw new Error('Falha ao buscar o próximo número.');
         const data = await response.json();
         const numeroInput = document.getElementById('numero');
@@ -281,17 +270,14 @@ async function salvarNotificacao() {
     try {
         const response = await fetch(`${API_BASE_URL_PHP}/notificacoes.php`, {
             method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(dados)
         });
         const result = await response.json();
         
         if (response.ok) {
             showStatus(result.message, 'success');
-            setTimeout(() => carregarConteudo('lista.php'), 1500);
+            setTimeout(() => { window.location.href = 'lista.php'; }, 1500);
         } else {
             showStatus(`Erro ao salvar: ${result.message}`, 'error');
         }
@@ -399,18 +385,14 @@ async function inicializarFormularioEdicao() {
 
         try {
             const response = await fetch(`${API_BASE_URL_PHP}/notificacoes.php`, {
-                method: 'POST', // O seu backend usa POST para criar e atualizar
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-                },
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(dados)
             });
             const result = await response.json();
             if (response.ok) {
                 showStatus(result.message, 'success');
-                // Após o sucesso, simula um clique no link da lista para voltar
-                setTimeout(() => document.querySelector('a[href="lista.php"]').click(), 1500);
+                setTimeout(() => { window.location.href = 'lista.php'; }, 1500);
             } else {
                 showStatus(`Erro: ${result.message}`, 'error');
             }
@@ -454,9 +436,7 @@ async function inicializarFormularioEdicao() {
 async function carregarDadosNotificacao() {
     showStatus('Carregando dados da notificação...', 'loading');
     try {
-        const response = await fetch(`${API_BASE_URL_PHP}/notificacoes.php?id=${NOTIFICACAO_ID}`, {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('accessToken')}` }
-        });
+        const response = await fetch(`${API_BASE_URL_PHP}/notificacoes.php?id=${NOTIFICACAO_ID}`);
         if (!response.ok) {
             const errorData = await response.json();
             throw new Error(errorData.message || 'Notificação não encontrada.');
@@ -490,17 +470,13 @@ async function atualizarNotificacao(id) {
     try {
         const response = await fetch(`${API_BASE_URL_PHP}/notificacoes.php`, {
             method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(dados)
         });
         const result = await response.json();
         if (response.ok) {
             showStatus(result.message, 'success');
-            // setTimeout(() => carregarConteudo('lista.php'), 1500);
-			setTimeout(() => carregarConteudo(`editar.php?id=${id}`), 1500);
+            setTimeout(() => { window.location.href = `editar.php?id=${id}`; }, 1500);
         } else {
             showStatus(`Erro: ${result.message}`, 'error');
         }
@@ -567,17 +543,7 @@ async function configurarModoEdicao(id) {
 
     showStatus('Carregando dados para edição...', 'loading');
     try {
-        const response = await fetch(`${API_BASE_URL_PHP}/notificacoes.php?id=${id}`, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-            }
-        });
-        
-        if (response.status === 401) {
-            window.tratarTokenExpirado();
-            return;
-        }
+        const response = await fetch(`${API_BASE_URL_PHP}/notificacoes.php?id=${id}`);
         
         if (!response.ok) {
             const err = await response.json().catch(() => ({}));
@@ -592,11 +558,7 @@ async function configurarModoEdicao(id) {
         showStatus('Pronto para edição.', 'success');
     } catch (error) {
         console.error('Erro ao carregar notificação:', error);
-        if (error.message.includes('401') || error.message.includes('expirou')) {
-            window.tratarTokenExpirado();
-        } else {
-            showStatus('Erro: ' + error.message, 'error');
-        }
+        showStatus('Erro: ' + error.message, 'error');
     }
 }
 
@@ -611,12 +573,7 @@ async function configurarModoCriacao() {
     addFato(); 
     
     try {
-        const response = await fetch(`${API_BASE_URL_PHP}/notificacoes.php?proximo_numero=true`, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-            }
-        });
+        const response = await fetch(`${API_BASE_URL_PHP}/notificacoes.php?proximo_numero=true`);
         const data = await response.json();
         if (data.proximo_numero) {
             document.getElementById('numero').value = data.proximo_numero;
@@ -649,9 +606,7 @@ async function carregarListaGrupos() {
     lista.html('<li class="collection-item">Carregando...</li>');
     
     try {
-        const response = await fetch(`${API_BASE_URL_PHP}/grupos.php`, {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('accessToken')}` }
-        });
+        const response = await fetch(`${API_BASE_URL_PHP}/grupos.php`);
         if (!response.ok) throw new Error('Erro ao buscar grupos.');
         
         const grupos = await response.json();
@@ -726,10 +681,7 @@ async function criarGrupo() {
     try {
         const response = await fetch(`${API_BASE_URL_PHP}/grupos.php`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 criar_grupo: true,
                 nome: nome,
@@ -755,9 +707,7 @@ async function criarGrupo() {
 
 async function editarGrupo(id) {
     try {
-        const response = await fetch(`${API_BASE_URL_PHP}/grupos.php?id=${id}`, {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('accessToken')}` }
-        });
+        const response = await fetch(`${API_BASE_URL_PHP}/grupos.php?id=${id}`);
         if (!response.ok) throw new Error('Erro ao buscar grupo.');
         
         const grupo = await response.json();
@@ -807,10 +757,7 @@ async function salvarGrupoModal() {
     try {
         const response = await fetch(`${API_BASE_URL_PHP}/grupos.php`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 id: parseInt(id),
                 nome: nome,
@@ -838,10 +785,7 @@ async function deletarGrupo(id) {
     try {
         const response = await fetch(`${API_BASE_URL_PHP}/grupos.php`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 deletar: true,
                 id: id

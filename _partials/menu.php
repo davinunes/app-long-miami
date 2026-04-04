@@ -17,5 +17,13 @@
     
     <li><div class="divider"></div></li>
     
-    <li><a class="waves-effect" href="#!" id="logout-link"><i class="material-icons">exit_to_app</i>Sair</a></li>
+    <li><a class="waves-effect" href="logout.php"><i class="material-icons">exit_to_app</i>Sair</a></li>
 </ul>
+
+<script>
+if (typeof fazerLogout === 'undefined') {
+    function fazerLogout() {
+        window.location.href = 'logout.php';
+    }
+}
+</script>
