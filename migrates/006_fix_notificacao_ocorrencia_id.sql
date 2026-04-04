@@ -5,5 +5,4 @@
 UPDATE notificacoes n
 INNER JOIN ocorrencia_notificacoes oc ON oc.notificacao_id = n.id
 SET n.ocorrencia_id = oc.ocorrencia_id
-WHERE n.ocorrencia_id IS NULL AND oc.tipo_vinculo = 'gerada'
-LIMIT 100;
+WHERE n.ocorrencia_id IS NULL AND oc.tipo_vinculo = 'gerada';
