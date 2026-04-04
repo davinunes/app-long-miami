@@ -296,6 +296,7 @@ $podeVerMinhas = true;
             
             const tbody = $('#ocorrencias-table-body');
             tbody.html('<tr><td colspan="6" style="text-align: center;">Carregando...</td></tr>');
+            console.log('[Todas] Carregando...');
             
             const fase = $('#filtro-fase').val();
             let url = API_BASE_URL_PHP + '/ocorrencias.php';
@@ -303,8 +304,10 @@ $podeVerMinhas = true;
             
             try {
                 const response = await fetch(url);
+                console.log('[Todas] Response:', response.status);
                 if (!response.ok) throw new Error('Erro ao carregar.');
                 ocorrenciasData = await response.json();
+                console.log('[Todas] Recebeu:', ocorrenciasData.length, 'ocorrências');
                 tbody.empty();
                 
                 if (ocorrenciasData.length === 0) {
@@ -324,12 +327,18 @@ $podeVerMinhas = true;
             if (!PODE_VER_DETALHES && !EH_ADMIN_DEV && !PODE_CRIAR) return;
             
             const tbody = $('#minhas-ocorrencias-table-body');
-            tbody.html('<tr><td colspan="6" style="text-align: center;">Carregando...</td></tr>');
+            tbody.html('<tr><td colspan="6" style="text-align: center;">Carregando minhas ocorrências...</td></tr>');
+            console.log('[Minhas] Carregando para usuário:', USUARIO_ID);
             
             try {
                 const response = await fetch(API_BASE_URL_PHP + '/ocorrencias.php?minhas=1');
-                if (!response.ok) throw new Error('Erro ao carregar.');
+                console.log('[Minhas] Response status:', response.status);
+                if (!response.ok) {
+                    const err = await response.json().catch(() => ({}));
+                    throw new Error(err.message || 'Erro ao carregar.');
+                }
                 const minhas = await response.json();
+                console.log('[Minhas] Recebeu:', minhas.length, 'ocorrências');
                 tbody.empty();
                 
                 if (minhas.length === 0) {
