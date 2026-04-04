@@ -268,10 +268,11 @@ function renderOcorrencia(occ) {
     if (podeEditar) {
         html += '<hr style="margin: 15px 0; border: none; border-top: 1px solid #eee;">' +
         '<div style="display: flex; gap: 10px; align-items: center;">' +
-        '<input type="text" id="nova-mensagem" placeholder="Digite uma mensagem..." style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">' +
+        '<input type="text" id="nova-mensagem" placeholder="Digite uma mensagem ou cole (Ctrl+V)..." style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">' +
         '<label style="display: flex; align-items: center; gap: 5px;"><input type="checkbox" id="msg-evidencia"><span>Evidência</span></label>' +
         '<button class="btn blue" onclick="enviarMensagem()">Enviar</button>' +
-        '</div>';
+        '</div>' +
+        '<small style="color: #999; font-size: 11px;">💡 Dica: Cole (Ctrl+V) texto ou imagem diretamente aqui</small>';
     }
     
     html += '</div>' +
@@ -285,7 +286,8 @@ function renderOcorrencia(occ) {
         '<div style="display: flex; gap: 10px; align-items: center;">' +
         '<input type="file" id="anexo-file" accept="image/*,.pdf,.doc,.docx" style="flex: 1;">' +
         '<button class="btn blue" onclick="uploadAnexo()">Anexar</button>' +
-        '</div>';
+        '</div>' +
+        '<small style="color: #999; font-size: 11px;">💡 Dica: Cole (Ctrl+V) uma imagem para anexá-la diretamente</small>';
     }
     
     html += '</div>' +
@@ -487,6 +489,85 @@ function formatDateTime(data) {
 function getIconeTipo(tipo) {
     var icones = { imagem: 'image', video: 'movie', audio: 'audiotrack', documento: 'description', link: 'link' };
     return icones[tipo] || 'attach_file';
+}
+
+document.addEventListener('paste', async function(e) {
+    if (!podeEditar) return;
+    
+    const items = e.clipboardData.items;
+    for (let item of items) {
+        if (item.type.startsWith('image/')) {
+            e.preventDefault();
+            const file = item.getAsFile();
+            if (file) {
+                await processarColagemImagem(file);
+            }
+            break;
+        } else if (item.type === 'text/plain') {
+            e.preventDefault();
+            const text = await getTextFromClipboard();
+            if (text && text.trim()) {
+                await enviarMensagemTexto(text.trim());
+            }
+            break;
+        }
+    }
+});
+
+async function getTextFromClipboard() {
+    return new Promise((resolve) => {
+        navigator.clipboard.readText().then(text => resolve(text)).catch(() => resolve(''));
+    });
+}
+
+async function processarColagemImagem(file) {
+    M.toast({html: 'Processando imagem...', classes: 'blue'});
+    
+    var reader = new FileReader();
+    reader.onload = async function(e) {
+        var dados = {
+            ocorrencia_id: ocorrenciaId,
+            tipo: 'imagem',
+            nome_original: 'paste_' + Date.now() + '.png',
+            dados: e.target.result.split(',')[1],
+            mime_type: file.type || 'image/png',
+            tamanho_bytes: file.size
+        };
+        
+        try {
+            var response = await fetch(API_BASE_URL_PHP + '/ocorrencias.php?upload=1', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dados)
+            });
+            var result = await response.json();
+            if (!response.ok) throw new Error(result.message);
+            M.toast({html: 'Imagem colada como evidência!', classes: 'green'});
+            carregarOcorrencia();
+        } catch (error) {
+            M.toast({html: 'Erro ao colar imagem: ' + error.message, classes: 'red'});
+        }
+    };
+    reader.readAsDataURL(file);
+}
+
+async function enviarMensagemTexto(texto) {
+    try {
+        var response = await fetch(API_BASE_URL_PHP + '/ocorrencias.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                ocorrencia_id: ocorrenciaId,
+                mensagem: texto
+            })
+        });
+        var result = await response.json();
+        if (!response.ok) throw new Error(result.message);
+        M.toast({html: 'Mensagem colada!', classes: 'green'});
+        carregarOcorrencia();
+    } catch (error) {
+        M.toast({html: 'Erro ao colar mensagem: ' + error.message, classes: 'red'});
+    }
 }
     </script>
 </body>

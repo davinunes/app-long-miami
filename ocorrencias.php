@@ -170,6 +170,22 @@ requirePapel(['protocolar', 'diligente', 'promotor', 'admin', 'dev']);
             window.location.href = 'logout.php';
         }
 
+        function temPapelEdicao(fase) {
+            return isAdmin || ['protocolar', 'diligente', 'promotor'].some(p => <?php echo json_encode(getPapeisUsuario()); ?>.includes(p));
+        }
+
+        async function editarOcorrencia(id) {
+            try {
+                const response = await fetch(API_BASE_URL_PHP + '/ocorrencias.php?id=' + id);
+                if (!response.ok) throw new Error('Erro ao carregar ocorrência');
+                const occ = await response.json();
+                ocorrenciasData = ocorrenciasData.map(o => o.id === id ? occ : o);
+                abrirModalOcorrencia(id);
+            } catch (error) {
+                M.toast({html: 'Erro ao carregar ocorrência', classes: 'red'});
+            }
+        }
+
         async function carregarOcorrencias() {
             const tbody = $('#ocorrencias-table-body');
             tbody.html('<tr><td colspan="7" style="text-align: center;">Carregando...</td></tr>');
@@ -195,6 +211,7 @@ requirePapel(['protocolar', 'diligente', 'promotor', 'admin', 'dev']);
                     const unidades = o.unidades || '-';
                     const excluirBtn = isAdmin ? 
                         `<button class="btn-floating btn-small red" onclick="excluirOcorrencia(${o.id})" title="Excluir"><i class="material-icons">delete</i></button>` : '';
+                    const podeEditarOcor = temPapelEdicao(o.fase);
                     
                     tbody.append(`
                         <tr>
@@ -204,9 +221,10 @@ requirePapel(['protocolar', 'diligente', 'promotor', 'admin', 'dev']);
                             <td>${formatDate(o.data_fato)}</td>
                             <td><span class="fase-badge ${faseClass}">${faseLabel}</span></td>
                             <td>
-                                <a href="ocorrencia_detalhe.php?id=${o.id}" class="btn-floating btn-small blue">
+                                <a href="ocorrencia_detalhe.php?id=${o.id}" class="btn-floating btn-small blue" title="Ver">
                                     <i class="material-icons">visibility</i>
                                 </a>
+                                ${podeEditarOcor ? `<button class="btn-floating btn-small orange" onclick="editarOcorrencia(${o.id})" title="Editar"><i class="material-icons">edit</i></button>` : ''}
                                 ${excluirBtn}
                             </td>
                         </tr>
@@ -241,7 +259,6 @@ requirePapel(['protocolar', 'diligente', 'promotor', 'admin', 'dev']);
             const modal = $('#modal-ocorrencia');
             $('#form-ocorrencia')[0].reset();
             unidadesSelecionadas = [];
-            renderUnidadesSelecionadas();
             
             if (id) {
                 $('#modal-ocorrencia-titulo').text('Editar Ocorrência');
@@ -251,6 +268,13 @@ requirePapel(['protocolar', 'diligente', 'promotor', 'admin', 'dev']);
                     $('#ocorrencia_titulo').val(occ.titulo);
                     $('#ocorrencia_data_fato').val(occ.data_fato);
                     $('#ocorrencia_descricao').val(occ.descricao_fato);
+                    if (occ.unidades && occ.unidades.length > 0) {
+                        unidadesSelecionadas = occ.unidades.map(u => ({
+                            id: u.id,
+                            bloco: u.unidade_bloco || '',
+                            numero: u.unidade_numero || ''
+                        }));
+                    }
                 }
             } else {
                 $('#modal-ocorrencia-titulo').text('Nova Ocorrência');
@@ -258,6 +282,7 @@ requirePapel(['protocolar', 'diligente', 'promotor', 'admin', 'dev']);
                 $('#ocorrencia_data_fato').val(new Date().toISOString().split('T')[0]);
             }
             
+            renderUnidadesSelecionadas();
             M.updateTextFields();
             M.Modal.getInstance(modal).open();
         }
@@ -291,6 +316,11 @@ requirePapel(['protocolar', 'diligente', 'promotor', 'admin', 'dev']);
             container.html(unidadesSelecionadas.map((u, i) => 
                 '<span class="unidade-chip">' + (u.bloco || '') + u.numero + ' <button onclick="removerUnidade(' + i + ')">×</button></span>'
             ).join(''));
+        }
+
+        function removerUnidade(index) {
+            unidadesSelecionadas.splice(index, 1);
+            renderUnidadesSelecionadas();
         }
 
         async function salvarOcorrencia() {
