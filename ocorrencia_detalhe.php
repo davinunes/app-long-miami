@@ -157,12 +157,29 @@ $podeNotificar = isAdmin() || temPermissao('notificacao.criar');
 const API_BASE_URL_PHP = window.location.origin + '/api';
 const urlParams = new URLSearchParams(window.location.search);
 const ocorrenciaId = urlParams.get('id');
-const podeMudarFase = <?php echo $podeMudarFase ? 'true' : 'false'; ?>;
 const isAdmin = <?php echo $isAdmin ? 'true' : 'false'; ?>;
 const podeNotificar = <?php echo $podeNotificar ? 'true' : 'false'; ?>;
 const usuarioId = <?php echo $usuario['id']; ?>;
+const permissoesUsuario = <?php echo json_encode(getPermissoesUsuario()); ?>;
+
+// Permissões injetadas pelo PHP
+const PODE_MUDAR_FASE = <?php echo $podeMudarFase ? 'true' : 'false'; ?>;
+const PODE_VINCULAR_UNIDADE = isAdmin || PODE_MUDAR_FASE || permissoesUsuario.includes('ocorrencia.unidade.vincular');
+const PODE_CRIAR_MENSAGEM = isAdmin || permissoesUsuario.includes('ocorrencia.mensagem.criar');
+const PODE_CRIAR_ANEXO = isAdmin || permissoesUsuario.includes('ocorrencia.anexo.criar');
+const PODE_CRIAR_EVIDENCIA = isAdmin || permissoesUsuario.includes('ocorrencia.evidencia.anexar');
+
+function temPermissao(perm) {
+    if (isAdmin) return true;
+    return permissoesUsuario.includes(perm);
+}
+
+console.log('[Permissões] PODE_VINCULAR_UNIDADE:', PODE_VINCULAR_UNIDADE);
+console.log('[Permissões] PODE_CRIAR_MENSAGEM:', PODE_CRIAR_MENSAGEM);
+console.log('[Permissões] PODE_CRIAR_ANEXO:', PODE_CRIAR_ANEXO);
+console.log('[Permissões] PODE_CRIAR_EVIDENCIA:', PODE_CRIAR_EVIDENCIA);
+
 let ocorrenciaData = null;
-let podeEditarGlobal = false;
 
 $(document).ready(async function() {
     $('.sidenav').sidenav({edge: 'left'});
@@ -197,8 +214,8 @@ async function carregarOcorrencia() {
 
 function renderOcorrencia(occ) {
     var faseLabel = occ.fase.replace('_', ' ');
-    var podeEditar = (occ.fase !== 'homologada') && (isAdmin || occ.created_by === usuarioId);
-    podeEditarGlobal = podeEditar;
+    var isProprio = occ.created_by === usuarioId;
+    var podeEditarProprio = isProprio && !isAdmin;
     
     $('#page-title').text('Ocorrência #' + occ.id);
     $('#fase-container').html('<span class="fase-badge fase-' + occ.fase + '">' + faseLabel + '</span>');
@@ -207,7 +224,7 @@ function renderOcorrencia(occ) {
     if (occ.unidades && occ.unidades.length > 0) {
         unidadesHtml = occ.unidades.map(function(u) {
             return '<span class="unidade-tag">' + (u.unidade_bloco || '') + u.unidade_numero + 
-                (isAdmin || podeMudarFase ? ' <button onclick="removerUnidade(' + u.id + ')" style="background:none;border:none;cursor:pointer;color:#999;padding:0;">×</button>' : '') + 
+                (PODE_VINCULAR_UNIDADE || isProprio ? ' <button onclick="removerUnidade(' + u.id + ')" style="background:none;border:none;cursor:pointer;color:#999;padding:0;">×</button>' : '') + 
                 '</span>';
         }).join('');
     } else {
@@ -215,7 +232,7 @@ function renderOcorrencia(occ) {
     }
     
     var unidadesForm = '';
-    if (isAdmin || podeMudarFase) {
+    if (PODE_VINCULAR_UNIDADE) {
         unidadesForm = '<div style="margin-top: 15px; padding-top: 15px; border-top: 1px dashed #ddd;">' +
             '<div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">' +
             '<select id="unidade-bloco" class="browser-default" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; min-width: 80px;">' +
@@ -229,7 +246,7 @@ function renderOcorrencia(occ) {
     }
     
     var faseControlsHtml = '';
-    if (podeMudarFase) {
+    if (PODE_MUDAR_FASE) {
         faseControlsHtml = '<div class="section-card">' +
             '<div class="section-title">Alterar Fase</div>' +
             '<div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">' +
@@ -281,9 +298,9 @@ function renderOcorrencia(occ) {
         
         '<div class="section-card">' +
         '<div class="section-title">Mensagens e Evidências</div>' +
-        '<div id="mensagens-container" style="max-height: 400px; overflow-y: auto;">' + renderMensagens(occ.mensagens || [], podeEditar) + '</div>';
+        '<div id="mensagens-container" style="max-height: 400px; overflow-y: auto;">' + renderMensagens(occ.mensagens || [], podeEditarProprio) + '</div>';
     
-    if (podeEditar) {
+    if (PODE_CRIAR_MENSAGEM) {
         html += '<hr style="margin: 15px 0; border: none; border-top: 1px solid #eee;">' +
         '<div style="display: flex; gap: 10px; align-items: center;">' +
         '<input type="text" id="nova-mensagem" placeholder="Digite uma mensagem ou cole (Ctrl+V)..." style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">' +
@@ -297,9 +314,9 @@ function renderOcorrencia(occ) {
         
         '<div class="section-card">' +
         '<div class="section-title">Anexos</div>' +
-        '<div class="anexo-lista" id="anexos-container">' + renderAnexos(occ.anexos || [], podeEditar) + '</div>';
+        '<div class="anexo-lista" id="anexos-container">' + renderAnexos(occ.anexos || [], podeEditarProprio) + '</div>';
     
-    if (podeEditar) {
+    if (PODE_CRIAR_ANEXO || PODE_CRIAR_EVIDENCIA) {
         html += '<hr style="margin: 15px 0; border: none; border-top: 1px solid #eee;">' +
         '<div style="margin-bottom: 10px;">' +
         '<label style="color: #666; font-size: 12px; display: block; margin-bottom: 5px;">Adicionar Link (Google Drive, OneDrive, etc.)</label>' +
@@ -584,7 +601,7 @@ function getIconeTipo(tipo) {
 }
 
 document.addEventListener('paste', async function(e) {
-    if (!podeEditarGlobal) return;
+    if (!PODE_CRIAR_EVIDENCIA) return;
     
     const items = e.clipboardData.items;
     for (let item of items) {
