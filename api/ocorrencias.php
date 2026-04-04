@@ -410,7 +410,7 @@ function adicionarMensagem($pdo, $dados, $usuario) {
 }
 
 function mudarFase($pdo, $dados, $usuario) {
-    $fasesPermitidas = ['nova', 'em_analise', 'recusada', 'homologada'];
+    $fasesPermitidas = ['nova', 'em_analise', 'pronta', 'recusada', 'homologada'];
     
     if (empty($dados->id) || empty($dados->nova_fase)) {
         http_response_code(400);
@@ -424,20 +424,8 @@ function mudarFase($pdo, $dados, $usuario) {
         exit();
     }
     
-    $papelPodeMudar = [
-        'nova' => ['protocolar', 'admin', 'dev'],
-        'em_analise' => ['promotor', 'admin', 'dev'],
-        'recusada' => ['promotor', 'admin', 'dev'],
-        'homologada' => ['promotor', 'admin', 'dev']
-    ];
-    
-    if (!in_array($usuario['role'], $papelPodeMudar[$dados->nova_fase])) {
-        http_response_code(403);
-        echo json_encode(['message' => 'Você não tem permissão para definir esta fase.']);
-        exit();
-    }
-    
-    $stmt = $pdo->prepare("SELECT fase FROM ocorrencias WHERE id = ?");
+    // Buscar fase atual da ocorrência
+    $stmt = $pdo->prepare("SELECT fase, created_by FROM ocorrencias WHERE id = ?");
     $stmt->execute([$dados->id]);
     $ocorrencia = $stmt->fetch();
     
@@ -449,14 +437,51 @@ function mudarFase($pdo, $dados, $usuario) {
     
     $faseAnterior = $ocorrencia['fase'];
     
+    // Verificar permissão baseada na transição
+    $transicoesPermitidas = [
+        'nova' => ['em_analise' => 'colocar_em_analise'],
+        'em_analise' => ['pronta' => 'marcar_pronta', 'recusada' => 'recusar'],
+        'pronta' => ['homologada' => 'homologar', 'recusada' => 'recusar'],
+        'recusada' => ['em_analise' => 'retornar_analise'],
+    ];
+    
+    // Admin/dev tem todas as permissões
+    $isAdminDev = in_array($usuario['role'], ['admin', 'dev']) || in_array('dev', $usuario['papeis'] ?? []) || in_array('admin', $usuario['papeis'] ?? []);
+    
+    if (!$isAdminDev) {
+        // Verificar se a transição é permitida
+        if (!isset($transicoesPermitidas[$faseAnterior]) || !isset($transicoesPermitidas[$faseAnterior][$dados->nova_fase])) {
+            http_response_code(403);
+            echo json_encode(['message' => 'Transição de fase não permitida.']);
+            exit();
+        }
+        
+        $permissaoNecessaria = $transicoesPermitidas[$faseAnterior][$dados->nova_fase];
+        
+        // Verificar se tem a permissão específica
+        if (!temPermissao($permissaoNecessaria)) {
+            http_response_code(403);
+            echo json_encode(['message' => 'Você não tem permissão para esta ação. Permissão necessária: ' . $permissaoNecessaria]);
+            exit();
+        }
+    }
+    
     $stmt = $pdo->prepare("UPDATE ocorrencias SET fase = ? WHERE id = ?");
     $stmt->execute([$dados->nova_fase, $dados->id]);
     
     $stmt = $pdo->prepare("INSERT INTO ocorrencia_fase_log (ocorrencia_id, fase_anterior, fase_nova, observacao, usuario_id) VALUES (?, ?, ?, ?, ?)");
     $stmt->execute([$dados->id, $faseAnterior, $dados->nova_fase, $dados->observacao ?? null, $usuario['id']]);
     
+    $labelsFase = [
+        'nova' => 'Nova',
+        'em_analise' => 'Em Análise',
+        'pronta' => 'Pronta',
+        'recusada' => 'Recusada',
+        'homologada' => 'Homologada'
+    ];
+    
     http_response_code(200);
-    echo json_encode(['message' => "Fase alterada de '$faseAnterior' para '$dados->nova_fase'."]);
+    echo json_encode(['message' => "Fase alterada de '{$labelsFase[$faseAnterior]}' para '{$labelsFase[$dados->nova_fase]}'."]);
 }
 
 function fazerUpload($pdo, $usuario) {

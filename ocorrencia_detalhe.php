@@ -3,9 +3,19 @@ require_once 'auth.php';
 requireAlgumaPermissao(['ocorrencia.ver_detalhes', 'ocorrencia.listar', 'ocorrencia.editar']);
 
 $usuario = getUsuario();
-$podeMudarFase = isAdmin() || temPermissao('ocorrencia.mudar_fase');
 $isAdmin = isAdmin();
 $podeNotificar = isAdmin() || temPermissao('notificacao.criar');
+
+// Permissões granulares para ações de fase
+$podeColocarEmAnalise = isAdmin() || temPermissao('ocorrencia.colocar_em_analise');
+$podeMarcarPronta = isAdmin() || temPermissao('ocorrencia.marcar_pronta');
+$podeHomologar = isAdmin() || temPermissao('ocorrencia.homologar');
+$podeRecusar = isAdmin() || temPermissao('ocorrencia.recusar');
+$podeVoltarAnalise = isAdmin() || temPermissao('ocorrencia.retornar_analise');
+$podeVincularUnidade = isAdmin() || temPermissao('ocorrencia.unidade.vincular');
+$podeCriarMensagem = isAdmin() || temPermissao('ocorrencia.mensagem.criar');
+$podeCriarAnexo = isAdmin() || temPermissao('ocorrencia.anexo.criar');
+$podeCriarEvidencia = isAdmin() || temPermissao('ocorrencia.evidencia.anexar');
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -40,6 +50,7 @@ $podeNotificar = isAdmin() || temPermissao('notificacao.criar');
         }
         .fase-nova { background: #2196F3; color: white; }
         .fase-em_analise { background: #FF9800; color: white; }
+        .fase-pronta { background: #9C27B0; color: white; }
         .fase-recusada { background: #F44336; color: white; }
         .fase-homologada { background: #4CAF50; color: white; }
 
@@ -162,22 +173,24 @@ const podeNotificar = <?php echo $podeNotificar ? 'true' : 'false'; ?>;
 const usuarioId = <?php echo $usuario['id']; ?>;
 const permissoesUsuario = <?php echo json_encode(getPermissoesUsuario()); ?>;
 
-// Permissões injetadas pelo PHP
-const PODE_MUDAR_FASE = <?php echo $podeMudarFase ? 'true' : 'false'; ?>;
-const PODE_VINCULAR_UNIDADE = isAdmin || PODE_MUDAR_FASE || permissoesUsuario.includes('ocorrencia.unidade.vincular');
-const PODE_CRIAR_MENSAGEM = isAdmin || permissoesUsuario.includes('ocorrencia.mensagem.criar');
-const PODE_CRIAR_ANEXO = isAdmin || permissoesUsuario.includes('ocorrencia.anexo.criar');
-const PODE_CRIAR_EVIDENCIA = isAdmin || permissoesUsuario.includes('ocorrencia.evidencia.anexar');
+// Permissões granulares injetadas pelo PHP
+const PODE_VINCULAR_UNIDADE = <?php echo $podeVincularUnidade ? 'true' : 'false'; ?>;
+const PODE_CRIAR_MENSAGEM = <?php echo $podeCriarMensagem ? 'true' : 'false'; ?>;
+const PODE_CRIAR_ANEXO = <?php echo $podeCriarAnexo ? 'true' : 'false'; ?>;
+const PODE_CRIAR_EVIDENCIA = <?php echo $podeCriarEvidencia ? 'true' : 'false'; ?>;
 
-function temPermissao(perm) {
-    if (isAdmin) return true;
-    return permissoesUsuario.includes(perm);
-}
+// Permissões de fase
+const PODE_COLOCAR_EM_ANALISE = <?php echo $podeColocarEmAnalise ? 'true' : 'false'; ?>;
+const PODE_MARCAR_PRONTA = <?php echo $podeMarcarPronta ? 'true' : 'false'; ?>;
+const PODE_HOMOLOGAR = <?php echo $podeHomologar ? 'true' : 'false'; ?>;
+const PODE_RECUSAR = <?php echo $podeRecusar ? 'true' : 'false'; ?>;
+const PODE_VOLTAR_ANALISE = <?php echo $podeVoltarAnalise ? 'true' : 'false'; ?>;
 
-console.log('[Permissões] PODE_VINCULAR_UNIDADE:', PODE_VINCULAR_UNIDADE);
-console.log('[Permissões] PODE_CRIAR_MENSAGEM:', PODE_CRIAR_MENSAGEM);
-console.log('[Permissões] PODE_CRIAR_ANEXO:', PODE_CRIAR_ANEXO);
-console.log('[Permissões] PODE_CRIAR_EVIDENCIA:', PODE_CRIAR_EVIDENCIA);
+console.log('[Permissões] Fase: COLOCAR_EM_ANALISE:', PODE_COLOCAR_EM_ANALISE);
+console.log('[Permissões] Fase: MARCAR_PRONTA:', PODE_MARCAR_PRONTA);
+console.log('[Permissões] Fase: HOMOLOGAR:', PODE_HOMOLOGAR);
+console.log('[Permissões] Fase: RECUSAR:', PODE_RECUSAR);
+console.log('[Permissões] Fase: VOLTAR_ANALISE:', PODE_VOLTAR_ANALISE);
 
 let ocorrenciaData = null;
 
@@ -246,18 +259,69 @@ function renderOcorrencia(occ) {
     }
     
     var faseControlsHtml = '';
-    if (PODE_MUDAR_FASE) {
+    
+    // Construir botões de ação baseados na fase atual e permissões
+    var acoesFase = [];
+    
+    if (occ.fase === 'nova' && PODE_COLOCAR_EM_ANALISE) {
+        acoesFase.push({
+            classe: 'blue',
+            icone: 'search',
+            texto: 'Colocar em Análise',
+            onclick: 'colocarEmAnalise()'
+        });
+    }
+    
+    if (occ.fase === 'em_analise' && PODE_MARCAR_PRONTA) {
+        acoesFase.push({
+            classe: 'orange',
+            icone: 'check_circle',
+            texto: 'Marcar como Pronta',
+            onclick: 'marcarPronta()'
+        });
+    }
+    
+    if (occ.fase === 'pronta' && PODE_HOMOLOGAR) {
+        acoesFase.push({
+            classe: 'green',
+            icone: 'verified',
+            texto: 'Homologar',
+            onclick: 'homologarOcorrencia()'
+        });
+    }
+    
+    if ((occ.fase === 'em_analise' || occ.fase === 'pronta') && PODE_RECUSAR) {
+        acoesFase.push({
+            classe: 'red',
+            icone: 'cancel',
+            texto: 'Recusar',
+            onclick: 'recusarOcorrencia()'
+        });
+    }
+    
+    if (occ.fase === 'recusada' && PODE_VOLTAR_ANALISE) {
+        acoesFase.push({
+            classe: 'grey',
+            icone: 'replay',
+            texto: 'Voltar para Análise',
+            onclick: 'voltarParaAnalise()'
+        });
+    }
+    
+    if (acoesFase.length > 0) {
         faseControlsHtml = '<div class="section-card">' +
-            '<div class="section-title">Alterar Fase</div>' +
-            '<div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">' +
-            '<select id="nova-fase" class="browser-default" style="padding: 10px; border: 1px solid #ddd; border-radius: 4px; min-width: 150px; background: white;">' +
-            '<option value="nova"' + (occ.fase === 'nova' ? ' selected' : '') + '>Nova</option>' +
-            '<option value="em_analise"' + (occ.fase === 'em_analise' ? ' selected' : '') + '>Em Análise</option>' +
-            '<option value="recusada"' + (occ.fase === 'recusada' ? ' selected' : '') + '>Recusada</option>' +
-            '<option value="homologada"' + (occ.fase === 'homologada' ? ' selected' : '') + '>Homologada</option>' +
-            '</select>' +
-            '<input type="text" id="fase-obs" placeholder="Observação" style="flex: 1; min-width: 200px; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">' +
-            '<button class="btn blue" onclick="mudarFase()">Alterar</button>' +
+            '<div class="section-title">Ações de Fase</div>' +
+            '<div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 10px;">';
+        
+        acoesFase.forEach(function(acao) {
+            faseControlsHtml += '<button class="btn ' + acao.classe + '" onclick="' + acao.onclick + '">' +
+                '<i class="material-icons left">' + acao.icone + '</i>' + acao.texto +
+                '</button>';
+        });
+        
+        faseControlsHtml += '</div>' +
+            '<div style="display: flex; gap: 10px; align-items: center;">' +
+            '<input type="text" id="fase-obs" placeholder="Observação (opcional)" style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">' +
             '</div></div>';
     }
     
@@ -561,8 +625,7 @@ async function excluirAnexo(id) {
     }
 }
 
-async function mudarFase() {
-    var novaFase = $('#nova-fase').val();
+async function mudarFase(novaFase) {
     var observacao = $('#fase-obs').val().trim();
     
     try {
@@ -573,10 +636,38 @@ async function mudarFase() {
         });
         var result = await response.json();
         if (!response.ok) throw new Error(result.message);
+        M.toast({html: 'Fase alterada com sucesso!', classes: 'green'});
         carregarOcorrencia();
     } catch (error) {
-        alert(error.message);
+        M.toast({html: error.message, classes: 'red'});
     }
+}
+
+async function colocarEmAnalise() {
+    if (!confirm('Colocar esta ocorrência em análise?')) return;
+    await mudarFase('em_analise');
+}
+
+async function marcarPronta() {
+    if (!confirm('Marcar esta ocorrência como pronta para homologação?')) return;
+    await mudarFase('pronta');
+}
+
+async function homologarOcorrencia() {
+    if (!confirm('Homologar esta ocorrência? Após isso, será possível criar uma notificação.')) return;
+    await mudarFase('homologada');
+}
+
+async function recusarOcorrencia() {
+    var obs = prompt('Informe o motivo da recusa:');
+    if (obs === null) return;
+    $('#fase-obs').val(obs);
+    await mudarFase('recusada');
+}
+
+async function voltarParaAnalise() {
+    if (!confirm('Voltar esta ocorrência para análise?')) return;
+    await mudarFase('em_analise');
 }
 
 function criarNotificacao() {

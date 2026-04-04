@@ -9,20 +9,36 @@ Uma **ocorrência** representa um fato relatado no condomínio que precisa ser i
 ## Estados (Fases)
 
 ```
-┌─────────┐     ┌──────────────┐     ┌────────────┐     ┌─────────────┐
-│  NOVA   │ ──► │ EM_ANALISE   │ ──► │ RECUSADA   │     │ HOMOLOGADA  │
-└─────────┘     └──────────────┘     └────────────┘     └─────────────┘
-     │                  │                                       │
-     └──────────────────┴───────────────────────────────────────┘
-                          (pode retornar para análise)
+┌─────────┐     ┌──────────────┐     ┌─────────┐     ┌────────────┐     ┌─────────────┐
+│  NOVA   │ ──► │ EM_ANALISE   │ ──► │ PRONTA  │ ──► │ HOMOLOGADA │     │  RECUSADA   │
+└─────────┘     └──────────────┘     └─────────┘     └────────────┘     └─────────────┘
+     │                  │                 │                                      │
+     │                  │                 └──────────────────────────────────────┘
+     │                  │                          (pode voltar para análise)         
+     └──────────────────┴────────────────────────────────────────────────────────────┘
 ```
 
 | Fase | Descrição | Cor |
 |------|-----------|-----|
 | `nova` | Ocorrência recém-criada, aguardando análise | Azul |
-| `em_analise` | Em investigação, evidências sendo coletadas | Amarelo |
+| `em_analise` | Em investigação, evidências sendo coletadas (CFTV, fotos, etc.) | Laranja |
+| `pronta` | Evidências coletadas, aguardando homologação | Roxo |
 | `recusada` | Ocorrência rejeitada, não procede | Vermelho |
 | `homologada` | Fato confirmado, pronta para notificação | Verde |
+
+---
+
+## Ações de Fase (Botões)
+
+Cada transição de fase é uma ação separada com permissão específica:
+
+| Ação | De | Para | Permissão Necessária |
+|------|-----|------|---------------------|
+| Colocar em Análise | nova | em_analise | `ocorrencia.colocar_em_analise` |
+| Marcar como Pronta | em_analise | pronta | `ocorrencia.marcar_pronta` |
+| Homologar | pronta | homologada | `ocorrencia.homologar` |
+| Recusar | em_analise/pronta | recusada | `ocorrencia.recusar` |
+| Voltar para Análise | recusada | em_analise | `ocorrencia.retornar_analise` |
 
 ---
 
@@ -34,17 +50,17 @@ CRIADOR (protocolar)                              SISTEMA
       │  1. Cria ocorrência                          │
       ├──────────────────────────────────────────────►│
       │                                              │
-      │                          fase = 'nova'       │
-      │                          log criado          │
+      │                          fase = 'nova'        │
+      │                          log criado           │
       │◄──────────────────────────────────────────────┤
       │                                              │
       ▼                                              ▼
 ┌──────────────────┐                    ┌──────────────────────┐
-│ Criador/edição   │                    │ Mensagens/evidências │
-│ disponível       │                    │ podem ser adicionados│
+│ Botão: Colocar   │                    │ Mensagens/evidências │
+│ em Análise       │                    │ podem ser adicionados │
 └──────────────────┘                    └──────────────────────┘
       │                                              │
-      │  2. Alterar fase para 'em_analise'            │
+      │  2. Colocar em Análise                       │
       ├──────────────────────────────────────────────►│
       │                                              │
       │                          fase = 'em_analise' │
@@ -52,25 +68,34 @@ CRIADOR (protocolar)                              SISTEMA
       │                                              │
       ▼                                              ▼
 ┌──────────────────┐                    ┌──────────────────────┐
-│ Diligente pode   │                    │ Evidências sendo     │
-│ adicionar evid.  │                    │ coletadas (CFTV,     │
+│ Botão: Marcar    │                    │ Evidências sendo     │
+│ como Pronta      │                    │ coletadas (CFTV,     │
 └──────────────────┘                    │ fotos, docs)        │
       │                                 └──────────────────────┘
       │                                              │
-      ├─► PATROCINADOR/ADMIN                        │
+      │  3. Marcar como Pronta                       │
+      ├──────────────────────────────────────────────►│
       │                                              │
-      │  3a. Homologar                              │
-      │      ├──────────────────────────────────────►│
-      │      │                    fase = 'homologada'
-      │      │                    Notificação pode  │
-      │      │                    ser gerada       │
-      │      │◄──────────────────────────────────────┤
+      │                          fase = 'pronta'     │
+      │◄──────────────────────────────────────────────┤
       │                                              │
-      │  3b. Recusar                                
-      │      ├──────────────────────────────────────►│
-      │      │                    fase = 'recusada'  │
-      │      │                    Ocorrência encerrada│
-      │      │◄──────────────────────────────────────┤
+      ▼                                              ▼
+┌──────────────────┐                    ┌──────────────────────┐
+│ Botão: Homologar │                    │ Ocorrência aguardando│
+│ Botão: Recusar   │                    │ homologação         │
+└──────────────────┘                    └──────────────────────┘
+      │                                              │
+      ├─► 3a. Homologar                              │
+      │    ├──────────────────────────────────────►│
+      │    │                    fase = 'homologada'
+      │    │                    Notificação pode  │
+      │    │                    ser gerada       │
+      │    │◄──────────────────────────────────────┤
+      │                                              │
+      └─► 3b. Recusar                                │
+           ├──────────────────────────────────────►│
+           │                    fase = 'recusada'  │
+           │◄──────────────────────────────────────┤
 ```
 
 ---
@@ -81,47 +106,59 @@ CRIADOR (protocolar)                              SISTEMA
 
 | Ação | Permitida para | Condição |
 |------|----------------|----------|
-| Ver detalhes | Criador, promotor, admin, dev | Sempre |
+| Ver detalhes | Qualquer usuário com acesso | Sempre |
 | Editar ocorrência | Criador, admin, dev | Sempre |
-| Listar ocorrências | Protocolar, diligente, promotor, admin, dev | Sempre |
-| Alterar fase | Protocolar, admin, dev | Para `em_analise` |
-| Adicionar mensagem | Criador, diligente, promotor, admin, dev | Sempre |
-| Adicionar evidência | Criador, diligente, promotor, admin, dev | Sempre |
-| Vincular unidade | Criador, promotor, admin, dev | Sempre |
+| Listar ocorrências | Qualquer usuário com acesso | Sempre |
+| Colocar em Análise | Usuários com permissão `colocar_em_analise` | Sempre |
+| Adicionar mensagem | Usuários com `mensagem.criar` | Sempre |
+| Adicionar evidência | Usuários com `evidencia.anexar` | Sempre |
+| Vincular unidade | Usuários com `unidade.vincular` | Sempre |
 | Criar notificação | - | **Não disponível** |
-| Excluir ocorrência | Admin, dev | Sempre |
 
 ### Fase: EM_ANALISE
 
 | Ação | Permitida para | Condição |
 |------|----------------|----------|
-| Ver detalhes | Todos os papéis | Sempre |
-| Editar ocorrência | Admin, dev, promotor | Sempre |
-| Alterar fase | Promotor, admin, dev | Para `homologada` ou `recusada` |
-| Adicionar mensagem | Diligente, promotor, admin, dev | Sempre |
-| Adicionar evidência | Diligente, promotor, admin, dev | Sempre |
-| Vincular/remover unidades | Promotor, admin, dev | Sempre |
+| Ver detalhes | Qualquer usuário com acesso | Sempre |
+| Editar ocorrência | Admin, dev | Sempre |
+| Marcar como Pronta | Usuários com permissão `marcar_pronta` | Sempre |
+| Recusar | Usuários com permissão `recusar` | Sempre |
+| Adicionar mensagem | Usuários com `mensagem.criar` | Sempre |
+| Adicionar evidência | Usuários com `evidencia.anexar` | Sempre |
+| Vincular/remover unidades | Usuários com `unidade.vincular` | Sempre |
+| Criar notificação | - | **Não disponível** |
+
+### Fase: PRONTA
+
+| Ação | Permitida para | Condição |
+|------|----------------|----------|
+| Ver detalhes | Qualquer usuário com acesso | Sempre |
+| Editar ocorrência | Admin, dev | Sempre |
+| Homologar | Usuários com permissão `homologar` | Sempre |
+| Recusar | Usuários com permissão `recusar` | Sempre |
+| Adicionar mensagem | Admin, dev | **Apenas admin/dev** |
+| Adicionar evidência | Admin, dev | **Apenas admin/dev** |
 | Criar notificação | - | **Não disponível** |
 
 ### Fase: HOMOLOGADA
 
 | Ação | Permitida para | Condição |
 |------|----------------|----------|
-| Ver detalhes | Todos os papéis | Sempre |
+| Ver detalhes | Qualquer usuário com acesso | Sempre |
 | Editar ocorrência | Admin, dev | Sempre |
 | Adicionar mensagem | Admin, dev | **Apenas admin/dev** |
 | Adicionar evidência | Admin, dev | **Apenas admin/dev** |
 | Vincular/remover unidades | Admin, dev | Sempre |
-| Criar notificação | Notificador, admin, dev | Sempre |
+| Criar notificação | Usuários com `notificacao.criar` | Sempre |
 | Excluir ocorrência | Admin, dev | Sempre |
 
 ### Fase: RECUSADA
 
 | Ação | Permitida para | Condição |
 |------|----------------|----------|
-| Ver detalhes | Todos os papéis | Sempre |
+| Ver detalhes | Qualquer usuário com acesso | Sempre |
 | Editar ocorrência | Admin, dev | Sempre |
-| Alterar fase | Promotor, admin, dev | Pode voltar para `em_analise` |
+| Voltar para Análise | Usuários com `retornar_analise` | Sempre |
 | Adicionar mensagem | Admin, dev | **Apenas admin/dev** |
 | Criar notificação | - | **Não disponível** |
 
@@ -138,7 +175,7 @@ ocorrencias
 ├── descricao_fato        TEXT NOT NULL           -- Descrição detalhada do fato
 ├── data_fato             DATE NOT NULL            -- Data em que o fato ocorreu
 ├── data_criacao          TIMESTAMP DEFAULT NOW() -- Data do registro no sistema
-├── fase                  ENUM('nova','em_analise','recusada','homologada') DEFAULT 'nova'
+├── fase                  ENUM('nova','em_analise','pronta','recusada','homologada') DEFAULT 'nova'
 ├── fase_obs              TEXT                    -- Observação da última mudança de fase
 ├── created_by            INT NOT NULL             -- FK → usuarios.id
 ├── created_at            TIMESTAMP DEFAULT CURRENT_TIMESTAMP

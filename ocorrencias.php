@@ -36,6 +36,7 @@ $podeVerMinhas = true;
         }
         .fase-nova { background: #2196F3; color: white; }
         .fase-em_analise { background: #FF9800; color: white; }
+        .fase-pronta { background: #9C27B0; color: white; }
         .fase-recusada { background: #F44336; color: white; }
         .fase-homologada { background: #4CAF50; color: white; }
         
@@ -96,6 +97,7 @@ $podeVerMinhas = true;
                         <option value="">Todas as fases</option>
                         <option value="nova">Nova</option>
                         <option value="em_analise">Em Análise</option>
+                        <option value="pronta">Pronta</option>
                         <option value="recusada">Recusada</option>
                         <option value="homologada">Homologada</option>
                     </select>
