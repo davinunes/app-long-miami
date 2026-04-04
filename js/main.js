@@ -4,6 +4,7 @@ async function inicializarGerenciadorUsuarios() {
     console.log('Inicializando gerenciador de usuários...');
     try {
         await M.AutoInit();
+        $('.modal').modal(); // Inicialização explícita para garantir
     } catch(e) {
         console.log('AutoInit não disponível');
     }
@@ -369,7 +370,7 @@ async function editarGrupo(id) {
         $('#grupo_nome').val(grupo.nome);
         $('#grupo_desc').val(grupo.descricao);
         
-        const container = $('#editar-grupo-permissoes');
+        const container = $('#grupo-permissoes-container');
         container.empty();
         
         Object.keys(configDataGlobal.permissoesPorModulo).forEach(modulo => {

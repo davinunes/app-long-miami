@@ -1,8 +1,6 @@
 // js/funcs.js - Funções compartilhadas (sem JWT)
 // As APIs agora usam sessões PHP diretamente
 
-const API_BASE_URL_PHP = window.location.origin + '/api';
-
 let imageStore = [];
 let currentPdfUrl = null;
 
