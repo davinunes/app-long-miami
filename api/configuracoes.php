@@ -26,8 +26,8 @@ if (!$pdo) {
 $metodo = $_SERVER['REQUEST_METHOD'];
 
 function verificarAdmin($usuario) {
-    $papeis = $usuario['papeis'] ?? [];
-    if (!in_array('admin', $papeis) && !in_array('dev', $papeis)) {
+    $papeis = getPapeisUsuario();
+    if (empty($papeis) || (!in_array('admin', $papeis) && !in_array('dev', $papeis))) {
         http_response_code(403);
         echo json_encode(['error' => 'Acesso negado. Apenas administradores.']);
         exit();
