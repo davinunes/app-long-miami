@@ -3,15 +3,15 @@
  * Helper para APIs - Inicializa sessão e retorna usuário
  */
 
-session_start();
+require_once __DIR__ . '/../auth.php';
 
 function getApiUsuario() {
-    if (!isset($_SESSION['usuario'])) {
+    if (!estaLogado()) {
         http_response_code(401);
         echo json_encode(['message' => 'Não autenticado.']);
         exit;
     }
-    return $_SESSION['usuario'];
+    return getUsuario();
 }
 
 function requireApiLogin() {
@@ -21,7 +21,7 @@ function requireApiLogin() {
 function requireApiPapel($papeis) {
     $usuario = getApiUsuario();
     $papeisPermitidos = is_array($papeis) ? $papeis : [$papeis];
-    $papeisUsuario = $usuario['papeis'] ?? [];
+    $papeisUsuario = getPapeisUsuario();
     
     foreach ($papeisPermitidos as $papel) {
         if (in_array($papel, $papeisUsuario)) {
