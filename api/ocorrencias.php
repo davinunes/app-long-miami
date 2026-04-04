@@ -63,18 +63,11 @@ switch ($metodo) {
         elseif (isset($dados->deletar_mensagem)) {
             deletarMensagem($pdo, $dados, $usuario);
         }
+        elseif (isset($dados->excluir_ocorrencia)) {
+            deletarOcorrencia($pdo, $dados, $usuario);
+        }
         else {
             criarOuAtualizar($pdo, $dados, $usuario);
-        }
-        break;
-
-    case 'DELETE':
-        $dados = json_decode(file_get_contents("php://input"));
-        if (isset($dados->id)) {
-            deletarOcorrencia($pdo, $dados, $usuario);
-        } else {
-            http_response_code(400);
-            echo json_encode(['message' => 'ID da ocorrência é obrigatório.']);
         }
         break;
 

@@ -222,9 +222,9 @@ requirePapel(['protocolar', 'diligente', 'promotor', 'admin', 'dev']);
             
             try {
                 const response = await fetch(API_BASE_URL_PHP + '/ocorrencias.php', {
-                    method: 'DELETE',
+                    method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id: id })
+                    body: JSON.stringify({ excluir_ocorrencia: true, id: id })
                 });
                 
                 const result = await response.json();
