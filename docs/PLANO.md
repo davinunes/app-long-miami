@@ -105,12 +105,12 @@ ocorrencia_anexos (arquivos avulsos)
 
 ### 2.4 - Tarefas
 
-- [ ] Criar migrate de ocorrências
-- [ ] Criar API CRUD de ocorrências
-- [ ] Implementar endpoints de unidades
-- [ ] Criar sistema de mensagens (chat)
-- [ ] Implementar upload de anexos
-- [ ] Criar frontend de ocorrências
+- [x] Criar migrate de ocorrências (003_ocorrencias.sql)
+- [x] Criar API CRUD de ocorrências (api/ocorrencias.php)
+- [x] Implementar endpoints de unidades (api/unidades.php)
+- [x] Criar sistema de mensagens (chat) - via api/ocorrencias.php
+- [x] Implementar upload de anexos - via api/ocorrencias.php
+- [x] Criar frontend de ocorrências (ocorrencias.php)
 
 ---
 
@@ -248,17 +248,21 @@ pareceres (tabela para receber dados externos)
 app-long-miami/
 ├── migrates/
 │   ├── 001_initial_schema.sql      ✓
-│   └── 002_grupos_papeis.sql      ✓
+│   ├── 002_grupos_papeis.sql       ✓
+│   └── 003_ocorrencias.sql        ✓
 ├── api/
 │   ├── usuarios.php                 ✓
 │   ├── grupos.php                  ✓
 │   ├── notificacoes.php            ✓
+│   ├── ocorrencias.php            ✓
+│   ├── unidades.php               ✓
 │   ├── config.php                  ✓
-│   └── verificar_token.php         ✓
+│   └── verificar_token.php        ✓
 ├── js/
-│   ├── main.js                     ✓ (atualizado com funções de usuários/grupos)
+│   ├── main.js                     ✓
 │   └── funcs.js                    ✓
-├── usuarios.php                    ✓ (frontend de usuários)
+├── usuarios.php                    ✓
+├── ocorrencias.php                ✓
 ├── verificar_token.php             ✓
 └── docs/
     └── PLANO.md                   ✓
@@ -299,3 +303,24 @@ app-long-miami/
 **Frontend:**
 - `usuarios.php` - Interface com modais de usuário e grupos
 - `js/main.js` - Funções: carregarListaUsuarios, abrirModalUsuario, salvarUsuarioModal, carregarListaGrupos, criarGrupo, editarGrupo, deletarGrupo
+
+---
+
+## Status: FASE 2 CONCLUÍDA ✓
+
+### Implementado em 03/04/2026:
+
+**Database (003_ocorrencias.sql):**
+- `ocorrencias` - Tabela principal com fases (nova, em_analise, recusada, homologada)
+- `ocorrencia_unidades` - Vínculo N:N com unidades
+- `ocorrencia_mensagens` - Sistema de chat com evidências
+- `ocorrencia_anexos` - Arquivos anexados
+- `ocorrencia_fase_log` - Log de mudanças de fase
+- `unidades` - Catálogo de unidades do condomínio
+
+**APIs:**
+- `api/ocorrencias.php` - CRUD completo com fases, mensagens, anexos
+- `api/unidades.php` - CRUD de unidades com importação em lote
+
+**Frontend:**
+- `ocorrencias.php` - Interface completa com tabs de mensagens/anexos/histórico
