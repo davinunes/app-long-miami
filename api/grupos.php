@@ -136,14 +136,36 @@ switch ($metodo) {
                 echo json_encode(['message' => 'Erro ao criar grupo: ' . $e->getMessage()]);
             }
         }
+        // Deletar grupo
+        elseif (isset($dados->deletar) && isset($dados->id)) {
+            requireApiPermissao('grupo.excluir');
+            $id = (int)$dados->id;
+            try {
+                $pdo->prepare("DELETE FROM grupo_permissoes WHERE grupo_id = ?")->execute([$id]);
+                $pdo->prepare("DELETE FROM usuario_grupos WHERE grupo_id = ?")->execute([$id]);
+                $pdo->prepare("DELETE FROM grupos WHERE id = ?")->execute([$id]);
+                http_response_code(200);
+                echo json_encode(['message' => 'Grupo deletado com sucesso.']);
+            } catch (Exception $e) {
+                http_response_code(500);
+                echo json_encode(['message' => 'Erro ao deletar grupo: ' . $e->getMessage()]);
+            }
+        }
         // Atualizar grupo
         elseif (isset($dados->id)) {
             requireApiPermissao('grupo.editar');
             $id = (int)$dados->id;
             
+            // Verificar se nome foi enviado
+            if (!isset($dados->nome) || empty(trim($dados->nome))) {
+                http_response_code(400);
+                echo json_encode(['message' => 'Nome do grupo é obrigatório.']);
+                exit();
+            }
+            
             try {
                 $stmt = $pdo->prepare("UPDATE grupos SET nome = ?, descricao = ? WHERE id = ?");
-                $stmt->execute([$dados->nome, $dados->descricao ?? null, $id]);
+                $stmt->execute([trim($dados->nome), $dados->descricao ?? null, $id]);
                 
                 // Atualiza permissões se especificadas
                 if (isset($dados->permissoes)) {
@@ -162,6 +184,21 @@ switch ($metodo) {
             } catch (Exception $e) {
                 http_response_code(500);
                 echo json_encode(['message' => 'Erro ao atualizar grupo: ' . $e->getMessage()]);
+            }
+        }
+        // Deletar grupo
+        elseif (isset($dados->deletar)) {
+            requireApiPermissao('grupo.excluir');
+            $id = (int)$dados->id;
+            try {
+                $pdo->prepare("DELETE FROM grupo_permissoes WHERE grupo_id = ?")->execute([$id]);
+                $pdo->prepare("DELETE FROM usuario_grupos WHERE grupo_id = ?")->execute([$id]);
+                $pdo->prepare("DELETE FROM grupos WHERE id = ?")->execute([$id]);
+                http_response_code(200);
+                echo json_encode(['message' => 'Grupo deletado com sucesso.']);
+            } catch (Exception $e) {
+                http_response_code(500);
+                echo json_encode(['message' => 'Erro ao deletar grupo: ' . $e->getMessage()]);
             }
         }
         // Adicionar membro ao grupo
@@ -186,21 +223,6 @@ switch ($metodo) {
             } catch (Exception $e) {
                 http_response_code(500);
                 echo json_encode(['message' => 'Erro: ' . $e->getMessage()]);
-            }
-        }
-        // Deletar grupo
-        elseif (isset($dados->deletar)) {
-            requireApiPermissao('grupo.excluir');
-            $id = (int)$dados->id;
-            try {
-                $pdo->prepare("DELETE FROM grupo_permissoes WHERE grupo_id = ?")->execute([$id]);
-                $pdo->prepare("DELETE FROM usuario_grupos WHERE grupo_id = ?")->execute([$id]);
-                $pdo->prepare("DELETE FROM grupos WHERE id = ?")->execute([$id]);
-                http_response_code(200);
-                echo json_encode(['message' => 'Grupo deletado com sucesso.']);
-            } catch (Exception $e) {
-                http_response_code(500);
-                echo json_encode(['message' => 'Erro ao deletar grupo: ' . $e->getMessage()]);
             }
         }
         else {

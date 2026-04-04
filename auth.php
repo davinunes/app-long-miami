@@ -262,17 +262,6 @@ function login($email, $senha) {
         $papeis[] = $usuario['role'];
     }
     
-    // Buscar papéis dos grupos que o usuário pertence
-    $stmtGruposPapeis = $pdo->prepare("
-        SELECT DISTINCT g.papel_principal 
-        FROM usuario_grupos ug 
-        JOIN grupos g ON ug.grupo_id = g.id 
-        WHERE ug.usuario_id = ? AND g.papel_principal IS NOT NULL
-    ");
-    $stmtGruposPapeis->execute([$usuario['id']]);
-    $papeisDosGrupos = $stmtGruposPapeis->fetchAll(PDO::FETCH_COLUMN);
-    $papeis = array_unique(array_merge($papeis, $papeisDosGrupos));
-    
     // Buscar permissões do usuário (via grupos + diretas)
     $stmtPerm = $pdo->prepare("
         SELECT DISTINCT p.slug FROM (
