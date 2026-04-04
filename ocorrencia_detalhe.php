@@ -1,11 +1,11 @@
 <?php
 require_once 'auth.php';
-requirePapel(['protocolar', 'diligente', 'promotor', 'admin', 'dev']);
+requireAlgumaPermissao(['ocorrencia.ver_detalhes', 'ocorrencia.listar', 'ocorrencia.editar']);
 
 $usuario = getUsuario();
-$podeMudarFase = temAlgumPapel(['promotor', 'admin', 'dev']);
-$isAdmin = temAlgumPapel(['admin', 'dev']);
-$podeNotificar = temAlgumPapel(['notificador', 'admin', 'dev']);
+$podeMudarFase = isAdmin() || temPermissao('ocorrencia.mudar_fase');
+$isAdmin = isAdmin();
+$podeNotificar = isAdmin() || temPermissao('notificacao.criar');
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">

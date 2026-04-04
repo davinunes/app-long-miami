@@ -326,8 +326,17 @@ function ativoSe($permissao) {
 
 /**
  * Retorna true se o usuário é admin ou dev
+ * Verifica tanto o role quanto os papeis
  */
 function isAdmin() {
+    $usuario = getUsuario();
+    if (!$usuario) return false;
+    
+    $role = $usuario['role'] ?? '';
+    if ($role === 'dev' || $role === 'admin') {
+        return true;
+    }
+    
     return temPapel('admin') || temPapel('dev');
 }
 
@@ -335,5 +344,13 @@ function isAdmin() {
  * Retorna true se o usuário é dev
  */
 function isDev() {
+    $usuario = getUsuario();
+    if (!$usuario) return false;
+    
+    $role = $usuario['role'] ?? '';
+    if ($role === 'dev') {
+        return true;
+    }
+    
     return temPapel('dev');
 }

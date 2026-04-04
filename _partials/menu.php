@@ -18,9 +18,11 @@
     <?php if (isAdmin() || temPermissao('ocorrencia.listar') || temAlgumaPermissao(['ocorrencia.ver_detalhes', 'ocorrencia.criar'])): ?>
     <li><a class="waves-effect ajax-link" href="ocorrencias.php"><i class="material-icons">report_problem</i>Ocorrências</a></li>
     <?php endif; ?>
-   	
- 	<li><a class="waves-effect ajax-link" href="usuarios.php"><i class="material-icons">people</i>Usuários</a></li>
     
+    <?php if (isAdmin() || temAlgumaPermissao(['usuario.listar', 'usuario.ver_detalhes', 'usuario.editar', 'usuario.criar'])): ?>
+    <li><a class="waves-effect ajax-link" href="usuarios.php"><i class="material-icons">people</i>Usuários</a></li>
+    <?php endif; ?>
+     
     <?php if (isAdmin()): ?>
     <li><div class="divider"></div></li>
     <li><a class="waves-effect ajax-link" href="configuracoes.php"><i class="material-icons">settings</i>Configurações</a></li>

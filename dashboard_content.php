@@ -50,10 +50,12 @@ $papeis = getPapeisUsuario();
         <div class="container">
             <div class="header">
                 <h1>Bem-vindo, <?php echo htmlspecialchars($usuario['nome']); ?>!</h1>
-                <p>Você tem acesso: <?php echo htmlspecialchars(implode(', ', $papeis)); ?></p>
+                <p>Role: <?php echo htmlspecialchars($usuario['role'] ?? 'sem role'); ?> | Permissões: <?php echo count($usuario['permissoes'] ?? []); ?></p>
+                <p><a href="debug_permissoes.php" target="_blank" style="color: #ff6b6b;">[Debug Permissões]</a></p>
             </div>
             
             <div class="row">
+                <?php if (temAlgumaPermissao(['notificacao.listar', 'notificacao.ver_detalhes', 'notificacao.criar']) || isAdmin()): ?>
                 <div class="col s12 m4">
                     <div class="dashboard-card">
                         <h5><i class="material-icons left">notifications</i> Notificações</h5>
@@ -61,8 +63,9 @@ $papeis = getPapeisUsuario();
                         <a href="lista.php" class="btn blue">Acessar</a>
                     </div>
                 </div>
+                <?php endif; ?>
                 
-                <?php if (temAlgumPapel(['protocolar', 'diligente', 'promotor', 'admin', 'dev'])): ?>
+                <?php if (temAlgumaPermissao(['ocorrencia.listar', 'ocorrencia.ver_detalhes', 'ocorrencia.criar']) || isAdmin()): ?>
                 <div class="col s12 m4">
                     <div class="dashboard-card">
                         <h5><i class="material-icons left">report_problem</i> Ocorrências</h5>
@@ -72,7 +75,7 @@ $papeis = getPapeisUsuario();
                 </div>
                 <?php endif; ?>
                 
-                <?php if (temAlgumPapel(['admin', 'dev'])): ?>
+                <?php if (isAdmin()): ?>
                 <div class="col s12 m4">
                     <div class="dashboard-card">
                         <h5><i class="material-icons left">people</i> Usuários</h5>
@@ -87,6 +90,10 @@ $papeis = getPapeisUsuario();
                 <h5><i class="material-icons left">info</i> Informações da Conta</h5>
                 <table>
                     <tr>
+                        <td><strong>ID:</strong></td>
+                        <td><?php echo htmlspecialchars($usuario['id']); ?></td>
+                    </tr>
+                    <tr>
                         <td><strong>Nome:</strong></td>
                         <td><?php echo htmlspecialchars($usuario['nome']); ?></td>
                     </tr>
@@ -95,14 +102,33 @@ $papeis = getPapeisUsuario();
                         <td><?php echo htmlspecialchars($usuario['email']); ?></td>
                     </tr>
                     <tr>
-                        <td><strong>Papéis:</strong></td>
-                        <td><?php echo htmlspecialchars(implode(', ', $papeis)); ?></td>
+                        <td><strong>Role:</strong></td>
+                        <td><?php echo htmlspecialchars($usuario['role'] ?? 'sem role'); ?></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Total Permissões:</strong></td>
+                        <td><?php echo count($usuario['permissoes'] ?? []); ?></td>
+                    </tr>
+                    <tr>
+                        <td><strong>É Admin/Dev:</strong></td>
+                        <td><?php echo isAdmin() ? '✅ Sim' : '❌ Não'; ?></td>
                     </tr>
                     <tr>
                         <td><strong>Login em:</strong></td>
                         <td><?php echo htmlspecialchars($usuario['login_at']); ?></td>
                     </tr>
                 </table>
+                <h6 style="margin-top: 15px;">Suas Permissões:</h6>
+                <div style="max-height: 200px; overflow-y: auto; background: #f5f5f5; padding: 10px; border-radius: 4px; font-size: 12px;">
+                    <?php 
+                    $perms = $usuario['permissoes'] ?? [];
+                    if (empty($perms)) {
+                        echo '<span style="color: red;">⚠️ Nenhuma permissão!</span>';
+                    } else {
+                        echo implode(', ', $perms);
+                    }
+                    ?>
+                </div>
             </div>
         </div>
     </main>

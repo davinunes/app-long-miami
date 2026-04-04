@@ -1,6 +1,7 @@
 <?php
 // Endpoint: /api/config.php
 // Método: GET
+// Parâmetros: ?debug=1 para ver permissões do usuário logado
 // Retorna configurações do sistema incluindo permissões
 
 header("Access-Control-Allow-Origin: *");
@@ -10,6 +11,64 @@ require_once '../api/helpers.php';
 requireApiLogin();
 
 require_once '../config.php';
+
+// Debug mode - mostra usuário logado e permissões
+if (isset($_GET['debug'])) {
+    $usuario = getUsuario();
+    $permissoes = getPermissoesUsuario();
+    
+    // Buscar grupos do usuário
+    $pdo = getDbConnection();
+    $stmt = $pdo->prepare("
+        SELECT g.id, g.nome 
+        FROM usuario_grupos ug 
+        JOIN grupos g ON ug.grupo_id = g.id 
+        WHERE ug.usuario_id = ?
+    ");
+    $stmt->execute([$usuario['id']]);
+    $grupos = $stmt->fetchAll();
+    
+    // Permissões por grupo
+    $permissoesPorGrupo = [];
+    foreach ($grupos as $g) {
+        $stmt = $pdo->prepare("
+            SELECT p.slug 
+            FROM grupo_permissoes gp 
+            JOIN permissoes p ON gp.permissao_id = p.id 
+            WHERE gp.grupo_id = ?
+        ");
+        $stmt->execute([$g['id']]);
+        $permissoesPorGrupo[$g['nome']] = $stmt->fetchAll(PDO::FETCH_COLUMN);
+    }
+    
+    // Permissões diretas
+    $stmt = $pdo->prepare("
+        SELECT p.slug 
+        FROM usuario_permissoes up 
+        JOIN permissoes p ON up.permissao_id = p.id 
+        WHERE up.usuario_id = ?
+    ");
+    $stmt->execute([$usuario['id']]);
+    $permissoesDiretas = $stmt->fetchAll(PDO::FETCH_COLUMN);
+    
+    echo json_encode([
+        'debug' => true,
+        'usuario' => [
+            'id' => $usuario['id'],
+            'nome' => $usuario['nome'],
+            'email' => $usuario['email'],
+            'role' => $usuario['role'],
+            'papeis' => $usuario['papeis'],
+            'grupos' => $grupos,
+            'permissoes_diretas' => $permissoesDiretas,
+            'permissoes_por_grupo' => $permissoesPorGrupo,
+            'total_permissoes' => count($permissoes),
+            'todas_permissoes' => $permissoes,
+            'eh_admin_ou_dev' => ($usuario['role'] === 'dev' || $usuario['role'] === 'admin'),
+        ]
+    ], JSON_PRETTY_PRINT);
+    exit;
+}
 
 try {
     $pdo = getDbConnection();
