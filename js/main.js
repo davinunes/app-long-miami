@@ -364,6 +364,11 @@ async function inicializarFormularioEdicao() {
             document.getElementById('tipo_id').value = data.tipo_id;
             document.getElementById('assunto_id').value = data.assunto_id;
             
+            setTimeout(function() {
+                $('select').formSelect();
+                toggleMultaField();
+            }, 100);
+            
             const fatosContainer = document.getElementById('fatos-container');
             fatosContainer.innerHTML = '';
             if (data.fatos && data.fatos.length > 0) {
