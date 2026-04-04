@@ -258,6 +258,9 @@ function getFormData(forPDF = false) {
     const assuntoSelect = document.getElementById('assunto_id');
     const selectedAssuntoOption = assuntoSelect.options[assuntoSelect.selectedIndex];
 
+    const ocorrenciaIdInput = document.getElementById('ocorrencia_id');
+    const ocorrenciaId = ocorrenciaIdInput ? ocorrenciaIdInput.value : null;
+
     const dados = {
         numero: document.getElementById('numero').value,
         unidade: document.getElementById('unidade').value,
@@ -268,6 +271,10 @@ function getFormData(forPDF = false) {
         fatos: Array.from(document.querySelectorAll('#fatos-container textarea')).map(input => input.value).filter(Boolean),
         fotos_fatos: imageStore
     };
+
+    if (ocorrenciaId) {
+        dados.ocorrencia_id = parseInt(ocorrenciaId);
+    }
 
     if (forPDF) {
         dados.tipo_notificacao = selectedTipoOption.text;

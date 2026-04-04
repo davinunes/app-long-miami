@@ -61,6 +61,9 @@ requireLogin();
     <script src="js/main.js?v=<?php echo time(); ?>"></script>
     <script src="js/regimento-busca.js?v=<?php echo time(); ?>"></script>
     <script>
+        const OCORRENCIA_ID = <?php echo isset($_GET['ocorrencia_id']) ? (int)$_GET['ocorrencia_id'] : 'null'; ?>;
+        let ocorrenciaData = null;
+        
         $(document).ready(function() {
             $('.sidenav').sidenav({edge: 'left'});
             
@@ -78,8 +81,62 @@ requireLogin();
             inicializarBuscaRegimento();
             await fetchProximoNumero();
             
+            if (OCORRENCIA_ID) {
+                await carregarOcorrenciaVinculada(OCORRENCIA_ID);
+            }
+            
             $('#btnSalvar').on('click', salvarNotificacao);
         });
+
+        async function carregarOcorrenciaVinculada(id) {
+            try {
+                const response = await fetch(API_BASE_URL_PHP + '/ocorrencias.php?id=' + id);
+                if (!response.ok) throw new Error('Erro ao carregar ocorrência');
+                
+                ocorrenciaData = await response.json();
+                
+                document.getElementById('ocorrencia_id').value = ocorrenciaData.id;
+                document.getElementById('ocorrencia_titulo').textContent = 'Ocorrência #' + ocorrenciaData.id + ': ' + ocorrenciaData.titulo;
+                document.getElementById('ver_ocorrencia_link').href = 'ocorrencia_detalhe.php?id=' + ocorrenciaData.id;
+                document.getElementById('ocorrencia_info').style.display = 'block';
+                
+                const unidade = ocorrenciaData.unidades && ocorrenciaData.unidades.length > 0 
+                    ? ocorrenciaData.unidades[0] 
+                    : null;
+                if (unidade) {
+                    document.getElementById('unidade').value = unidade.unidade_numero || '';
+                    document.getElementById('bloco').value = unidade.unidade_bloco || '';
+                }
+                
+                if (ocorrenciaData.descricao_fato) {
+                    addFato(ocorrenciaData.descricao_fato);
+                }
+                
+                renderEvidenciasOcorrencia(ocorrenciaData.anexos || []);
+                
+            } catch (error) {
+                console.error('Erro ao carregar ocorrência:', error);
+                M.toast({html: 'Erro ao carregar dados da ocorrência', classes: 'red'});
+            }
+        }
+
+        function renderEvidenciasOcorrencia(anexos) {
+            const container = document.getElementById('evidencias-ocorrencia');
+            if (!container) return;
+            
+            const imagens = anexos.filter(a => a.tipo === 'imagem');
+            if (imagens.length === 0) {
+                container.innerHTML = '<p style="color: #999;">Nenhuma evidência fotográfica disponível.</p>';
+                return;
+            }
+            
+            container.innerHTML = imagens.map(img => `
+                <div class="img-preview-item">
+                    <img src="${img.url}" alt="${img.nome_original}" style="max-width: 150px; max-height: 150px; cursor: pointer;" onclick="window.open('${img.url}', '_blank')">
+                    <small>${img.nome_original}</small>
+                </div>
+            `).join('');
+        }
     </script>
 </body>
 </html>

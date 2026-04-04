@@ -398,9 +398,48 @@ app-long-miami/
 
 ---
 
+## Status: FEATURE - Vinculação de Evidências (04/04/2026)
+
+### Migration 005: Vinculação de Evidências
+
+**Estrutura de Dados:**
+- `notificacao_imagens.inactive` - Flag para soft delete
+- `notificacao_imagens.deleted_at` - Data da remoção
+- `notificacao_imagens.ocorrencia_id` - Ocorrência de origem
+- `notificacao_imagens.anexo_ocorrencia_id` - Anexo específico da ocorrência
+- `evidencia_compartilhada` - Tabela para rastrear evidências compartilhadas
+
+**APIs:**
+- `buscarOcorrenciasParaVincular` - Lista ocorrências homologadas sem notificação
+- `deletarImagem` - Soft delete para imagens de ocorrência, hard delete para imagens diretas
+- `vincularEvidencias` - Vincula/desvincula evidências de ocorrências
+- `buscarNotificacao` - Retorna evidências vinculadas e todas da ocorrência
+
+**Frontend:**
+- `ocorrencia_detalhe.php` - Botão "Criar Notificação" (papeis: notificador, admin, dev)
+- `nova_not.php` - Pré-preenche com dados da ocorrência
+- `_form.php` - Mostra evidências da ocorrência vinculada
+
+**Regras de Negócio:**
+1. Botão "Criar Notificação" só aparece para ocorrências homologadas e usuários com papel `notificador`, `admin` ou `dev`
+2. Ao criar notificação a partir de ocorrência, pré-preenche: unidade, descrição, evidências
+3. Imagens vinculadas a ocorrência → soft delete (flag `inactive=1`) quando removidas da notificação
+4. Imagens uploadadas diretamente na notificação → hard delete (remove do disco)
+5. Evidências compartilhadas são rastreadas na tabela `evidencia_compartilhada`
+
+---
+
 ## Tarefas Pendentes
 
 - [ ] Função de **editar mensagem** (não implementada)
 - [ ] FASE 4: Notificações melhoradas
 - [ ] FASE 5: Sistema de Despacho
 - [ ] FASE 6: API para Conselho
+
+### Concluído (04/04/2026)
+- [x] Migration 005 - Vinculação de evidências
+- [x] Botão "Criar Notificação" na ocorrência (papeis permitidos)
+- [x] Soft delete para imagens de ocorrência
+- [x] Hard delete para imagens diretas
+- [x] Pré-preenchimento de notificação com dados da ocorrência
+- [x] Exibição de evidências da ocorrência na notificação

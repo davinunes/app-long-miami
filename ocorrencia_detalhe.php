@@ -5,6 +5,7 @@ requirePapel(['protocolar', 'diligente', 'promotor', 'admin', 'dev']);
 $usuario = getUsuario();
 $podeMudarFase = temAlgumPapel(['promotor', 'admin', 'dev']);
 $isAdmin = temAlgumPapel(['admin', 'dev']);
+$podeNotificar = temAlgumPapel(['notificador', 'admin', 'dev']);
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -158,6 +159,7 @@ const urlParams = new URLSearchParams(window.location.search);
 const ocorrenciaId = urlParams.get('id');
 const podeMudarFase = <?php echo $podeMudarFase ? 'true' : 'false'; ?>;
 const isAdmin = <?php echo $isAdmin ? 'true' : 'false'; ?>;
+const podeNotificar = <?php echo $podeNotificar ? 'true' : 'false'; ?>;
 const usuarioId = <?php echo $usuario['id']; ?>;
 let ocorrenciaData = null;
 
@@ -228,16 +230,21 @@ function renderOcorrencia(occ) {
     if (occ.notificacao) {
         notificacaoHtml = '<div class="section-card">' +
             '<div class="section-title">Notificação Vinculada</div>' +
-            '<div style="display: flex; align-items: center; gap: 15px;">' +
+            '<div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">' +
             '<span class="fase-badge fase-' + (occ.notificacao.status === 'Deferido' ? 'homologada' : 'em_analise') + '">' + occ.notificacao.status + '</span>' +
             '<span><strong>Notificação #' + occ.notificacao.numero + '/' + occ.notificacao.ano + '</strong></span>' +
-            '<a href="notificacao_detalhe.php?id=' + occ.notificacao.id + '" class="btn-small blue">Ver Notificação</a>' +
+            '<a href="editar.php?id=' + occ.notificacao.id + '" class="btn-small blue">Ver Notificação</a>' +
             '</div></div>';
-    } else if (occ.fase === 'homologada') {
+    } else if (occ.fase === 'homologada' && podeNotificar) {
         notificacaoHtml = '<div class="section-card">' +
             '<div class="section-title">Notificação</div>' +
             '<p style="color: #666; margin-bottom: 15px;">Esta ocorrência homologada ainda não possui uma notificação vinculada.</p>' +
-            '<button class="btn green" onclick="gerarNotificacao()"><i class="material-icons">add</i> Gerar Notificação</button>' +
+            '<button class="btn green" onclick="criarNotificacao()"><i class="material-icons">add</i> Criar Notificação</button>' +
+            '</div>';
+    } else if (occ.fase === 'homologada') {
+        notificacaoHtml = '<div class="section-card">' +
+            '<div class="section-title">Notificação</div>' +
+            '<p style="color: #666;"><em>Esta ocorrência homologada ainda não possui uma notificação vinculada.</em></p>' +
             '</div>';
     }
     
@@ -461,22 +468,8 @@ async function mudarFase() {
     }
 }
 
-async function gerarNotificacao() {
-    if (!confirm('Deseja gerar uma notificação para esta ocorrência?')) return;
-    
-    try {
-        var response = await fetch(API_BASE_URL_PHP + '/ocorrencias.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ gerar_notificacao: true, ocorrencia_id: ocorrenciaId })
-        });
-        var result = await response.json();
-        if (!response.ok) throw new Error(result.message);
-        alert('Notificação #' + result.numero + ' gerada com sucesso!');
-        carregarOcorrencia();
-    } catch (error) {
-        alert(error.message);
-    }
+function criarNotificacao() {
+    window.location.href = 'nova_not.php?ocorrencia_id=' + ocorrenciaId;
 }
 
 function formatDate(data) {

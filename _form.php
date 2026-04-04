@@ -1,6 +1,13 @@
 <input type="hidden" id="notificacao_id" value="">
+<input type="hidden" id="ocorrencia_id" value="">
 
 <div id="status" class="status" style="display: none;"></div>
+
+<div id="ocorrencia_info" class="form-group" style="display: none; background: #e3f2fd; padding: 15px; border-radius: 8px; border-left: 4px solid #2196F3;">
+    <label style="color: #1976D2; font-weight: bold;">Ocorrência Vinculada:</label>
+    <p id="ocorrencia_titulo" style="margin: 5px 0; color: #333;"></p>
+    <a href="#" id="ver_ocorrencia_link" class="btn-small" style="margin-top: 5px;">Ver Ocorrência</a>
+</div>
 
 <div class="form-group">
     <label for="tipo_id">Tipo de Notificação:</label>
@@ -33,8 +40,14 @@
     <button type="button" class="add-fato" onclick="addFato()">+ Adicionar Fato</button>
 </div>
 
+<div class="form-group" id="evidencias_ocorrencia_section" style="display: none;">
+    <label>Evidências da Ocorrência:</label>
+    <div class="evidencias-grid" id="evidencias-ocorrencia" style="display: flex; flex-wrap: wrap; gap: 10px; margin: 10px 0;"></div>
+    <p style="color: #666; font-size: 12px; margin-top: 5px;"><i class="material-icons" style="font-size: 14px; vertical-align: middle;">info</i> As evidências da ocorrência estão disponíveis acima. Você pode adicionar mais fotos manualmente abaixo.</p>
+</div>
+
 <div class="form-group">
-    <label for="fotos_fatos">Evidências Fotográficas:</label>
+    <label for="fotos_fatos">Adicionar Evidências Fotográficas:</label>
     <input type="file" id="fotos_fatos" accept="image/*" multiple onchange="handleFiles(this, 'preview-container')">
     <div class="image-preview-container" id="preview-container"></div>
 </div>
