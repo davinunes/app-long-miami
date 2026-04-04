@@ -49,25 +49,24 @@ if (!$pdo) {
 
 switch ($metodo) {
     case 'GET':
-        if (!$podeListar && !$podeVerDetalhes) {
-            http_response_code(403);
-            echo json_encode(['message' => 'Permissão insuficiente para listar ocorrências.']);
-            exit();
-        }
-        
         if (isset($_GET['id'])) {
             buscarOcorrencia($pdo, (int)$_GET['id'], $usuario);
         }
         elseif (isset($_GET['homologadas'])) {
+            if (!$podeListar && !$isAdminDev) {
+                http_response_code(403);
+                echo json_encode(['message' => 'Permissão insuficiente.']);
+                exit();
+            }
             listarHomologadas($pdo);
         }
         elseif (isset($_GET['minhas'])) {
             listarMinhas($pdo, $usuario);
         }
         else {
-            if (!$podeListar) {
+            if (!$podeListar && !$isAdminDev) {
                 http_response_code(403);
-                echo json_encode(['message' => 'Permissão insuficiente.']);
+                echo json_encode(['message' => 'Permissão insuficiente para listar ocorrências.']);
                 exit();
             }
             listarOcorrencias($pdo);

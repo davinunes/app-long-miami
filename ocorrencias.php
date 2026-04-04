@@ -12,6 +12,9 @@ $podeVerDetalhes = $isAdminDev || temPermissao('ocorrencia.ver_detalhes');
 $podeEditarPropria = $isAdminDev || temPermissao('ocorrencia.editar_propria');
 $podeEditar = $isAdminDev || temPermissao('ocorrencia.editar');
 $podeExcluir = $isAdminDev || temPermissao('ocorrencia.excluir');
+
+// Qualquer usuário logado pode ver suas próprias ocorrências
+$podeVerMinhas = true;
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -98,7 +101,7 @@ $podeExcluir = $isAdminDev || temPermissao('ocorrencia.excluir');
                     </select>
                     <?php endif; ?>
                     
-                    <?php if ($podeVerDetalhes || $isAdminDev): ?>
+                    <?php if ($podeVerMinhas): ?>
                     <button class="btn" id="btn-minhas-ocorrencias" style="margin-left: 10px;">
                         <i class="material-icons">person</i> Minhas Ocorrências
                     </button>
