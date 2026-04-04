@@ -1,41 +1,74 @@
 let configDataGlobal = { grupos: [], papeis: [] };
 
 async function inicializarGerenciadorUsuarios() {
-    $('.modal').modal();
+    console.log('Inicializando gerenciador de usuários...');
+    try {
+        await M.AutoInit();
+    } catch(e) {
+        console.log('AutoInit não disponível');
+    }
+    
     await carregarConfiguracoesUsuarios();
-    carregarListaUsuarios();
-    carregarListaGrupos();
+    await carregarListaUsuarios();
+    await carregarListaGrupos();
     setupEventListenersUsuarios();
 }
 
 async function carregarConfiguracoesUsuarios() {
+    console.log('Carregando configurações...');
     try {
         const response = await fetch(`${API_BASE_URL_PHP}/config.php`);
-        if (!response.ok) throw new Error('Falha ao carregar configurações.');
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            throw new Error(err.message || 'Falha ao carregar configurações: ' + response.status);
+        }
         configDataGlobal = await response.json();
+        console.log('Configurações carregadas:', configDataGlobal);
     } catch (error) {
         console.error('Erro ao carregar configurações:', error);
     }
 }
 
 function setupEventListenersUsuarios() {
-    $('#btn-novo-usuario').off('click').on('click', () => abrirModalUsuario(null));
-    $('#modal-salvar-usuario').off('click').on('click', salvarUsuarioModal);
-    $('#btn-salvar-grupo').off('click').on('click', salvarGrupoModal);
-    $('#modal-grupos').off('click', '#btn-criar-grupo').on('click', '#btn-criar-grupo', criarGrupo);
+    console.log('Configurando event listeners...');
+    
+    $(document).on('click', '#btn-novo-usuario', function(e) {
+        console.log('Clicou em novo usuário');
+        e.preventDefault();
+        abrirModalUsuario(null);
+    });
+    
+    $(document).on('click', '#btn-gerenciar-grupos', function(e) {
+        console.log('Clicou em gerenciar grupos');
+        e.preventDefault();
+        const modal = M.Modal.getInstance($('#modal-grupos'));
+        if (modal) modal.open();
+        else $('#modal-grupos').modal('open');
+    });
+    
+    $(document).on('click', '#modal-salvar-usuario', salvarUsuarioModal);
+    $(document).on('click', '#btn-salvar-grupo', salvarGrupoModal);
+    $(document).on('click', '#btn-criar-grupo', criarGrupo);
+    
+    console.log('Event listeners configurados');
 }
 
 async function carregarListaUsuarios() {
     const tbody = $('#usuarios-table-body');
     tbody.html('<tr><td colspan="4" style="text-align: center;">Carregando...</td></tr>');
     
+    console.log('Carregando lista de usuários...');
+    
     try {
         const response = await fetch(`${API_BASE_URL_PHP}/usuarios.php`);
         
         if (!response.ok) {
-            const err = await response.json();
-            throw new Error(err.message || 'Erro ao buscar usuários.');
+            const err = await response.json().catch(() => ({}));
+            throw new Error(err.message || 'Erro ao buscar usuários: ' + response.status);
         }
+        
+        const usuarios = await response.json();
+        console.log('Usuários carregados:', usuarios);
 
         const usuarios = await response.json();
         tbody.empty();
@@ -605,11 +638,17 @@ async function carregarListaGrupos() {
     const lista = $('#grupos-lista');
     lista.html('<li class="collection-item">Carregando...</li>');
     
+    console.log('Carregando lista de grupos...');
+    
     try {
         const response = await fetch(`${API_BASE_URL_PHP}/grupos.php`);
-        if (!response.ok) throw new Error('Erro ao buscar grupos.');
+        if (!response.ok) {
+            const err = await response.json().catch(() => ({}));
+            throw new Error(err.message || 'Erro ao buscar grupos: ' + response.status);
+        }
         
         const grupos = await response.json();
+        console.log('Grupos carregados:', grupos);
         lista.empty();
         
         if (grupos.length === 0) {

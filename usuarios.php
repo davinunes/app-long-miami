@@ -170,17 +170,18 @@ requirePapel(['admin', 'dev']);
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
-    <script src="js/main.js"></script>
     <script>
         const API_BASE_URL_PHP = window.location.origin + '/api';
-        let configDataGlobal = { grupos: [], papeis: [] };
-        
+    </script>
+    <script src="js/main.js"></script>
+    <script>
         $(document).ready(function() {
-            $('.modal').modal();
-            inicializarGerenciadorUsuarios();
+            $('.sidenav').sidenav({edge: 'left'});
             
             $('#user-name').text('<?php echo htmlspecialchars(getUsuarioNome()); ?>');
             $('#user-email').text('<?php echo htmlspecialchars(getUsuarioEmail()); ?>');
+            
+            inicializarGerenciadorUsuarios();
         });
         
         function fazerLogout() {
