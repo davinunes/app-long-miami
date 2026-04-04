@@ -1,29 +1,50 @@
-<div class="container">
-    <div class="header">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div>
-                <a href="ocorrencias.php" class="btn-flat" style="color: #666;">
-                    <i class="material-icons">arrow_back</i> Voltar
-                </a>
-                <h1 id="page-title" style="display: inline; margin-left: 10px;">Ocorrência</h1>
-            </div>
-            <div id="fase-container"></div>
-        </div>
-    </div>
-    
-    <div id="main-content" style="padding: 20px 0;">
-        <div style="text-align: center; padding: 50px;">
-            <div class="preloader-wrapper small active">
-                <div class="spinner-layer spinner-blue">
-                    <div class="circle-clipper left">
-                        <div class="circle"></div>
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalhes da Ocorrência</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <?php include '_partials/menu.php'; ?>
+    </header>
+
+    <a href="#" data-target="slide-out" class="sidenav-trigger mobile-menu-btn">
+        <i class="material-icons">menu</i>
+    </a>
+
+    <main id="main-content-ocorrencia" class="main-content">
+        <div class="container">
+            <div class="header">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <a href="ocorrencias.php" class="btn-flat" style="color: #666;">
+                            <i class="material-icons">arrow_back</i> Voltar
+                        </a>
+                        <h1 id="page-title" style="display: inline; margin-left: 10px;">Ocorrência</h1>
                     </div>
+                    <div id="fase-container"></div>
                 </div>
             </div>
-            <p style="margin-top: 15px; color: #666;">Carregando...</p>
+            
+            <div id="ocorrencia-content" style="padding: 20px 0;">
+                <div style="text-align: center; padding: 50px;">
+                    <div class="preloader-wrapper small active">
+                        <div class="spinner-layer spinner-blue">
+                            <div class="circle-clipper left">
+                                <div class="circle"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <p style="margin-top: 15px; color: #666;">Carregando...</p>
+                </div>
+            </div>
         </div>
-    </div>
-</div>
+    </main>
 
 <style>
 .fase-badge {
@@ -141,6 +162,7 @@
 </style>
 
 <script>
+const API_BASE_URL_PHP = window.location.origin + '/api';
 const urlParams = new URLSearchParams(window.location.search);
 const ocorrenciaId = urlParams.get('id');
 
@@ -158,8 +180,14 @@ function getJwtPayload() {
 }
 
 $(document).ready(async function() {
+    const accessToken = localStorage.getItem('accessToken');
+    if (!accessToken) {
+        window.location.href = 'index.html';
+        return;
+    }
+    
     if (!ocorrenciaId) {
-        $('#main-content').html('<p style="color: red;">ID da ocorrência não fornecido.</p>');
+        $('#ocorrencia-content').html('<p style="color: red;">ID da ocorrência não fornecido.</p>');
         return;
     }
     
@@ -186,7 +214,7 @@ async function carregarOcorrencia() {
         renderOcorrencia(occ);
         
     } catch (error) {
-        $('#main-content').html(`<p style="color: red;">Erro: ${error.message}</p>`);
+        $('#ocorrencia-content').html(`<p style="color: red;">Erro: ${error.message}</p>`);
     }
 }
 
@@ -227,7 +255,7 @@ function renderOcorrencia(occ) {
     const anexosHtml = renderAnexos(occ.anexos || []);
     const historicoHtml = renderHistorico(occ.fase_log || []);
     
-    $('#main-content').html(`
+    $('#ocorrencia-content').html(`
         ${faseControlsHtml}
         
         <div class="section-card">
@@ -517,3 +545,14 @@ function getIconeTipo(tipo) {
     return icones[tipo] || 'attach_file';
 }
 </script>
+
+    </main>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script src="js/jwt.js"></script>
+    <script src="js/helpers.js"></script>
+    <script src="js/funcs.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
