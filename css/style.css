@@ -214,22 +214,22 @@ header {
 
 header nav.sidenav {
     background-color: #1e293b;
-    width: 280px !important;
+    width: 280px;
     height: 100vh;
-    position: fixed !important;
+    position: fixed;
     left: 0;
     top: 0;
-    transform: translateX(0) !important;
+    transform: translateX(0);
 }
 
 header .sidenav {
     background-color: #1e293b;
-    width: 280px !important;
+    width: 280px;
     height: 100vh;
-    position: fixed !important;
+    position: fixed;
     left: 0;
     top: 0;
-    transform: translateX(0) !important;
+    transform: translateX(0);
 }
 
 .sidenav li > a, .sidenav li > a > i.material-icons { color: rgba(255, 255, 255, 0.9); }
@@ -270,43 +270,12 @@ header .sidenav {
     border-left: 3px solid #667eea;
 }
 
-.sidenav-collapse-btn {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: rgba(255,255,255,0.1);
-    border: none;
-    border-radius: 50%;
-    width: 32px;
-    height: 32px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.2s;
-}
-
-.sidenav-collapse-btn:hover {
-    background: rgba(255,255,255,0.2);
-}
-
-.sidenav-collapse-btn i {
-    color: white;
-    font-size: 20px;
-    margin: 0;
-}
-
 #main-content, main.main-content {
     margin-left: 280px;
     min-height: 100vh;
     flex: 1;
     background: #f0f2f5;
     overflow-x: hidden;
-    transition: margin-left 0.3s ease;
-}
-
-#main-content.sidenav-collapsed, main.main-content.sidenav-collapsed {
-    margin-left: 0;
 }
 
 /* --- 3. ESTILOS DE CONTEÚDO CARREGADO VIA AJAX --- */
@@ -415,13 +384,16 @@ textarea { min-height: 100px; resize: vertical; overflow: hidden; }
     .form-section { border-right: none; border-bottom: 2px solid #e9ecef; }
     
     header {
-        width: 0;
-        overflow: hidden;
+        position: static;
+        width: 100%;
+        height: auto;
     }
     
-    .sidenav {
+    header nav.sidenav,
+    header .sidenav {
+        position: fixed !important;
         transform: translateX(-105%) !important;
-        width: 280px !important;
+        z-index: 999;
     }
     
     .sidenav.sidenav-open {
@@ -429,7 +401,7 @@ textarea { min-height: 100px; resize: vertical; overflow: hidden; }
     }
     
     #main-content, main.main-content {
-        margin-left: 0;
+        margin-left: 0 !important;
     }
     
     .mobile-menu-btn {
