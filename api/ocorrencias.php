@@ -537,8 +537,13 @@ function gerarNotificacao($pdo, $dados, $usuario) {
     }
 }
 
+function usuarioTemPapel($usuario, $papel) {
+    $papeis = $usuario['papeis'] ?? [];
+    return is_array($papeis) && in_array($papel, $papeis);
+}
+
 function deletarOcorrencia($pdo, $dados, $usuario) {
-    if (!in_array('admin', $usuario['papeis']) && !in_array('dev', $usuario['papeis'])) {
+    if (!usuarioTemPapel($usuario, 'admin') && !usuarioTemPapel($usuario, 'dev')) {
         http_response_code(403);
         echo json_encode(['message' => 'Apenas administradores podem excluir ocorrências.']);
         exit();
@@ -597,7 +602,7 @@ function deletarAnexo($pdo, $dados, $usuario) {
         exit();
     }
     
-    $isAdmin = in_array('admin', $usuario['papeis']) || in_array('dev', $usuario['papeis']);
+    $isAdmin = usuarioTemPapel($usuario, 'admin') || usuarioTemPapel($usuario, 'dev');
     $isCriador = $anexo['created_by'] == $usuario['id'];
     
     if (!$isAdmin && !$isCriador) {
@@ -644,7 +649,7 @@ function deletarMensagem($pdo, $dados, $usuario) {
         exit();
     }
     
-    $isAdmin = in_array('admin', $usuario['papeis']) || in_array('dev', $usuario['papeis']);
+    $isAdmin = usuarioTemPapel($usuario, 'admin') || usuarioTemPapel($usuario, 'dev');
     $isCriador = $mensagem['usuario_id'] == $usuario['id'];
     
     if (!$isAdmin && !$isCriador) {
