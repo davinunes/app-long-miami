@@ -11,7 +11,8 @@
     
     <li><a class="waves-effect ajax-link" href="dashboard_content.php"><i class="material-icons">dashboard</i>Dashboard</a></li>
     <li><a class="waves-effect ajax-link" href="lista.php"><i class="material-icons">notifications</i>Notificações</a></li>
- 	
+    <li><a class="waves-effect ajax-link" href="ocorrencias.php"><i class="material-icons">report_problem</i>Ocorrências</a></li>
+  	
 	<li><a class="waves-effect ajax-link" href="usuarios.php"><i class="material-icons">people</i>Usuários</a></li>
     
     <li><div class="divider"></div></li>
