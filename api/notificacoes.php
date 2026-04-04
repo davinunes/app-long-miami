@@ -109,6 +109,14 @@ function buscarNotificacao($pdo, $id, $usuario) {
         $stmt_imagens->execute([$id]);
         $notificacao['imagens'] = $stmt_imagens->fetchAll();
         
+        $stmt_artigos = $pdo->prepare("
+            SELECT artigo_notacao as notation, artigo_texto as text, tipo
+            FROM notificacao_artigos 
+            WHERE notificacao_id = ?
+        ");
+        $stmt_artigos->execute([$id]);
+        $notificacao['artigos'] = $stmt_artigos->fetchAll();
+        
         if ($notificacao['ocorrencia_id']) {
             $stmt_todas_evidencias = $pdo->prepare("
                 SELECT id, url, nome_original, tipo, created_at
@@ -354,6 +362,21 @@ function atualizarNotificacao($pdo, $dados, $usuario) {
             }
         }
 
+        $pdo->prepare("DELETE FROM notificacao_artigos WHERE notificacao_id = ?")->execute([$id]);
+        if (!empty($dados->artigos) && is_array($dados->artigos)) {
+            $sql_artigo = "INSERT INTO notificacao_artigos (notificacao_id, artigo_notacao, artigo_texto, tipo) VALUES (?, ?, ?, 'regimento')";
+            $stmt_artigo = $pdo->prepare($sql_artigo);
+            foreach ($dados->artigos as $artigo) {
+                if (isset($artigo->notation) || isset($artigo['notation'])) {
+                    $stmt_artigo->execute([
+                        $id,
+                        $artigo->notation ?? $artigo['notation'],
+                        $artigo->text ?? $artigo['text'] ?? null
+                    ]);
+                }
+            }
+        }
+
         if (!empty($dados->fotos_fatos)) {
             $sql_imagens = "INSERT INTO notificacao_imagens (notificacao_id, caminho_arquivo, nome_original, ordem) VALUES (?, ?, ?, ?)";
             $stmt_imagens = $pdo->prepare($sql_imagens);
@@ -456,6 +479,20 @@ function criarNotificacao($pdo, $dados, $usuario) {
             $stmt_fatos = $pdo->prepare($sql_fatos);
             foreach ($dados->fatos as $ordem => $descricao) { 
                 $stmt_fatos->execute([$notificacao_id, $descricao, $ordem]); 
+            }
+        }
+
+        if (!empty($dados->artigos) && is_array($dados->artigos)) {
+            $sql_artigo = "INSERT INTO notificacao_artigos (notificacao_id, artigo_notacao, artigo_texto, tipo) VALUES (?, ?, ?, 'regimento')";
+            $stmt_artigo = $pdo->prepare($sql_artigo);
+            foreach ($dados->artigos as $artigo) {
+                if (isset($artigo->notation) || isset($artigo['notation'])) {
+                    $stmt_artigo->execute([
+                        $notificacao_id,
+                        $artigo->notation ?? $artigo['notation'],
+                        $artigo->text ?? $artigo['text'] ?? null
+                    ]);
+                }
             }
         }
         

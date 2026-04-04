@@ -2,6 +2,15 @@
 
 let selectedArticles = [];
 
+function getSelectedArticles() {
+    return selectedArticles;
+}
+
+function setSelectedArticles(articles) {
+    selectedArticles = articles || [];
+    updateSelectedArticlesUI();
+}
+
 async function inicializarBuscaRegimento() {
     const searchInput = document.getElementById('regimento-search');
     const resultsContainer = document.getElementById('regimento-results');

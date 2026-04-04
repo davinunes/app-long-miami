@@ -17,6 +17,11 @@ function showStatus(message, type) {
     }
 }
 
+function autoExpand(textarea) {
+    textarea.style.height = 'auto';
+    textarea.style.height = textarea.scrollHeight + 'px';
+}
+
 function addFato(valor = '') {
     const container = document.getElementById('fatos-container');
     if (!container) return;
@@ -304,7 +309,8 @@ function getFormData(forPDF = false) {
         fundamentacao_legal: document.getElementById('fundamentacao_legal').value,
         texto_descritivo: document.getElementById('texto_descritivo') ? document.getElementById('texto_descritivo').value : '',
         fatos: Array.from(document.querySelectorAll('#fatos-container textarea')).map(input => input.value).filter(Boolean),
-        fotos_fatos: imageStore
+        fotos_fatos: imageStore,
+        artigos: typeof getSelectedArticles === 'function' ? getSelectedArticles() : []
     };
 
     if (ocorrenciaId) {
@@ -333,3 +339,10 @@ function getFormData(forPDF = false) {
     
     return dados;
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    const fundamentacao = document.getElementById('fundamentacao_legal');
+    if (fundamentacao) {
+        autoExpand(fundamentacao);
+    }
+});

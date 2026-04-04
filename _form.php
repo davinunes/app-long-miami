@@ -82,7 +82,7 @@
         </button>
     </div>
     
-    <textarea id="fundamentacao_legal" rows="4" placeholder="Artigos do regimento, leis, etc..."></textarea>
+    <textarea id="fundamentacao_legal" rows="4" placeholder="Artigos do regimento, leis, etc..." oninput="autoExpand(this)"></textarea>
 </div>
 
 <div class="form-group hidden" id="valor_multa_group">

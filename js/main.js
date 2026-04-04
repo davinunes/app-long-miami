@@ -290,7 +290,12 @@ async function salvarNotificacao() {
         
         if (response.ok) {
             showStatus(result.message, 'success');
-            setTimeout(() => { window.location.href = 'lista.php'; }, 1500);
+            const novoId = result.id || dados.id;
+            if (novoId) {
+                setTimeout(() => { window.location.href = 'editar.php?id=' + novoId; }, 1500);
+            } else {
+                setTimeout(() => { window.location.href = 'lista.php'; }, 1500);
+            }
         } else {
             showStatus(`Erro ao salvar: ${result.message}`, 'error');
         }
@@ -345,7 +350,7 @@ async function inicializarFormularioEdicao() {
             const result = await response.json();
             if (response.ok) {
                 showStatus(result.message, 'success');
-                setTimeout(() => { window.location.href = 'lista.php'; }, 1500);
+                setTimeout(() => { window.location.reload(); }, 1500);
             } else {
                 showStatus(`Erro: ${result.message}`, 'error');
             }
@@ -450,6 +455,10 @@ async function inicializarFormularioEdicao() {
                 if (multaInput) multaInput.value = data.valor_multa;
                 const multaGroup = document.getElementById('valor_multa_group');
                 if (multaGroup) multaGroup.classList.remove('hidden');
+            }
+
+            if (data.artigos && data.artigos.length > 0 && typeof setSelectedArticles === 'function') {
+                setSelectedArticles(data.artigos);
             }
             
             console.log("Formulário preenchido com sucesso.");
