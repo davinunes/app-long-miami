@@ -276,24 +276,7 @@ $isAdminOrDev = in_array('dev', $usuarioLogado['papeis'] ?? []) || in_array('adm
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
     <script>
-        const API_BASE_URL_PHP = window.location.origin + '/api';
-        
-        // Permissões do usuário logado (injetadas pelo PHP)
-        const USUARIO_LOGADO_ID = <?php echo $usuarioLogado['id']; ?>;
-        const USUARIO_LOGADO_ROLE = '<?php echo $usuarioLogado['role']; ?>';
-        const EH_ADMIN_DEV = <?php echo $isAdminOrDev ? 'true' : 'false'; ?>;
-        const PERMISSOES_USUARIO = <?php echo json_encode($permissoesUsuario); ?>;
-        
-        // Função auxiliar para verificar permissão
-        function temPermissao(perm) {
-            if (EH_ADMIN_DEV) return true;
-            return PERMISSOES_USUARIO.includes(perm);
-        }
-        
-        function temAlgumaPermissao(perms) {
-            if (EH_ADMIN_DEV) return true;
-            return perms.some(p => PERMISSOES_USUARIO.includes(p));
-        }
+        // Funções auxiliares adicionais se necessário
     </script>
     <script src="js/main.js?v=<?php echo time(); ?>"></script>
     <script>

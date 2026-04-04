@@ -43,6 +43,7 @@ if (typeof fazerLogout === 'undefined') {
 }
 
 // Lógica de Permissões no JS
+const API_BASE_URL_PHP = window.location.origin + '/api';
 const PERMISSOES_USUARIO = <?php echo json_encode(getPermissoesUsuario()); ?>;
 const USUARIO_LOGADO_ID = <?php echo (int)getUsuarioId(); ?>;
 const EH_ADMIN_DEV = <?php echo isAdmin() ? 'true' : 'false'; ?>;

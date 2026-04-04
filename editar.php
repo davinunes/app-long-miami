@@ -105,12 +105,11 @@ $podeAlterarFase = isAdmin() || temPermissao('notificacao.alterar_fase');
     <script>
         const NOTIFICACAO_ID = <?php echo isset($_GET['id']) ? (int)$_GET['id'] : 'null'; ?>;
         const USUARIO_ID = <?php echo $usuarioLogado['id']; ?>;
-        const EH_ADMIN_DEV = <?php echo isAdmin() ? 'true' : 'false'; ?>;
         
         let notificationData = null;
         let ocorrenciaVinculadaData = null;
 
-        // Permissões injetadas para o JS
+        // Permissões de fase específicas para a UI se necessário (ou use temPermissao global)
         const PODE_LAVRAR = <?php echo $podeLavrar ? 'true' : 'false'; ?>;
         const PODE_REVOGAR = <?php echo $podeRevogarAssinatura ? 'true' : 'false'; ?>;
         const PODE_ENVIAR = <?php echo $podeEnviar ? 'true' : 'false'; ?>;

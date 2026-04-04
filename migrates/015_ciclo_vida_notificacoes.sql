@@ -46,6 +46,8 @@ CREATE TABLE IF NOT EXISTS notificacao_fase_log (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 5. Atualizar os status na tabela notificacao_status para o padrão do ciclo de vida
+ALTER TABLE notificacao_status ADD COLUMN IF NOT EXISTS slug VARCHAR(50) UNIQUE DEFAULT NULL;
+
 SET FOREIGN_KEY_CHECKS = 0;
 TRUNCATE TABLE notificacao_status;
 INSERT INTO notificacao_status (id, nome, slug) VALUES 

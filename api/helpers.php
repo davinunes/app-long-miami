@@ -9,6 +9,8 @@ require_once __DIR__ . '/../auth.php';
 /**
  * Retorna o usuário logado ou rejeita a requisição
  */
+$metodo = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+
 function getApiUsuario() {
     if (!estaLogado()) {
         http_response_code(401);

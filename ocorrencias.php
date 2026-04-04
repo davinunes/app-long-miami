@@ -219,14 +219,11 @@ $podeVerMinhas = true;
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
     <script>
-        const API_BASE_URL_PHP = window.location.origin + '/api';
-        
         // Permissões do usuário (injetadas pelo PHP)
         const USUARIO_ID = <?php echo $usuarioLogado['id']; ?>;
-        const EH_ADMIN_DEV = <?php echo $isAdminDev ? 'true' : 'false'; ?>;
         const PERMISSOES = <?php echo json_encode($permissoesUsuario); ?>;
         
-        // Permissões específicas
+        // Permissões específicas de tela
         const PODE_CRIAR = <?php echo $podeCriarOcorrencia ? 'true' : 'false'; ?>;
         const PODE_LISTAR_TODAS = <?php echo $podeListarTodas ? 'true' : 'false'; ?>;
         const PODE_VER_DETALHES = <?php echo $podeVerDetalhes ? 'true' : 'false'; ?>;

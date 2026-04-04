@@ -165,13 +165,10 @@ $podeCriarEvidencia = isAdmin() || temPermissao('ocorrencia.evidencia.anexar');
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
     <script>
-const API_BASE_URL_PHP = window.location.origin + '/api';
 const urlParams = new URLSearchParams(window.location.search);
 const ocorrenciaId = urlParams.get('id');
-const isAdmin = <?php echo $isAdmin ? 'true' : 'false'; ?>;
 const podeNotificar = <?php echo $podeNotificar ? 'true' : 'false'; ?>;
 const usuarioId = <?php echo $usuario['id']; ?>;
-const permissoesUsuario = <?php echo json_encode(getPermissoesUsuario()); ?>;
 
 // Permissões granulares injetadas pelo PHP
 const PODE_VINCULAR_UNIDADE = <?php echo $podeVincularUnidade ? 'true' : 'false'; ?>;
