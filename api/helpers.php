@@ -11,7 +11,9 @@ function getApiUsuario() {
         echo json_encode(['message' => 'Não autenticado.']);
         exit;
     }
-    return getUsuario();
+    $usuario = getUsuario();
+    error_log("SESSION DEBUG: " . print_r($_SESSION, true));
+    return $usuario;
 }
 
 function requireApiLogin() {
@@ -30,6 +32,9 @@ function requireApiPapel($papeis) {
     }
     
     http_response_code(403);
-    echo json_encode(['message' => 'Permissão insuficiente. Papel necessário: ' . implode(', ', $papeisPermitidos)]);
+    echo json_encode([
+        'message' => 'Permissão insuficiente. Papel necessário: ' . implode(', ', $papeisPermitidos),
+        'debug' => ['session' => $_SESSION, 'papeisUsuario' => $papeisUsuario]
+    ]);
     exit;
 }

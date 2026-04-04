@@ -543,15 +543,15 @@ function usuarioTemPapel($usuario, $papel) {
 }
 
 function deletarOcorrencia($pdo, $dados, $usuario) {
-    error_log("DEBUG deletarOcorrencia - usuario: " . print_r($usuario, true));
+    error_log("DEBUG deletarOcorrencia - SESSION: " . print_r($_SESSION, true));
     
     if (!usuarioTemPapel($usuario, 'admin') && !usuarioTemPapel($usuario, 'dev')) {
         http_response_code(403);
         echo json_encode([
             'message' => 'Apenas administradores podem excluir ocorrências.',
             'debug' => [
-                'papeis' => $usuario['papeis'] ?? null,
-                'role' => $usuario['role'] ?? null
+                'usuario' => $usuario,
+                'session' => $_SESSION
             ]
         ]);
         exit();
