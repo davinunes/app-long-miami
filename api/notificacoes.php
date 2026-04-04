@@ -445,8 +445,6 @@ function criarNotificacao($pdo, $dados, $usuario) {
             $anexos = $stmt_anexos->fetchAll(PDO::FETCH_ASSOC);
             
             if (!empty($anexos)) {
-                if (!is_dir(UPLOADS_PATH)) { mkdir(UPLOADS_PATH, 0755, true); }
-                
                 $sql_copia_img = "INSERT INTO notificacao_imagens (notificacao_id, caminho_arquivo, nome_original, ocorrencia_id, anexo_ocorrencia_id) VALUES (?, ?, ?, ?, ?)";
                 $stmt_copia_img = $pdo->prepare($sql_copia_img);
                 
@@ -454,22 +452,16 @@ function criarNotificacao($pdo, $dados, $usuario) {
                 $stmt_evidencia = $pdo->prepare($sql_evidencia);
                 
                 foreach ($anexos as $anexo) {
-                    $nome_arquivo = uniqid('img_notif_' . $notificacao_id . '_', true) . '.jpg';
-                    $caminho_origem = dirname(__DIR__) . '/' . $anexo['url'];
-                    $caminho_destino = UPLOADS_PATH . $nome_arquivo;
+                    $caminho_relativo = ltrim($anexo['url'], '/');
                     
-                    if (file_exists($caminho_origem)) {
-                        if (copy($caminho_origem, $caminho_destino)) {
-                            $stmt_copia_img->execute([
-                                $notificacao_id,
-                                $nome_arquivo,
-                                $anexo['nome_original'],
-                                $dados->ocorrencia_id,
-                                $anexo['id']
-                            ]);
-                            $stmt_evidencia->execute([$anexo['id'], $notificacao_id]);
-                        }
-                    }
+                    $stmt_copia_img->execute([
+                        $notificacao_id,
+                        $caminho_relativo,
+                        $anexo['nome_original'],
+                        $dados->ocorrencia_id,
+                        $anexo['id']
+                    ]);
+                    $stmt_evidencia->execute([$anexo['id'], $notificacao_id]);
                 }
             }
         }
