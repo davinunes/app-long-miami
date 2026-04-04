@@ -220,10 +220,11 @@ ON DUPLICATE KEY UPDATE permissao_id = permissao_id;
 -- DELETAR TABELAS ANTIGAS DE PAPÉIS
 -- =====================================================
 
--- Remover referências às tabelas antigas nos migrations (comentar futuramente)
---DROP TABLE IF EXISTS grupo_papeis;
---DROP TABLE IF EXISTS usuario_papeis;
+/*
+ * Tabelas antigas a serem removidas:
+ * - grupo_papeis
+ * - usuario_papeis
+ */
 
--- Para executar agora (descomente após backup):
 DROP TABLE IF EXISTS grupo_papeis;
 DROP TABLE IF EXISTS usuario_papeis;
