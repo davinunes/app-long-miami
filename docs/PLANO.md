@@ -448,6 +448,68 @@ app-long-miami/
 - [x] Pré-preenchimento de notificação com dados da ocorrência
 - [x] Exibição de evidências da ocorrência na notificação
 - [x] Cópia de imagens da ocorrência para notificação (criarNotificacao atualizada)
+- [x] Migration 009 - Sistema de Permissões
+
+---
+
+## Sistema de Permissões (MIGRAÇÃO 009)
+
+### Estrutura de Dados
+
+```
+permissoes
+├── id
+├── slug                    -- ex: 'ocorrencia.criar'
+├── nome                    -- ex: 'Criar Ocorrência'
+├── descricao
+├── modulo                  -- ex: 'ocorrencia', 'notificacao'
+└── created_at
+
+grupo_permissoes
+├── grupo_id
+└── permissao_id
+
+usuario_permissoes
+├── usuario_id
+├── permissao_id
+├── granted_by
+└── granted_at
+```
+
+### Funções Disponíveis em auth.php
+
+```php
+// Verificar permissão
+temPermissao('ocorrencia.criar');              // bool
+temAlgumaPermissao(['a', 'b']);                 // bool
+verificarDono('ocorrencias', $id);              // bool
+podeEditar('ocorrencias', $id, 'editar_propria', 'editar'); // bool
+
+// Requerer permissão
+requirePermissao('ocorrencia.criar');
+requireAlgumaPermissao(['a', 'b']);
+
+// Legacy (mantido para compatibilidade)
+temPapel('admin');                              // bool
+requirePapel(['admin', 'dev']);
+```
+
+### API Endpoints
+
+```
+GET  /api/grupos.php?listar_permissoes=1       -- Lista todas permissões
+GET  /api/grupos.php?modulos=1                 -- Lista módulos
+GET  /api/config.php                           -- Inclui permissões
+POST /api/grupos.php                            -- CRUD com permissões
+```
+
+### Próximos Passos
+
+1. [x] Migration 009 criada
+2. [x] Funções em auth.php implementadas
+3. [x] APIs atualizadas
+4. [ ] Atualizar telas uma a uma com permissões granulares
+5. [ ] Remover dependência de papéis legacy
 
 ---
 
@@ -466,14 +528,6 @@ Consulte os arquivos em `docs/` para informações detalhadas:
 O novo sistema substitui o controle por **papeis** por **permissões** mais granulares:
 
 - Cada ação do sistema é uma permissão específica (ex: `ocorrencia.criar`, `notificacao.lavrar`)
-- Papéis são apenas "pacotes" de permissões pré-definidos
+- Grupos são associados a permissões (não mais a papéis)
 - Usuários podem ter permissões individuais extras
-- `dev` é o modo deus (todas as permissões)
-
-### Próximos Passos para Migração de Permissões
-
-1. Criar tabelas `permissoes`, `papel_permissoes`, `usuario_permissoes`
-2. Popular com permissões e mapeamentos
-3. Criar função `temPermissao()` em `auth.php`
-4. Substituir gradualmente `requirePapel()` por `requirePermissao()`
-5. Atualizar frontends para usar `temPermissao()`
+- `dev` é o modo deus (todas as permissões automaticamente)

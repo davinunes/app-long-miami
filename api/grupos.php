@@ -1,6 +1,7 @@
 <?php
 // Endpoint: /api/grupos.php
 // Métodos: GET, POST
+// Sistema de Permissões: Grupos agora têm permissões, não papéis
 
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
@@ -13,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 }
 
 require_once '../api/helpers.php';
-requireApiPapel(['admin', 'dev']);
+requireApiPermissao('grupo.listar');
 
 require_once '../config.php';
 
@@ -28,6 +29,29 @@ if (!$pdo) {
 
 switch ($metodo) {
     case 'GET':
+        // Listar permissões disponíveis
+        if (isset($_GET['listar_permissoes'])) {
+            $modulo = $_GET['modulo'] ?? null;
+            if ($modulo) {
+                $stmt = $pdo->prepare("SELECT * FROM permissoes WHERE modulo = ? ORDER BY modulo, nome ASC");
+                $stmt->execute([$modulo]);
+            } else {
+                $stmt = $pdo->query("SELECT * FROM permissoes ORDER BY modulo, nome ASC");
+            }
+            http_response_code(200);
+            echo json_encode($stmt->fetchAll());
+            break;
+        }
+        
+        // Listar módulos de permissões
+        if (isset($_GET['modulos'])) {
+            $stmt = $pdo->query("SELECT DISTINCT modulo FROM permissoes ORDER BY modulo ASC");
+            http_response_code(200);
+            echo json_encode($stmt->fetchAll(PDO::FETCH_COLUMN));
+            break;
+        }
+        
+        // Buscar grupo específico
         if (isset($_GET['id'])) {
             $id = (int)$_GET['id'];
             $stmt = $pdo->prepare("SELECT * FROM grupos WHERE id = ?");
@@ -40,10 +64,14 @@ switch ($metodo) {
                 exit();
             }
             
-            // Busca papéis do grupo
-            $stmt = $pdo->prepare("SELECT papel_slug FROM grupo_papeis WHERE grupo_id = ?");
+            // Busca permissões do grupo
+            $stmt = $pdo->prepare("
+                SELECT p.* FROM grupo_permissoes gp 
+                JOIN permissoes p ON gp.permissao_id = p.id 
+                WHERE gp.grupo_id = ?
+            ");
             $stmt->execute([$id]);
-            $grupo['papeis'] = $stmt->fetchAll(PDO::FETCH_COLUMN);
+            $grupo['permissoes'] = $stmt->fetchAll();
             
             // Busca membros do grupo
             $stmt = $pdo->prepare("SELECT u.id, u.nome, u.email FROM usuarios u JOIN usuario_grupos ug ON u.id = ug.usuario_id WHERE ug.grupo_id = ?");
@@ -52,16 +80,23 @@ switch ($metodo) {
             
             http_response_code(200);
             echo json_encode($grupo);
-        } else if (isset($_GET['todos_papeis'])) {
-            $stmt = $pdo->query("SELECT * FROM papeles ORDER BY nome ASC");
-            http_response_code(200);
-            echo json_encode($stmt->fetchAll());
         } else {
-            $stmt = $pdo->query("SELECT g.*, GROUP_CONCAT(gp.papel_slug) as papeles FROM grupos g LEFT JOIN grupo_papeis gp ON g.id = gp.grupo_id GROUP BY g.id ORDER BY g.nome ASC");
+            // Listar todos os grupos com suas permissões
+            $stmt = $pdo->query("
+                SELECT g.id, g.nome, g.descricao, g.created_at
+                FROM grupos g 
+                ORDER BY g.nome ASC
+            ");
             $grupos = $stmt->fetchAll();
             
             foreach ($grupos as &$grupo) {
-                $grupo['papeis'] = $grupo['papeis'] ? explode(',', $grupo['papeis']) : [];
+                $stmt = $pdo->prepare("
+                    SELECT p.slug FROM grupo_permissoes gp 
+                    JOIN permissoes p ON gp.permissao_id = p.id 
+                    WHERE gp.grupo_id = ?
+                ");
+                $stmt->execute([$grupo['id']]);
+                $grupo['permissoes'] = $stmt->fetchAll(PDO::FETCH_COLUMN);
             }
             
             http_response_code(200);
@@ -70,6 +105,7 @@ switch ($metodo) {
         break;
 
     case 'POST':
+        requireApiPermissao('grupo.criar');
         $dados = json_decode(file_get_contents("php://input"));
         
         // Criar grupo
@@ -85,11 +121,11 @@ switch ($metodo) {
                 $stmt->execute([$dados->nome, $dados->descricao ?? null]);
                 $grupo_id = $pdo->lastInsertId();
                 
-                // Adiciona papéis se especificados
-                if (!empty($dados->papeis) && is_array($dados->papeis)) {
-                    $stmt = $pdo->prepare("INSERT INTO grupo_papeis (grupo_id, papel_slug) VALUES (?, ?)");
-                    foreach ($dados->papeis as $papel) {
-                        $stmt->execute([$grupo_id, $papel]);
+                // Adiciona permissões se especificadas
+                if (!empty($dados->permissoes) && is_array($dados->permissoes)) {
+                    $stmt = $pdo->prepare("INSERT INTO grupo_permissoes (grupo_id, permissao_id) VALUES (?, ?)");
+                    foreach ($dados->permissoes as $permissaoId) {
+                        $stmt->execute([$grupo_id, (int)$permissaoId]);
                     }
                 }
                 
@@ -102,20 +138,21 @@ switch ($metodo) {
         }
         // Atualizar grupo
         elseif (isset($dados->id)) {
+            requireApiPermissao('grupo.editar');
             $id = (int)$dados->id;
             
             try {
                 $stmt = $pdo->prepare("UPDATE grupos SET nome = ?, descricao = ? WHERE id = ?");
                 $stmt->execute([$dados->nome, $dados->descricao ?? null, $id]);
                 
-                // Atualiza papéis
-                if (isset($dados->papeis)) {
-                    $pdo->prepare("DELETE FROM grupo_papeis WHERE grupo_id = ?")->execute([$id]);
+                // Atualiza permissões se especificadas
+                if (isset($dados->permissoes)) {
+                    $pdo->prepare("DELETE FROM grupo_permissoes WHERE grupo_id = ?")->execute([$id]);
                     
-                    if (is_array($dados->papeis)) {
-                        $stmt = $pdo->prepare("INSERT INTO grupo_papeis (grupo_id, papel_slug) VALUES (?, ?)");
-                        foreach ($dados->papeis as $papel) {
-                            $stmt->execute([$id, $papel]);
+                    if (is_array($dados->permissoes)) {
+                        $stmt = $pdo->prepare("INSERT INTO grupo_permissoes (grupo_id, permissao_id) VALUES (?, ?)");
+                        foreach ($dados->permissoes as $permissaoId) {
+                            $stmt->execute([$id, (int)$permissaoId]);
                         }
                     }
                 }
@@ -153,9 +190,10 @@ switch ($metodo) {
         }
         // Deletar grupo
         elseif (isset($dados->deletar)) {
+            requireApiPermissao('grupo.excluir');
             $id = (int)$dados->id;
             try {
-                $pdo->prepare("DELETE FROM grupo_papeis WHERE grupo_id = ?")->execute([$id]);
+                $pdo->prepare("DELETE FROM grupo_permissoes WHERE grupo_id = ?")->execute([$id]);
                 $pdo->prepare("DELETE FROM usuario_grupos WHERE grupo_id = ?")->execute([$id]);
                 $pdo->prepare("DELETE FROM grupos WHERE id = ?")->execute([$id]);
                 http_response_code(200);
@@ -164,12 +202,6 @@ switch ($metodo) {
                 http_response_code(500);
                 echo json_encode(['message' => 'Erro ao deletar grupo: ' . $e->getMessage()]);
             }
-        }
-        // Listar papéis disponíveis
-        elseif (isset($_GET['listar_papeis'])) {
-            $stmt = $pdo->query("SELECT * FROM papeles ORDER BY nome ASC");
-            http_response_code(200);
-            echo json_encode($stmt->fetchAll());
         }
         else {
             http_response_code(400);
