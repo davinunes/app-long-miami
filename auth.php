@@ -100,6 +100,42 @@ function getPermissoesUsuario() {
 }
 
 /**
+ * Atualiza as permissões do usuário na sessão a partir do banco de dados
+ * Útil quando permissões são adicionadas/removidas enquanto o usuário está logado
+ */
+function refreshPermissoesUsuario() {
+    if (!estaLogado()) return;
+    
+    $pdo = getDbConnection();
+    $usuarioId = getUsuarioId();
+    
+    // Buscar permissões do usuário (via grupos + diretas)
+    $stmtPerm = $pdo->prepare("
+        SELECT DISTINCT p.slug FROM (
+            SELECT gp.permissao_id FROM usuario_grupos ug 
+            JOIN grupo_permissoes gp ON ug.grupo_id = gp.grupo_id 
+            WHERE ug.usuario_id = ?
+            UNION
+            SELECT up.permissao_id FROM usuario_permissoes up 
+            WHERE up.usuario_id = ?
+        ) AS todas_permissoes
+        JOIN permissoes p ON p.id = todas_permissoes.permissao_id
+    ");
+    $stmtPerm->execute([$usuarioId, $usuarioId]);
+    $permissoes = $stmtPerm->fetchAll(PDO::FETCH_COLUMN);
+    
+    // DEV e ADMIN sempre tem todas as permissões
+    $papeis = $_SESSION['usuario']['papeis'] ?? [];
+    if (in_array('dev', $papeis) || in_array('admin', $papeis)) {
+        $stmtTodasPerm = $pdo->query("SELECT slug FROM permissoes");
+        $todasPermissoes = $stmtTodasPerm->fetchAll(PDO::FETCH_COLUMN);
+        $permissoes = array_unique(array_merge($permissoes, $todasPermissoes));
+    }
+    
+    $_SESSION['usuario']['permissoes'] = $permissoes;
+}
+
+/**
  * Verifica se o usuário tem uma permissão específica
  * 
  * @param string $permissao Slug da permissão (ex: 'ocorrencia.criar')

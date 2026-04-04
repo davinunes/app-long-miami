@@ -448,6 +448,11 @@ function mudarFase($pdo, $dados, $usuario) {
     // Admin/dev tem todas as permissões
     $isAdminDev = in_array($usuario['role'], ['admin', 'dev']) || in_array('dev', $usuario['papeis'] ?? []) || in_array('admin', $usuario['papeis'] ?? []);
     
+    // Atualizar permissões da sessão antes de verificar (para capturar mudanças recentes)
+    if (!$isAdminDev) {
+        refreshPermissoesUsuario();
+    }
+    
     if (!$isAdminDev) {
         // Verificar se a transição é permitida
         if (!isset($transicoesPermitidas[$faseAnterior]) || !isset($transicoesPermitidas[$faseAnterior][$dados->nova_fase])) {
