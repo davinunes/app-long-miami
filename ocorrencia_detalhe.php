@@ -162,6 +162,7 @@ const isAdmin = <?php echo $isAdmin ? 'true' : 'false'; ?>;
 const podeNotificar = <?php echo $podeNotificar ? 'true' : 'false'; ?>;
 const usuarioId = <?php echo $usuario['id']; ?>;
 let ocorrenciaData = null;
+let podeEditarGlobal = false;
 
 $(document).ready(async function() {
     $('.sidenav').sidenav({edge: 'left'});
@@ -197,6 +198,7 @@ async function carregarOcorrencia() {
 function renderOcorrencia(occ) {
     var faseLabel = occ.fase.replace('_', ' ');
     var podeEditar = (occ.fase !== 'homologada') && (isAdmin || occ.created_by === usuarioId);
+    podeEditarGlobal = podeEditar;
     
     $('#page-title').text('Ocorrência #' + occ.id);
     $('#fase-container').html('<span class="fase-badge fase-' + occ.fase + '">' + faseLabel + '</span>');
@@ -492,7 +494,7 @@ function getIconeTipo(tipo) {
 }
 
 document.addEventListener('paste', async function(e) {
-    if (!podeEditar) return;
+    if (!podeEditarGlobal) return;
     
     const items = e.clipboardData.items;
     for (let item of items) {
