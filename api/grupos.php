@@ -152,6 +152,20 @@ switch ($metodo) {
                 echo json_encode(['message' => 'Erro: ' . $e->getMessage()]);
             }
         }
+        // Deletar grupo
+        elseif (isset($dados->deletar)) {
+            $id = (int)$dados->id;
+            try {
+                $pdo->prepare("DELETE FROM grupo_papeis WHERE grupo_id = ?")->execute([$id]);
+                $pdo->prepare("DELETE FROM usuario_grupos WHERE grupo_id = ?")->execute([$id]);
+                $pdo->prepare("DELETE FROM grupos WHERE id = ?")->execute([$id]);
+                http_response_code(200);
+                echo json_encode(['message' => 'Grupo deletado com sucesso.']);
+            } catch (Exception $e) {
+                http_response_code(500);
+                echo json_encode(['message' => 'Erro ao deletar grupo: ' . $e->getMessage()]);
+            }
+        }
         // Listar papéis disponíveis
         elseif (isset($_GET['listar_papeis'])) {
             $stmt = $pdo->query("SELECT * FROM papeles ORDER BY nome ASC");

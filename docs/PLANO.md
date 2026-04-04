@@ -44,10 +44,11 @@ usuario_grupos (usuario_id, grupo_id)
 
 ### 1.4 - Tarefas
 
-- [x] Criar migrate para grupos e papéis
-- [x] Criar CRUD de grupos
-- [x] Criar CRUD de usuários com gestão de grupos
-- [x] Implementar middleware de verificação de papel
+- [x] Criar migrate para grupos e papéis (002_grupos_papeis.sql)
+- [x] Criar CRUD de grupos (api/grupos.php)
+- [x] Criar CRUD de usuários com gestão de grupos (api/usuarios.php)
+- [x] Implementar middleware de verificação de papel (verificar_token.php)
+- [x] Frontend de usuários com modais de grupos/papéis (usuarios.php + js/main.js)
 
 ---
 
@@ -247,22 +248,20 @@ pareceres (tabela para receber dados externos)
 app-long-miami/
 ├── migrates/
 │   ├── 001_initial_schema.sql      ✓
-│   ├── 002_usuarios_papeis_grupos.sql  [PRÓXIMO]
-│   ├── 003_ocorrencias.sql           [FASE 2]
-│   ├── 004_notificacoes_extendido.sql [FASE 4]
-│   └── 005_pareceres.sql             [FASE 6]
+│   └── 002_grupos_papeis.sql      ✓
 ├── api/
-│   ├── usuarios.php                  ✓
-│   ├── notificacoes.php              ✓
-│   ├── ocorrencias.php              [FASE 2]
-│   ├── config.php                   ✓
-│   ├── auth.php                     [FASE 1]
-│   └── v1/
-│       └── notificacoes.php         [FASE 6]
+│   ├── usuarios.php                 ✓
+│   ├── grupos.php                  ✓
+│   ├── notificacoes.php            ✓
+│   ├── config.php                  ✓
+│   └── verificar_token.php         ✓
 ├── js/
-│   └── ...                          (atualizar conforme necessário)
+│   ├── main.js                     ✓ (atualizado com funções de usuários/grupos)
+│   └── funcs.js                    ✓
+├── usuarios.php                    ✓ (frontend de usuários)
+├── verificar_token.php             ✓
 └── docs/
-    └── PLANO.md                     ✓
+    └── PLANO.md                   ✓
 ```
 
 ---
@@ -283,3 +282,20 @@ app-long-miami/
 - O grupo `dev` é hardcoded com acesso total em `verificar_token.php`
 - Todas as APIs devem usar autenticação JWT
 - Frontend usa padrão SPA com AJAX
+- Migrate 002 executado no servidor (10.0.0.208)
+
+---
+
+## Status: FASE 1 CONCLUÍDA ✓
+
+### Implementado em 03/04/2026:
+
+**Backend:**
+- `api/grupos.php` - CRUD completo de grupos
+- `api/usuarios.php` - Atualizado com suporte a grupos/papéis
+- `api/config.php` - Retorna papéis e grupos disponíveis
+- `verificar_token.php` - Verifica papéis do banco
+
+**Frontend:**
+- `usuarios.php` - Interface com modais de usuário e grupos
+- `js/main.js` - Funções: carregarListaUsuarios, abrirModalUsuario, salvarUsuarioModal, carregarListaGrupos, criarGrupo, editarGrupo, deletarGrupo

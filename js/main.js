@@ -1,14 +1,35 @@
-function inicializarGerenciadorUsuarios() {
-    // 1. Inicializa o componente Modal do Materialize
+let configDataGlobal = { grupos: [], papeis: [] };
+
+async function inicializarGerenciadorUsuarios() {
     $('.modal').modal();
-    
-    // 2. Carrega a lista de usuários na tabela
+    await carregarConfiguracoesUsuarios();
     carregarListaUsuarios();
+    carregarListaGrupos();
+    setupEventListenersUsuarios();
+}
+
+async function carregarConfiguracoesUsuarios() {
+    try {
+        const response = await fetch(`${API_BASE_URL_PHP}/config.php`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('accessToken')}` }
+        });
+        if (!response.ok) throw new Error('Falha ao carregar configurações.');
+        configDataGlobal = await response.json();
+    } catch (error) {
+        console.error('Erro ao carregar configurações:', error);
+    }
+}
+
+function setupEventListenersUsuarios() {
+    $('#btn-novo-usuario').off('click').on('click', () => abrirModalUsuario(null));
+    $('#modal-salvar-usuario').off('click').on('click', salvarUsuarioModal);
+    $('#btn-salvar-grupo').off('click').on('click', salvarGrupoModal);
+    $('#modal-grupos').off('click', '#btn-criar-grupo').on('click', '#btn-criar-grupo', criarGrupo);
 }
 
 async function carregarListaUsuarios() {
     const tbody = $('#usuarios-table-body');
-    tbody.html('<tr><td colspan="4" style="text-align: center;">Carregando...</td></tr>');
+    tbody.html('<tr><td colspan="5" style="text-align: center;">Carregando...</td></tr>');
     
     try {
         const response = await fetch(`${API_BASE_URL_PHP}/usuarios.php`, {
@@ -21,33 +42,40 @@ async function carregarListaUsuarios() {
         }
 
         const usuarios = await response.json();
-        tbody.empty(); // Limpa o "Carregando..."
+        tbody.empty();
 
         if (usuarios.length === 0) {
-            tbody.html('<tr><td colspan="4" style="text-align: center;">Nenhum usuário encontrado.</td></tr>');
+            tbody.html('<tr><td colspan="5" style="text-align: center;">Nenhum usuário encontrado.</td></tr>');
             return;
         }
 
         usuarios.forEach(user => {
+            const gruposDisplay = Array.isArray(user.grupos) && user.grupos.length > 0 
+                ? user.grupos.join(', ') 
+                : '<span style="color: #999;">-</span>';
+            const papeisDisplay = Array.isArray(user.papeis) && user.papeis.length > 0 
+                ? user.papeis.map(p => `<span class="chip">${p}</span>`).join(' ') 
+                : '<span style="color: #999;">-</span>';
+            
             const row = `
                 <tr>
                     <td>${user.nome}</td>
                     <td>${user.email}</td>
-                    <td>${user.role}</td>
+                    <td>${gruposDisplay}</td>
+                    <td>${papeisDisplay}</td>
                     <td>
-                        <a href="#modal-usuario" class="btn-floating btn-small waves-effect waves-light blue btn-editar-usuario modal-trigger" data-id="${user.id}">
+                        <button class="btn-floating btn-small waves-effect waves-light blue modal-trigger" data-id="${user.id}" onclick="abrirModalUsuario(${user.id})">
                             <i class="material-icons">edit</i>
-                        </a>
-                        </td>
+                        </button>
+                    </td>
                 </tr>
             `;
             tbody.append(row);
         });
 
     } catch (error) {
-        // O catch agora só mostra o erro na tabela ou no console
         console.error('Erro ao buscar usuários:', error);
-        tbody.html(`<tr><td colspan="4" style="text-align: center; color: red;">Erro: ${error.message}</td></tr>`);
+        tbody.html(`<tr><td colspan="5" style="text-align: center; color: red;">Erro: ${error.message}</td></tr>`);
     }
 }
 
@@ -55,16 +83,15 @@ async function abrirModalUsuario(id) {
     const modal = $('#modal-usuario');
     const form = $('#form-usuario');
     
-    form[0].reset(); // Limpa o formulário
+    form[0].reset();
+    popularSelectsGruposPapeis();
     
     if (id) {
-        // --- MODO EDIÇÃO ---
         $('#modal-usuario-titulo').text('Editar Usuário');
-        $('#usuario_id').val(id); // Define o ID oculto
+        $('#usuario_id').val(id);
         $('#senha-helper-text').text('Deixe em branco para não alterar a senha.');
-        $('#usuario_senha').prop('required', false); // Senha não é obrigatória na edição
+        $('#usuario_senha').prop('required', false);
 
-        // Busca os dados do usuário específico
         try {
             const response = await fetch(`${API_BASE_URL_PHP}/usuarios.php?id=${id}`, {
                 headers: { 'Authorization': `Bearer ${localStorage.getItem('accessToken')}` }
@@ -74,10 +101,14 @@ async function abrirModalUsuario(id) {
             const user = await response.json();
             $('#usuario_nome').val(user.nome);
             $('#usuario_email').val(user.email);
-            $('#usuario_role').val(user.role);
             
-            M.updateTextFields(); // Atualiza os labels flutuantes do Materialize
-            $('select').formSelect(); // Re-inicializa o select com o valor correto
+            if (user.grupos) {
+                const grupoIds = user.grupos.map(g => String(g.id || g));
+                $('#usuario_grupos').val(grupoIds);
+            }
+            if (user.papeis) {
+                $('#usuario_papeis').val(user.papeis);
+            }
             
         } catch (error) {
             alert(error.message);
@@ -85,37 +116,68 @@ async function abrirModalUsuario(id) {
         }
 
     } else {
-        // --- MODO CRIAÇÃO ---
         $('#modal-usuario-titulo').text('Novo Usuário');
-        $('#usuario_id').val(''); // Garante que o ID oculto está vazio
+        $('#usuario_id').val('');
         $('#senha-helper-text').text('A senha é obrigatória para criar.');
-        $('#usuario_senha').prop('required', true); // Senha é obrigatória na criação
+        $('#usuario_senha').prop('required', true);
     }
     
     M.updateTextFields();
     $('select').formSelect();
-    
-    // Abre o modal
     M.Modal.getInstance(modal).open();
+}
+
+function popularSelectsGruposPapeis() {
+    const gruposSelect = $('#usuario_grupos');
+    gruposSelect.html('<option value="" disabled>Selecione os grupos</option>');
+    if (configDataGlobal.grupos) {
+        configDataGlobal.grupos.forEach(g => {
+            gruposSelect.append(`<option value="${g.id}">${g.nome}</option>`);
+        });
+    }
+    
+    const papeisSelect = $('#usuario_papeis');
+    papeisSelect.html('<option value="" disabled>Selecione os papéis</option>');
+    if (configDataGlobal.papeis) {
+        configDataGlobal.papeis.forEach(p => {
+            papeisSelect.append(`<option value="${p.slug}">${p.nome}</option>`);
+        });
+    }
 }
 
 async function salvarUsuarioModal() {
     const id = $('#usuario_id').val();
+    const nome = $('#usuario_nome').val();
+    const email = $('#usuario_email').val();
+    const senha = $('#usuario_senha').val();
+    
+    if (!nome || !email) {
+        M.toast({html: 'Preencha nome e email.', classes: 'red'});
+        return;
+    }
+    
+    if (!id && !senha) {
+        M.toast({html: 'A senha é obrigatória para criar usuário.', classes: 'red'});
+        return;
+    }
+    
     const dados = {
-        nome: $('#usuario_nome').val(),
-        email: $('#usuario_email').val(),
-        role: $('#usuario_role').val(),
-        senha: $('#usuario_senha').val()
+        nome: nome,
+        email: email,
+        grupos: $('#usuario_grupos').val() || [],
+        papeis: $('#usuario_papeis').val() || []
     };
     
-    let url = `${API_BASE_URL_PHP}/usuarios.php`;
+    if (senha) {
+        dados.senha = senha;
+    }
     
     if (id) {
-        dados.id = id; // Adiciona o ID para a API saber que é um UPDATE
+        dados.id = parseInt(id);
     }
     
     try {
-        const response = await fetch(url, {
+        const response = await fetch(`${API_BASE_URL_PHP}/usuarios.php`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -130,12 +192,12 @@ async function salvarUsuarioModal() {
             throw new Error(result.message || 'Erro ao salvar.');
         }
 
-        alert(result.message); // Exibe "Usuário salvo com sucesso!"
-        M.Modal.getInstance($('#modal-usuario')).close(); // Fecha o modal
-        carregarListaUsuarios(); // Recarrega a tabela
+        M.toast({html: result.message, classes: 'green'});
+        M.Modal.getInstance($('#modal-usuario')).close();
+        carregarListaUsuarios();
         
     } catch (error) {
-        alert(error.message); // Exibe o erro (ex: "Este email já existe")
+        M.toast({html: error.message, classes: 'red'});
     }
 }
 
@@ -588,8 +650,6 @@ function urlParaBase64(url) {
             .then(blob => {
                 const reader = new FileReader();
                 reader.onloadend = () => {
-                    // Resultado é 'data:image/jpeg;base64, ...'
-                    // Nós queremos apenas a parte depois da vírgula
                     const base64String = reader.result.split(',')[1];
                     resolve(base64String);
                 };
@@ -598,4 +658,220 @@ function urlParaBase64(url) {
             })
             .catch(reject);
     });
+}
+
+async function carregarListaGrupos() {
+    const lista = $('#grupos-lista');
+    lista.html('<li class="collection-item">Carregando...</li>');
+    
+    try {
+        const response = await fetch(`${API_BASE_URL_PHP}/grupos.php`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('accessToken')}` }
+        });
+        if (!response.ok) throw new Error('Erro ao buscar grupos.');
+        
+        const grupos = await response.json();
+        lista.empty();
+        
+        if (grupos.length === 0) {
+            lista.html('<li class="collection-item">Nenhum grupo encontrado.</li>');
+            return;
+        }
+        
+        grupos.forEach(g => {
+            const PapeisHtml = g.papeis && g.papeis.length > 0 
+                ? g.papeis.map(p => `<span class="chip">${p}</span>`).join(' ')
+                : '<span style="color: #999;">Sem papéis</span>';
+            
+            lista.append(`
+                <li class="collection-item">
+                    <div>
+                        <strong>${g.nome}</strong>
+                        ${g.descricao ? `<p style="margin: 5px 0; color: #666;">${g.descricao}</p>` : ''}
+                        <div style="margin-top: 5px;">${PapeisHtml}</div>
+                    </div>
+                    <div style="float: right;">
+                        <button class="btn-small blue" onclick="editarGrupo(${g.id})"><i class="material-icons">edit</i></button>
+                        <button class="btn-small red" onclick="deletarGrupo(${g.id})"><i class="material-icons">delete</i></button>
+                    </div>
+                </li>
+            `);
+        });
+        
+        popularFormularioNovoGrupo();
+        
+    } catch (error) {
+        lista.html(`<li class="collection-item" style="color: red;">Erro: ${error.message}</li>`);
+    }
+}
+
+function popularFormularioNovoGrupo() {
+    const container = $('#novo-grupo-papeis');
+    container.empty();
+    
+    if (!configDataGlobal.papeis || configDataGlobal.papeis.length === 0) return;
+    
+    container.html('<label style="margin-bottom: 10px;">Papéis do Grupo</label>');
+    
+    configDataGlobal.papeis.forEach(p => {
+        container.append(`
+            <p>
+                <label>
+                    <input type="checkbox" class="novo-grupo-papel" value="${p.slug}">
+                    <span>${p.nome}</span>
+                </label>
+            </p>
+        `);
+    });
+}
+
+async function criarGrupo() {
+    const nome = $('#novo_grupo_nome').val().trim();
+    const desc = $('#novo_grupo_desc').val().trim();
+    
+    if (!nome) {
+        M.toast({html: 'Informe o nome do grupo.', classes: 'red'});
+        return;
+    }
+    
+    const papeis = [];
+    $('.novo-grupo-papel:checked').each(function() {
+        papeis.push($(this).val());
+    });
+    
+    try {
+        const response = await fetch(`${API_BASE_URL_PHP}/grupos.php`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+            },
+            body: JSON.stringify({
+                criar_grupo: true,
+                nome: nome,
+                descricao: desc,
+                papeis: papeis
+            })
+        });
+        
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.message);
+        
+        M.toast({html: result.message, classes: 'green'});
+        $('#novo_grupo_nome').val('');
+        $('#novo_grupo_desc').val('');
+        $('.novo-grupo-papel').prop('checked', false);
+        carregarListaGrupos();
+        carregarConfiguracoesUsuarios();
+        
+    } catch (error) {
+        M.toast({html: error.message, classes: 'red'});
+    }
+}
+
+async function editarGrupo(id) {
+    try {
+        const response = await fetch(`${API_BASE_URL_PHP}/grupos.php?id=${id}`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('accessToken')}` }
+        });
+        if (!response.ok) throw new Error('Erro ao buscar grupo.');
+        
+        const grupo = await response.json();
+        
+        $('#grupo_id').val(grupo.id);
+        $('#grupo_nome').val(grupo.nome);
+        $('#grupo_desc').val(grupo.descricao || '');
+        
+        $('#grupo-papeis-checkboxes').empty();
+        if (configDataGlobal.papeis) {
+            configDataGlobal.papeis.forEach(p => {
+                const checked = grupo.papeis && grupo.papeis.includes(p.slug) ? 'checked' : '';
+                $('#grupo-papeis-checkboxes').append(`
+                    <p>
+                        <label>
+                            <input type="checkbox" class="grupo-papel-editar" value="${p.slug}" ${checked}>
+                            <span>${p.nome}</span>
+                        </label>
+                    </p>
+                `);
+            });
+        }
+        
+        M.updateTextFields();
+        M.Modal.getInstance($('#modal-editar-grupo')).open();
+        
+    } catch (error) {
+        M.toast({html: error.message, classes: 'red'});
+    }
+}
+
+async function salvarGrupoModal() {
+    const id = $('#grupo_id').val();
+    const nome = $('#grupo_nome').val().trim();
+    const desc = $('#grupo_desc').val().trim();
+    
+    if (!nome) {
+        M.toast({html: 'Informe o nome do grupo.', classes: 'red'});
+        return;
+    }
+    
+    const papeis = [];
+    $('.grupo-papel-editar:checked').each(function() {
+        papeis.push($(this).val());
+    });
+    
+    try {
+        const response = await fetch(`${API_BASE_URL_PHP}/grupos.php`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+            },
+            body: JSON.stringify({
+                id: parseInt(id),
+                nome: nome,
+                descricao: desc,
+                papeis: papeis
+            })
+        });
+        
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.message);
+        
+        M.toast({html: result.message, classes: 'green'});
+        M.Modal.getInstance($('#modal-editar-grupo')).close();
+        carregarListaGrupos();
+        carregarConfiguracoesUsuarios();
+        
+    } catch (error) {
+        M.toast({html: error.message, classes: 'red'});
+    }
+}
+
+async function deletarGrupo(id) {
+    if (!confirm('Tem certeza que deseja deletar este grupo?')) return;
+    
+    try {
+        const response = await fetch(`${API_BASE_URL_PHP}/grupos.php`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+            },
+            body: JSON.stringify({
+                deletar: true,
+                id: id
+            })
+        });
+        
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.message);
+        
+        M.toast({html: 'Grupo deletado.', classes: 'green'});
+        carregarListaGrupos();
+        carregarConfiguracoesUsuarios();
+        
+    } catch (error) {
+        M.toast({html: error.message, classes: 'red'});
+    }
 }
