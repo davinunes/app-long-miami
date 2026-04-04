@@ -69,8 +69,6 @@ async function carregarListaUsuarios() {
         
         const usuarios = await response.json();
         console.log('Usuários carregados:', usuarios);
-
-        const usuarios = await response.json();
         tbody.empty();
 
         if (usuarios.length === 0) {
@@ -211,18 +209,49 @@ async function salvarUsuarioModal() {
 
 function carregarListaNotificacoes() {
     const tbody = document.getElementById('notifications-table-body');
-    // Se o elemento da tabela não existir na página, não faz nada.
     if (!tbody) return;
 
     tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">Carregando...</td></tr>';
 
-    const apiEndpoint = '/api/notificacoes.php';
-    const accessToken = localStorage.getItem('accessToken');
-
-    fetch(apiEndpoint, {
-        headers: {
-            'Authorization': `Bearer ${accessToken}`
+    fetch(`${API_BASE_URL_PHP}/notificacoes.php`)
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`Erro na rede: ${response.statusText}`);
         }
+        return response.json();
+    })
+    .then(data => {
+        tbody.innerHTML = '';
+        if (!data || data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">Nenhuma notificação encontrada.</td></tr>';
+            return;
+        }
+
+        data.forEach(n => {
+            const dataEmissao = new Date(n.data_emissao + 'T00:00:00');
+            const dataFormatada = dataEmissao.toLocaleDateString('pt-BR');
+
+            const row = `
+                <tr>
+                    <td>${n.numero}/${n.ano}</td>
+                    <td>${n.bloco ? n.bloco : ''}${n.unidade}</td>
+                    <td>${n.assunto}</td>
+                    <td>${n.tipo}</td>
+                    <td>${n.status}</td>
+                    <td>${dataFormatada}</td>
+                    <td>
+                        <a href="editar.php?id=${n.id}" class="action-btn">Detalhes / Editar</a>
+                    </td>
+                </tr>
+            `;
+            tbody.innerHTML += row;
+        });
+    })
+    .catch(error => {
+        console.error('Erro ao buscar notificações:', error);
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: red;">Erro: ${error.message}</td></tr>`;
+    });
+}
     })
     .then(response => {
         if (!response.ok) {

@@ -87,7 +87,14 @@ function login($email, $senha) {
     ");
     $stmtPapeis->execute([$usuario['id'], $usuario['id']]);
     $papeis = $stmtPapeis->fetchAll(PDO::FETCH_COLUMN);
-    $papeis[] = $usuario['role'];
+    
+    // Adiciona o role principal, mas só se não estiver duplicado
+    if (!in_array($usuario['role'], $papeis)) {
+        $papeis[] = $usuario['role'];
+    }
+    
+    // Remove duplicatas
+    $papeis = array_unique($papeis);
     
     // Armazenar na sessão
     $_SESSION['usuario'] = [

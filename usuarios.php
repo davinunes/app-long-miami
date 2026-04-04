@@ -173,7 +173,7 @@ requirePapel(['admin', 'dev']);
     <script>
         const API_BASE_URL_PHP = window.location.origin + '/api';
     </script>
-    <script src="js/main.js"></script>
+    <script src="js/main.js?v=<?php echo time(); ?>"></script>
     <script>
         $(document).ready(function() {
             $('.sidenav').sidenav({edge: 'left'});

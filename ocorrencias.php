@@ -145,7 +145,7 @@ requirePapel(['protocolar', 'diligente', 'promotor', 'admin', 'dev']);
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
-    <script src="js/main.js"></script>
+    <script src="js/main.js?v=<?php echo time(); ?>"></script>
     <script>
         const API_BASE_URL_PHP = window.location.origin + '/api';
         let ocorrenciasData = [];
