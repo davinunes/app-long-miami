@@ -301,9 +301,20 @@ function renderOcorrencia(occ) {
     
     if (podeEditar) {
         html += '<hr style="margin: 15px 0; border: none; border-top: 1px solid #eee;">' +
+        '<div style="margin-bottom: 10px;">' +
+        '<label style="color: #666; font-size: 12px; display: block; margin-bottom: 5px;">Adicionar Link (Google Drive, OneDrive, etc.)</label>' +
+        '<div style="display: flex; gap: 10px; align-items: center;">' +
+        '<input type="url" id="link-url" placeholder="https://drive.google.com/..." style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">' +
+        '<input type="text" id="link-nome" placeholder="Nome do link" style="width: 150px; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">' +
+        '<button class="btn blue" onclick="adicionarLink()">Adicionar</button>' +
+        '</div>' +
+        '</div>' +
+        '<div style="border-top: 1px dashed #ddd; padding-top: 15px;">' +
+        '<label style="color: #666; font-size: 12px; display: block; margin-bottom: 5px;">Anexar Arquivo</label>' +
         '<div style="display: flex; gap: 10px; align-items: center;">' +
         '<input type="file" id="anexo-file" accept="image/*,.pdf,.doc,.docx" style="flex: 1;">' +
         '<button class="btn blue" onclick="uploadAnexo()">Anexar</button>' +
+        '</div>' +
         '</div>' +
         '<small style="color: #999; font-size: 11px;">💡 Dica: Cole (Ctrl+V) uma imagem para anexá-la diretamente</small>';
     }
@@ -333,14 +344,23 @@ function renderMensagens(mensagens, podeEditarLocal) {
     return mensagens.map(function(m) {
         var podeExcluir = podeEditarLocal && (isAdmin || m.usuario_id === usuarioId);
         var btnExcluir = podeExcluir ? '<button class="btn-floating btn-small red" onclick="excluirMensagem(' + m.id + ')" title="Excluir"><i class="material-icons" style="font-size: 18px;">delete</i></button>' : '';
+        var msgComLinks = converterLinks(m.mensagem);
         return '<div class="mensagem-chat ' + (m.eh_evidencia ? 'evidencia' : '') + '">' +
             '<span class="msg-autor">' + (m.autor_nome || 'Sistema') + '</span>' +
             '<span class="msg-hora">' + formatDateTime(m.created_at) + '</span>' +
             '<div style="display: flex; align-items: center; gap: 10px; margin-top: 5px;">' +
-            '<p style="flex: 1; margin: 0;">' + m.mensagem + '</p>' +
+            '<p style="flex: 1; margin: 0; word-break: break-word;">' + msgComLinks + '</p>' +
             btnExcluir +
             '</div></div>';
     }).join('');
+}
+
+function converterLinks(texto) {
+    var urlRegex = /(https?:\/\/[^\s<]+)/g;
+    return texto.replace(urlRegex, function(url) {
+        var nomeExibido = url.length > 50 ? url.substring(0, 50) + '...' : url;
+        return '<a href="' + url + '" target="_blank" style="color: #2196F3; text-decoration: underline;">' + nomeExibido + '</a>';
+    });
 }
 
 function renderAnexos(anexos, podeEditarLocal) {
@@ -350,7 +370,10 @@ function renderAnexos(anexos, podeEditarLocal) {
     return anexos.map(function(a) {
         var podeExcluir = podeEditarLocal && (isAdmin || a.usuario_id === usuarioId);
         var conteudo = '';
-        if (a.tipo === 'imagem') {
+        if (a.tipo === 'link') {
+            var iconeLink = getIconeLink(a.url);
+            conteudo = '<div class="link-anexo"><a href="' + a.url + '" target="_blank" class="link-externo"><i class="material-icons">' + iconeLink + '</i><span>' + a.nome_original + '</span><i class="material-icons open-icon">open_in_new</i></a></div>';
+        } else if (a.tipo === 'imagem') {
             conteudo = '<div style="margin-top: 10px;"><img src="' + a.url + '" alt="' + a.nome_original + '" style="max-width: 100%; max-height: 300px; border-radius: 6px; cursor: pointer;" onclick="window.open(\'' + a.url + '\', \'_blank\')"></div>';
         } else if (a.tipo === 'audio') {
             conteudo = '<div style="margin-top: 10px;"><audio controls style="width: 100%;"><source src="' + a.url + '" type="' + (a.mime_type || 'audio/mpeg') + '"></audio></div>';
@@ -362,6 +385,22 @@ function renderAnexos(anexos, podeEditarLocal) {
         var btnExcluir = podeExcluir ? '<button class="btn-floating btn-small red" onclick="excluirAnexo(' + a.id + ')" title="Excluir" style="margin-left: 10px;"><i class="material-icons" style="font-size: 18px;">delete</i></button>' : '';
         return '<div class="anexo-item" style="flex: 1; justify-content: space-between;">' + conteudo + btnExcluir + '</div>';
     }).join('');
+}
+
+function getIconeLink(url) {
+    if (url.includes('drive.google.com') || url.includes('docs.google.com')) {
+        return 'description';
+    } else if (url.includes('dropbox.com')) {
+        return 'cloud';
+    } else if (url.includes('sharepoint.com') || url.includes('onedrive.live.com') || url.includes('1drv.ms')) {
+        return 'cloud_circle';
+    } else if (url.includes('youtube.com') || url.includes('youtu.be')) {
+        return 'play_circle_filled';
+    } else if (url.includes('github.com')) {
+        return 'code';
+    } else {
+        return 'link';
+    }
 }
 
 function renderHistorico(logs) {
@@ -432,6 +471,41 @@ async function uploadAnexo() {
         }
     };
     reader.readAsDataURL(file);
+}
+
+async function adicionarLink() {
+    var url = document.getElementById('link-url').value.trim();
+    var nome = document.getElementById('link-nome').value.trim() || 'Link';
+    
+    if (!url) {
+        M.toast({html: 'Informe a URL do link.', classes: 'orange'});
+        return;
+    }
+    
+    if (!/^https?:\/\//i.test(url)) {
+        url = 'https://' + url;
+    }
+    
+    try {
+        var response = await fetch(API_BASE_URL_PHP + '/ocorrencias.php?upload=1', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                ocorrencia_id: ocorrenciaId,
+                tipo: 'link',
+                url: url,
+                nome_original: nome
+            })
+        });
+        var result = await response.json();
+        if (!response.ok) throw new Error(result.message);
+        document.getElementById('link-url').value = '';
+        document.getElementById('link-nome').value = '';
+        M.toast({html: 'Link adicionado!', classes: 'green'});
+        carregarOcorrencia();
+    } catch (error) {
+        M.toast({html: 'Erro: ' + error.message, classes: 'red'});
+    }
 }
 
 async function excluirMensagem(id) {

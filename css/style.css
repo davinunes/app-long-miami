@@ -632,3 +632,44 @@ textarea { min-height: 100px; resize: vertical; overflow: hidden; }
     outline: none;
     border-color: #3498db;
 }
+
+.link-anexo {
+    margin: 5px 0;
+}
+
+.link-externo {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 18px;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    color: #333;
+    text-decoration: none;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    min-width: 200px;
+}
+
+.link-externo:hover {
+    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    color: white;
+    border-color: #2980b9;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+}
+
+.link-externo .material-icons {
+    font-size: 24px;
+}
+
+.link-externo .open-icon {
+    font-size: 16px;
+    opacity: 0.7;
+    margin-left: auto;
+}
+
+.link-externo:hover .open-icon {
+    opacity: 1;
+}
