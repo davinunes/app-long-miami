@@ -77,6 +77,25 @@ function buscarNotificacao($pdo, $id, $usuario) {
             exit();
         }
         
+        if (!$notificacao['ocorrencia_id']) {
+            $stmt_link = $pdo->prepare("
+                SELECT ocorrencia_id FROM ocorrencia_notificacoes 
+                WHERE notificacao_id = ? LIMIT 1
+            ");
+            $stmt_link->execute([$id]);
+            $link = $stmt_link->fetch();
+            if ($link) {
+                $notificacao['ocorrencia_id'] = $link['ocorrencia_id'];
+                $stmt_oc = $pdo->prepare("SELECT titulo, fase FROM ocorrencias WHERE id = ?");
+                $stmt_oc->execute([$link['ocorrencia_id']]);
+                $oc = $stmt_oc->fetch();
+                if ($oc) {
+                    $notificacao['ocorrencia_titulo'] = $oc['titulo'];
+                    $notificacao['ocorrencia_fase'] = $oc['fase'];
+                }
+            }
+        }
+        
         $stmt_fatos = $pdo->prepare("SELECT descricao FROM notificacao_fatos WHERE notificacao_id = ? ORDER BY ordem ASC");
         $stmt_fatos->execute([$id]);
         $notificacao['fatos'] = $stmt_fatos->fetchAll(PDO::FETCH_COLUMN);
@@ -91,20 +110,10 @@ function buscarNotificacao($pdo, $id, $usuario) {
         $notificacao['imagens'] = $stmt_imagens->fetchAll();
         
         if ($notificacao['ocorrencia_id']) {
-            $stmt_evidencias = $pdo->prepare("
-                SELECT ea.id, ea.url, ea.nome_original, ea.tipo, ea.created_at
-                FROM ocorrencia_anexos ea
-                INNER JOIN evidencia_compartilhada ec ON ea.id = ec.ocorrencia_anexo_id
-                WHERE ec.notificacao_id = ? AND ec.inactive = 0
-                ORDER BY ea.created_at DESC
-            ");
-            $stmt_evidencias->execute([$id]);
-            $notificacao['evidencias_vinculadas'] = $stmt_evidencias->fetchAll();
-            
             $stmt_todas_evidencias = $pdo->prepare("
                 SELECT id, url, nome_original, tipo, created_at
                 FROM ocorrencia_anexos
-                WHERE ocorrencia_id = ? AND tipo = 'imagem'
+                WHERE ocorrencia_id = ? AND tipo = 'imagem' AND (inactive = 0 OR inactive IS NULL)
                 ORDER BY created_at DESC
             ");
             $stmt_todas_evidencias->execute([$notificacao['ocorrencia_id']]);
