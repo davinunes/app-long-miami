@@ -252,47 +252,6 @@ function carregarListaNotificacoes() {
         tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: red;">Erro: ${error.message}</td></tr>`;
     });
 }
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error(`Erro na rede: ${response.statusText}`);
-        }
-        return response.json();
-    })
-    .then(data => {
-        tbody.innerHTML = ''; // Limpa a mensagem "Carregando..."
-        if (!data || data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">Nenhuma notificação encontrada.</td></tr>';
-            return;
-        }
-
-        data.forEach(n => {
-            const dataEmissao = new Date(n.data_emissao + 'T00:00:00');
-            const dataFormatada = dataEmissao.toLocaleDateString('pt-BR');
-
-            // Adicionamos a classe 'ajax-link' para que a navegação continue via AJAX
-            const row = `
-                <tr>
-                    <td>${n.numero}/${n.ano}</td>
-                    <td>${n.bloco ? n.bloco : ''}${n.unidade}</td>
-                    <td>${n.assunto}</td>
-                    <td>${n.tipo}</td>
-                    <td>${n.status}</td>
-                    <td>${dataFormatada}</td>
-                    <td>
-                        <a href="editar.php?id=${n.id}" class="action-btn ajax-link">Detalhes / Editar</a>
-                    </td>
-                </tr>
-            `;
-            tbody.innerHTML += row;
-        });
-    })
-    .catch(error => {
-        // O catch agora só mostra o erro na tabela ou no console
-        console.error('Erro ao buscar notificações:', error);
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center;">Erro: ${error.message}</td></tr>`;
-    });
-}
 
 async function fetchProximoNumero() {
     try {
