@@ -15,23 +15,64 @@ INSERT INTO permissoes (slug, nome, descricao, modulo) VALUES
     ('notificacao.alterar_fase', 'Alterar Fase', 'Permissão geral para transições de fase da notificação', 'notificacao')
 ON DUPLICATE KEY UPDATE nome = VALUES(nome);
 
--- 3. Novos campos na tabela notificacoes para suportar o ciclo de vida
-ALTER TABLE notificacoes 
-    ADD COLUMN IF NOT EXISTS data_lavratura DATETIME DEFAULT NULL,
-    ADD COLUMN IF NOT EXISTS lavrada_por INT DEFAULT NULL,
-    ADD COLUMN IF NOT EXISTS data_ciencia DATETIME DEFAULT NULL,
-    ADD COLUMN IF NOT EXISTS ciencia_por VARCHAR(100) DEFAULT NULL,
-    ADD COLUMN IF NOT EXISTS tem_recurso BOOLEAN DEFAULT FALSE,
-    ADD COLUMN IF NOT EXISTS data_recurso DATETIME DEFAULT NULL,
-    ADD COLUMN IF NOT EXISTS prazo_recurso_expira DATE DEFAULT NULL,
-    ADD COLUMN IF NOT EXISTS recurso_texto TEXT DEFAULT NULL,
-    ADD COLUMN IF NOT EXISTS recurso_status VARCHAR(20) DEFAULT NULL,
-    ADD COLUMN IF NOT EXISTS encerrada BOOLEAN DEFAULT FALSE,
-    ADD COLUMN IF NOT EXISTS data_encerramento DATETIME DEFAULT NULL,
-    ADD COLUMN IF NOT EXISTS motivo_encerramento VARCHAR(50) DEFAULT NULL;
+-- 3. Novos campos na tabela notificacoes para suportar o ciclo de vida (Idempotente via Procedure)
+DELIMITER //
 
--- 3.1. Adicionar constraint separadamente se necessário (pode falhar se já existir, mas o sistema segue)
-ALTER TABLE notificacoes ADD CONSTRAINT fk_lavrada_por FOREIGN KEY IF NOT EXISTS (lavrada_por) REFERENCES usuarios(id);
+CREATE PROCEDURE ADD_COLUMNS_NOTIFICACAO()
+BEGIN
+    IF NOT EXISTS (SELECT * FROM information_schema.COLUMNS WHERE TABLE_NAME='notificacoes' AND COLUMN_NAME='data_lavratura' AND TABLE_SCHEMA=DATABASE()) THEN
+        ALTER TABLE notificacoes ADD COLUMN data_lavratura DATETIME DEFAULT NULL;
+    END IF;
+    IF NOT EXISTS (SELECT * FROM information_schema.COLUMNS WHERE TABLE_NAME='notificacoes' AND COLUMN_NAME='lavrada_por' AND TABLE_SCHEMA=DATABASE()) THEN
+        ALTER TABLE notificacoes ADD COLUMN lavrada_por INT DEFAULT NULL;
+    END IF;
+    IF NOT EXISTS (SELECT * FROM information_schema.COLUMNS WHERE TABLE_NAME='notificacoes' AND COLUMN_NAME='data_ciencia' AND TABLE_SCHEMA=DATABASE()) THEN
+        ALTER TABLE notificacoes ADD COLUMN data_ciencia DATETIME DEFAULT NULL;
+    END IF;
+    IF NOT EXISTS (SELECT * FROM information_schema.COLUMNS WHERE TABLE_NAME='notificacoes' AND COLUMN_NAME='ciencia_por' AND TABLE_SCHEMA=DATABASE()) THEN
+        ALTER TABLE notificacoes ADD COLUMN ciencia_por VARCHAR(100) DEFAULT NULL;
+    END IF;
+    IF NOT EXISTS (SELECT * FROM information_schema.COLUMNS WHERE TABLE_NAME='notificacoes' AND COLUMN_NAME='tem_recurso' AND TABLE_SCHEMA=DATABASE()) THEN
+        ALTER TABLE notificacoes ADD COLUMN tem_recurso BOOLEAN DEFAULT FALSE;
+    END IF;
+    IF NOT EXISTS (SELECT * FROM information_schema.COLUMNS WHERE TABLE_NAME='notificacoes' AND COLUMN_NAME='data_recurso' AND TABLE_SCHEMA=DATABASE()) THEN
+        ALTER TABLE notificacoes ADD COLUMN data_recurso DATETIME DEFAULT NULL;
+    END IF;
+    IF NOT EXISTS (SELECT * FROM information_schema.COLUMNS WHERE TABLE_NAME='notificacoes' AND COLUMN_NAME='prazo_recurso_expira' AND TABLE_SCHEMA=DATABASE()) THEN
+        ALTER TABLE notificacoes ADD COLUMN prazo_recurso_expira DATE DEFAULT NULL;
+    END IF;
+    IF NOT EXISTS (SELECT * FROM information_schema.COLUMNS WHERE TABLE_NAME='notificacoes' AND COLUMN_NAME='recurso_texto' AND TABLE_SCHEMA=DATABASE()) THEN
+        ALTER TABLE notificacoes ADD COLUMN recurso_texto TEXT DEFAULT NULL;
+    END IF;
+    IF NOT EXISTS (SELECT * FROM information_schema.COLUMNS WHERE TABLE_NAME='notificacoes' AND COLUMN_NAME='recurso_status' AND TABLE_SCHEMA=DATABASE()) THEN
+        ALTER TABLE notificacoes ADD COLUMN recurso_status VARCHAR(20) DEFAULT NULL;
+    END IF;
+    IF NOT EXISTS (SELECT * FROM information_schema.COLUMNS WHERE TABLE_NAME='notificacoes' AND COLUMN_NAME='encerrada' AND TABLE_SCHEMA=DATABASE()) THEN
+        ALTER TABLE notificacoes ADD COLUMN encerrada BOOLEAN DEFAULT FALSE;
+    END IF;
+    IF NOT EXISTS (SELECT * FROM information_schema.COLUMNS WHERE TABLE_NAME='notificacoes' AND COLUMN_NAME='data_encerramento' AND TABLE_SCHEMA=DATABASE()) THEN
+        ALTER TABLE notificacoes ADD COLUMN data_encerramento DATETIME DEFAULT NULL;
+    END IF;
+    IF NOT EXISTS (SELECT * FROM information_schema.COLUMNS WHERE TABLE_NAME='notificacoes' AND COLUMN_NAME='motivo_encerramento' AND TABLE_SCHEMA=DATABASE()) THEN
+        ALTER TABLE notificacoes ADD COLUMN motivo_encerramento VARCHAR(50) DEFAULT NULL;
+    END IF;
+
+    -- Tentar adicionar constraint apenas se não existir (ignora erro se já existir no catch do script, ou use IF NOT EXISTS)
+    -- Em algumas versões do MariaDB suporta CONSTRAINT IF NOT EXISTS, se não, colocamos na procedure também
+    IF NOT EXISTS (SELECT * FROM information_schema.TABLE_CONSTRAINTS WHERE CONSTRAINT_NAME='fk_lavrada_por' AND TABLE_NAME='notificacoes' AND TABLE_SCHEMA=DATABASE()) THEN
+        ALTER TABLE notificacoes ADD CONSTRAINT fk_lavrada_por FOREIGN KEY (lavrada_por) REFERENCES usuarios(id);
+    END IF;
+    
+    -- Ajustar slug da tabela notificacao_status
+    IF NOT EXISTS (SELECT * FROM information_schema.COLUMNS WHERE TABLE_NAME='notificacao_status' AND COLUMN_NAME='slug' AND TABLE_SCHEMA=DATABASE()) THEN
+        ALTER TABLE notificacao_status ADD COLUMN slug VARCHAR(50) UNIQUE DEFAULT NULL;
+    END IF;
+END //
+
+DELIMITER ;
+
+CALL ADD_COLUMNS_NOTIFICACAO();
+DROP PROCEDURE ADD_COLUMNS_NOTIFICACAO;
 
 -- 4. Criar tabela de histórico de fases da notificação (Timeline)
 CREATE TABLE IF NOT EXISTS notificacao_fase_log (
@@ -48,8 +89,6 @@ CREATE TABLE IF NOT EXISTS notificacao_fase_log (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 5. Atualizar os status na tabela notificacao_status para o padrão do ciclo de vida
-ALTER TABLE notificacao_status ADD COLUMN IF NOT EXISTS slug VARCHAR(50) UNIQUE DEFAULT NULL;
-
 SET FOREIGN_KEY_CHECKS = 0;
 TRUNCATE TABLE notificacao_status;
 INSERT INTO notificacao_status (id, nome, slug) VALUES 
