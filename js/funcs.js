@@ -222,6 +222,8 @@ async function gerarPDF() {
             return;
         }
         
+        dados.fotos_fatos = await getExistingImagesForPDF();
+        
         const response = await fetch(`${API_BASE_URL_PHP}/gerar_pdf.php`, {
             method: 'POST',
             headers: { 
@@ -249,6 +251,39 @@ async function gerarPDF() {
     } catch (error) {
         showStatus(`Preview PDF em desenvolvimento. Salve a notificação primeiro.`, 'warning');
     }
+}
+
+async function getExistingImagesForPDF() {
+    const existingImages = [];
+    const previewContainer = document.getElementById('preview-container');
+    if (!previewContainer) return existingImages;
+    
+    const imgElements = previewContainer.querySelectorAll('.existing-image img');
+    for (const img of imgElements) {
+        const src = img.src;
+        if (src && !src.startsWith('data:')) {
+            try {
+                const response = await fetch(src);
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const reader = new FileReader();
+                    const base64 = await new Promise((resolve) => {
+                        reader.onloadend = () => resolve(reader.result.split(',')[1]);
+                        reader.readAsDataURL(blob);
+                    });
+                    existingImages.push(base64);
+                }
+            } catch (e) {
+                console.warn('Erro ao carregar imagem existente:', src, e);
+            }
+        }
+    }
+    
+    if (imageStore && imageStore.length > 0) {
+        existingImages.push(...imageStore.map(img => img.b64));
+    }
+    
+    return existingImages;
 }
 
 function getFormData(forPDF = false) {

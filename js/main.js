@@ -364,6 +364,38 @@ async function inicializarFormularioEdicao() {
             document.getElementById('tipo_id').value = data.tipo_id;
             document.getElementById('assunto_id').value = data.assunto_id;
             
+            if (data.ocorrencia_id) {
+                document.getElementById('ocorrencia_id').value = data.ocorrencia_id;
+                document.getElementById('ocorrencia_titulo').textContent = data.ocorrencia_titulo 
+                    ? `Ocorrência #${data.ocorrencia_id}: ${data.ocorrencia_titulo}`
+                    : `Ocorrência #${data.ocorrencia_id}`;
+                document.getElementById('ver_ocorrencia_link').href = `ocorrencia_detalhe.php?id=${data.ocorrencia_id}`;
+                document.getElementById('ocorrencia_info').style.display = 'block';
+                document.getElementById('ocorrencia_busca_section').style.display = 'none';
+                
+                const evidenciasSection = document.getElementById('evidencias_ocorrencia_section');
+                const evidenciasContainer = document.getElementById('evidencias-ocorrencia');
+                if (data.evidencias_vinculadas && data.evidencias_vinculadas.length > 0) {
+                    evidenciasSection.style.display = 'block';
+                    evidenciasContainer.innerHTML = data.evidencias_vinculadas.map(img => `
+                        <div class="img-preview-item">
+                            <img src="${img.url}" alt="${img.nome_original}" style="max-width: 150px; max-height: 150px; cursor: pointer;" onclick="window.open('${img.url}', '_blank')">
+                            <small>${img.nome_original}</small>
+                        </div>
+                    `).join('');
+                } else if (data.todas_evidencias_ocorrencia && data.todas_evidencias_ocorrencia.length > 0) {
+                    evidenciasSection.style.display = 'block';
+                    evidenciasContainer.innerHTML = data.todas_evidencias_ocorrencia.map(img => `
+                        <div class="img-preview-item">
+                            <img src="${img.url}" alt="${img.nome_original}" style="max-width: 150px; max-height: 150px; cursor: pointer;" onclick="window.open('${img.url}', '_blank')">
+                            <small>${img.nome_original}</small>
+                        </div>
+                    `).join('');
+                } else {
+                    evidenciasSection.style.display = 'none';
+                }
+            }
+            
             setTimeout(function() {
                 $('select').formSelect();
                 toggleMultaField();
@@ -384,11 +416,19 @@ async function inicializarFormularioEdicao() {
                     const item = document.createElement('div');
                     item.className = 'img-preview-item existing-image';
                     item.id = `imagem-salva-${img.id}`;
-                    item.innerHTML = `
-                        <img src="${imageUrl}" alt="${img.nome_original}">
-                        <small>Salva</small>
-                        <button type="button" class="remove-btn-existing" onclick="marcarParaDeletar(${img.id})">&times;</button>
-                    `;
+                    
+                    if (img.ocorrencia_id) {
+                        item.innerHTML = `
+                            <img src="${imageUrl}" alt="${img.nome_original}">
+                            <small>Evidência da Ocorrência</small>
+                        `;
+                    } else {
+                        item.innerHTML = `
+                            <img src="${imageUrl}" alt="${img.nome_original}">
+                            <small>Salva</small>
+                            <button type="button" class="remove-btn-existing" onclick="marcarParaDeletar(${img.id})">&times;</button>
+                        `;
+                    }
                     previewContainer.appendChild(item);
                 });
             }
