@@ -41,4 +41,48 @@ if (typeof fazerLogout === 'undefined') {
         window.location.href = 'logout.php';
     }
 }
+
+// Lógica de toggle do menu lateral (Sidenav)
+// Usamos delegação de eventos diretamente no document para garantir que funcione em qualquer página/estado
+(function() {
+    function closeSidenav() {
+        const sidenav = document.querySelector('.sidenav');
+        const overlay = document.querySelector('.sidenav-overlay');
+        if (sidenav) sidenav.classList.remove('sidenav-open');
+        if (overlay) overlay.classList.remove('active');
+    }
+
+    function openSidenav() {
+        const sidenav = document.querySelector('.sidenav');
+        const overlay = document.querySelector('.sidenav-overlay');
+        if (sidenav) sidenav.classList.add('sidenav-open');
+        if (overlay) overlay.classList.add('active');
+    }
+
+    document.addEventListener('click', function(e) {
+        // 1. Clique no botão hambúrguer
+        const toggleBtn = e.target.closest('.custom-sidenav-toggle');
+        if (toggleBtn) {
+            e.preventDefault();
+            const sidenav = document.querySelector('.sidenav');
+            if (sidenav && sidenav.classList.contains('sidenav-open')) {
+                closeSidenav();
+            } else {
+                openSidenav();
+            }
+            return;
+        }
+        
+        // 2. Clique no overlay para fechar
+        if (e.target.classList.contains('sidenav-overlay')) {
+            closeSidenav();
+            return;
+        }
+
+        // 3. Clique em um link do menu em telas pequenas
+        if (e.target.closest('.sidenav li a') && window.innerWidth <= 992) {
+            closeSidenav();
+        }
+    });
+})();
 </script>
