@@ -1,6 +1,7 @@
 <?php
 // Endpoint: /api/ocorrencias.php
 // Métodos: GET, POST
+// Sistema de Permissões
 
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
@@ -13,8 +14,27 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 }
 
 require_once '../api/helpers.php';
-requireApiPapel(['protocolar', 'diligente', 'promotor', 'admin', 'dev']);
+requireApiLogin();
 $usuario = getApiUsuario();
+
+// Verificar permissões
+$isAdminDev = in_array($usuario['role'], ['admin', 'dev']);
+$podeListar = $isAdminDev || temPermissao('ocorrencia.listar');
+$podeCriar = $isAdminDev || temPermissao('ocorrencia.criar');
+$podeVerDetalhes = $isAdminDev || temPermissao('ocorrencia.ver_detalhes');
+$podeEditarPropria = $isAdminDev || temPermissao('ocorrencia.editar_propria');
+$podeEditar = $isAdminDev || temPermissao('ocorrencia.editar');
+$podeExcluir = $isAdminDev || temPermissao('ocorrencia.excluir');
+$podeAlterarFase = $isAdminDev || temPermissao('ocorrencia.alterar_fase');
+$podeHomologar = $isAdminDev || temPermissao('ocorrencia.homologar');
+$podeRecusar = $isAdminDev || temPermissao('ocorrencia.recusar');
+$podeGerarNotificacao = $isAdminDev || temPermissao('ocorrencia.gerar_notificacao');
+$podeVincularUnidade = $isAdminDev || temPermissao('ocorrencia.unidade.vincular');
+$podeRemoverUnidade = $isAdminDev || temPermissao('ocorrencia.unidade.remover');
+$podeCriarMensagem = $isAdminDev || temPermissao('ocorrencia.mensagem.criar');
+$podeCriarEvidencia = $isAdminDev || temPermissao('ocorrencia.evidencia.anexar');
+$podeCriarAnexo = $isAdminDev || temPermissao('ocorrencia.anexo.criar');
+$podeCriarLink = $isAdminDev || temPermissao('ocorrencia.link.criar');
 
 require_once '../config.php';
 
@@ -29,6 +49,12 @@ if (!$pdo) {
 
 switch ($metodo) {
     case 'GET':
+        if (!$podeListar && !$podeVerDetalhes) {
+            http_response_code(403);
+            echo json_encode(['message' => 'Permissão insuficiente para listar ocorrências.']);
+            exit();
+        }
+        
         if (isset($_GET['id'])) {
             buscarOcorrencia($pdo, (int)$_GET['id'], $usuario);
         }
@@ -39,6 +65,11 @@ switch ($metodo) {
             listarMinhas($pdo, $usuario);
         }
         else {
+            if (!$podeListar) {
+                http_response_code(403);
+                echo json_encode(['message' => 'Permissão insuficiente.']);
+                exit();
+            }
             listarOcorrencias($pdo);
         }
         break;
@@ -47,15 +78,35 @@ switch ($metodo) {
         $dados = json_decode(file_get_contents("php://input"));
         
         if (isset($dados->mensagem)) {
+            if (!$podeCriarMensagem) {
+                http_response_code(403);
+                echo json_encode(['message' => 'Permissão insuficiente para criar mensagem.']);
+                exit();
+            }
             adicionarMensagem($pdo, $dados, $usuario);
         }
         elseif (isset($dados->mudar_fase)) {
+            if (!$podeAlterarFase) {
+                http_response_code(403);
+                echo json_encode(['message' => 'Permissão insuficiente para alterar fase.']);
+                exit();
+            }
             mudarFase($pdo, $dados, $usuario);
         }
         elseif (isset($_GET['upload'])) {
+            if (!$podeCriarAnexo && !$podeCriarEvidencia && !$podeCriarLink) {
+                http_response_code(403);
+                echo json_encode(['message' => 'Permissão insuficiente para criar anexo.']);
+                exit();
+            }
             fazerUpload($pdo, $usuario);
         }
         elseif (isset($dados->gerar_notificacao)) {
+            if (!$podeGerarNotificacao) {
+                http_response_code(403);
+                echo json_encode(['message' => 'Permissão insuficiente para gerar notificação.']);
+                exit();
+            }
             gerarNotificacao($pdo, $dados, $usuario);
         }
         elseif (isset($dados->deletar_anexo)) {
@@ -65,12 +116,27 @@ switch ($metodo) {
             deletarMensagem($pdo, $dados, $usuario);
         }
         elseif (isset($dados->excluir_ocorrencia)) {
+            if (!$podeExcluir) {
+                http_response_code(403);
+                echo json_encode(['message' => 'Permissão insuficiente para excluir ocorrência.']);
+                exit();
+            }
             deletarOcorrencia($pdo, $dados, $usuario);
         }
         elseif (isset($dados->adicionar_unidade)) {
+            if (!$podeVincularUnidade) {
+                http_response_code(403);
+                echo json_encode(['message' => 'Permissão insuficiente para vincular unidade.']);
+                exit();
+            }
             adicionarUnidade($pdo, $dados, $usuario);
         }
         elseif (isset($dados->remover_unidade)) {
+            if (!$podeRemoverUnidade) {
+                http_response_code(403);
+                echo json_encode(['message' => 'Permissão insuficiente para remover unidade.']);
+                exit();
+            }
             removerUnidade($pdo, $dados, $usuario);
         }
         else {
@@ -207,6 +273,8 @@ function listarMinhas($pdo, $usuario) {
 }
 
 function criarOuAtualizar($pdo, $dados, $usuario) {
+    global $podeCriar, $podeEditar, $podeEditarPropria, $podeExcluir, $isAdminDev;
+    
     if (empty($dados->titulo) || empty($dados->descricao_fato) || empty($dados->data_fato)) {
         http_response_code(400);
         echo json_encode(['message' => 'Título, descrição e data do fato são obrigatórios.']);
@@ -226,12 +294,21 @@ function criarOuAtualizar($pdo, $dados, $usuario) {
             exit();
         }
         
-        if ($existing['fase'] !== 'nova' && $existing['fase'] !== 'em_analise') {
-            if (!in_array($usuario['role'], ['admin', 'dev', 'promotor'])) {
-                http_response_code(403);
-                echo json_encode(['message' => 'Não é possível editar ocorrências nesta fase.']);
-                exit();
-            }
+        // Verificar permissão de edição
+        $isProprio = ($existing['created_by'] == $usuario['id']);
+        $podeEditarAgora = $isAdminDev || $podeEditar || ($podeEditarPropria && $isProprio);
+        
+        if (!$podeEditarAgora) {
+            http_response_code(403);
+            echo json_encode(['message' => 'Permissão insuficiente para editar esta ocorrência.']);
+            exit();
+        }
+        
+        // Não pode editar ocorrências homologadas (a menos que admin/dev)
+        if (!$isAdminDev && ($existing['fase'] === 'homologada' || $existing['fase'] === 'recusada')) {
+            http_response_code(403);
+            echo json_encode(['message' => 'Não é possível editar ocorrências nesta fase.']);
+            exit();
         }
         
         $stmt = $pdo->prepare("
@@ -253,6 +330,7 @@ function criarOuAtualizar($pdo, $dados, $usuario) {
         echo json_encode(['message' => 'Ocorrência atualizada com sucesso!', 'id' => $id]);
         
     } else {
+        // Criar nova ocorrência
         try {
             $stmt = $pdo->prepare("
                 INSERT INTO ocorrencias (titulo, descricao_fato, data_fato, created_by, fase) 

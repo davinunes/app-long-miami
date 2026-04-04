@@ -1,6 +1,17 @@
 <?php
 require_once 'auth.php';
-requirePapel(['protocolar', 'diligente', 'promotor', 'admin', 'dev']);
+requireLogin();
+
+$usuarioLogado = getUsuario();
+$permissoesUsuario = getPermissoesUsuario();
+$isAdminDev = isAdmin();
+
+$podeCriarOcorrencia = $isAdminDev || temPermissao('ocorrencia.criar');
+$podeListarTodas = $isAdminDev || temPermissao('ocorrencia.listar');
+$podeVerDetalhes = $isAdminDev || temPermissao('ocorrencia.ver_detalhes');
+$podeEditarPropria = $isAdminDev || temPermissao('ocorrencia.editar_propria');
+$podeEditar = $isAdminDev || temPermissao('ocorrencia.editar');
+$podeExcluir = $isAdminDev || temPermissao('ocorrencia.excluir');
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -33,6 +44,19 @@ requirePapel(['protocolar', 'diligente', 'promotor', 'admin', 'dev']);
             margin: 2px;
             font-size: 12px;
         }
+        
+        .permissao-info {
+            background: #e3f2fd;
+            border: 1px solid #2196F3;
+            border-radius: 8px;
+            padding: 10px 15px;
+            margin-bottom: 15px;
+            font-size: 13px;
+        }
+        .permissao-info i {
+            vertical-align: middle;
+            margin-right: 5px;
+        }
     </style>
 </head>
 <body>
@@ -48,12 +72,23 @@ requirePapel(['protocolar', 'diligente', 'promotor', 'admin', 'dev']);
         <div class="container">
             <div class="header">
                 <h1>Ocorrências</h1>
-                <p>Gerencie as ocorrências registradas no sistema.</p>
+                <p id="page-description">Gerencie as ocorrências registradas no sistema.</p>
             </div>
+            
+            <?php if (!$podeListarTodas && !$podeVerDetalhes && !$podeCriarOcorrencia && !$isAdminDev): ?>
+            <div class="permissao-info">
+                <i class="material-icons">info</i>
+                Você possui acesso limitado. Entre em contato com o administrador para solicitar permissões adicionais.
+            </div>
+            <?php endif; ?>
             
             <div class="table-container">
                 <div class="header-actions">
+                    <?php if ($podeCriarOcorrencia): ?>
                     <button class="btn-new modal-trigger" id="btn-nova-ocorrencia">+ Nova Ocorrência</button>
+                    <?php endif; ?>
+                    
+                    <?php if ($podeListarTodas || $isAdminDev): ?>
                     <select id="filtro-fase" class="browser-default" style="margin-left: 10px; padding: 8px; border-radius: 4px;">
                         <option value="">Todas as fases</option>
                         <option value="nova">Nova</option>
@@ -61,23 +96,56 @@ requirePapel(['protocolar', 'diligente', 'promotor', 'admin', 'dev']);
                         <option value="recusada">Recusada</option>
                         <option value="homologada">Homologada</option>
                     </select>
+                    <?php endif; ?>
+                    
+                    <?php if ($podeVerDetalhes || $isAdminDev): ?>
+                    <button class="btn" id="btn-minhas-ocorrencias" style="margin-left: 10px;">
+                        <i class="material-icons">person</i> Minhas Ocorrências
+                    </button>
+                    <?php endif; ?>
                 </div>
                 
-                <table class="striped highlight">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Título</th>
-                            <th>Unidades</th>
-                            <th>Data Fato</th>
-                            <th>Fase</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody id="ocorrencias-table-body">
-                        <tr><td colspan="6" style="text-align: center;">Carregando...</td></tr>
-                    </tbody>
-                </table>
+                <?php if ($podeListarTodas || $isAdminDev): ?>
+                <div id="section-todas-ocorrencias">
+                    <h5>Todas as Ocorrências</h5>
+                    <table class="striped highlight">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Título</th>
+                                <th>Unidades</th>
+                                <th>Data Fato</th>
+                                <th>Fase</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ocorrencias-table-body">
+                            <tr><td colspan="6" style="text-align: center;">Carregando...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <?php endif; ?>
+                
+                <?php if (($podeVerDetalhes || $podeCriarOcorrencia) && (!$podeListarTodas && !$isAdminDev)): ?>
+                <div id="section-minhas-ocorrencias">
+                    <h5>Minhas Ocorrências</h5>
+                    <table class="striped highlight">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Título</th>
+                                <th>Unidades</th>
+                                <th>Data Fato</th>
+                                <th>Fase</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="minhas-ocorrencias-table-body">
+                            <tr><td colspan="6" style="text-align: center;">Carregando...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <?php endif; ?>
             </div>
         </div>
     </main>
@@ -110,7 +178,7 @@ requirePapel(['protocolar', 'diligente', 'promotor', 'admin', 'dev']);
                     </div>
                 </div>
                 
-                <div class="row">
+                <div class="row" id="unidades-section">
                     <div class="col s12">
                         <label>Unidades Envolvidas</label>
                         <div id="unidades-selecionadas" style="margin: 10px 0;"></div>
@@ -130,7 +198,7 @@ requirePapel(['protocolar', 'diligente', 'promotor', 'admin', 'dev']);
                                 <input id="unidade_numero" type="text" placeholder="Número">
                             </div>
                             <div class="input-field col s4">
-                                <button type="button" class="btn" onclick="adicionarUnidade()">+ Adicionar</button>
+                                <button type="button" class="btn" id="btn-adicionar-unidade">+ Adicionar</button>
                             </div>
                         </div>
                     </div>
@@ -145,50 +213,86 @@ requirePapel(['protocolar', 'diligente', 'promotor', 'admin', 'dev']);
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
-    <script src="js/main.js?v=<?php echo time(); ?>"></script>
     <script>
         const API_BASE_URL_PHP = window.location.origin + '/api';
+        
+        // Permissões do usuário (injetadas pelo PHP)
+        const USUARIO_ID = <?php echo $usuarioLogado['id']; ?>;
+        const EH_ADMIN_DEV = <?php echo $isAdminDev ? 'true' : 'false'; ?>;
+        const PERMISSOES = <?php echo json_encode($permissoesUsuario); ?>;
+        
+        // Permissões específicas
+        const PODE_CRIAR = <?php echo $podeCriarOcorrencia ? 'true' : 'false'; ?>;
+        const PODE_LISTAR_TODAS = <?php echo $podeListarTodas ? 'true' : 'false'; ?>;
+        const PODE_VER_DETALHES = <?php echo $podeVerDetalhes ? 'true' : 'false'; ?>;
+        const PODE_EDITAR_PROPRIA = <?php echo $podeEditarPropria ? 'true' : 'false'; ?>;
+        const PODE_EDITAR = <?php echo $podeEditar ? 'true' : 'false'; ?>;
+        const PODE_EXCLUIR = <?php echo $podeExcluir ? 'true' : 'false'; ?>;
+        
         let ocorrenciasData = [];
         let unidadesSelecionadas = [];
-        const isAdmin = <?php echo temPapel('admin') || temPapel('dev') ? 'true' : 'false'; ?>;
+        let mostrandoMinhas = false;
+
+        function temPermissao(perm) {
+            if (EH_ADMIN_DEV) return true;
+            return PERMISSOES.includes(perm);
+        }
 
         $(document).ready(function() {
+            $('.sidenav').sidenav({edge: 'left'});
             $('.modal').modal();
+            
+            $('#user-name').text('<?php echo htmlspecialchars(getUsuarioNome()); ?>');
+            $('#user-email').text('<?php echo htmlspecialchars(getUsuarioEmail()); ?>');
+            
+            // Event listeners
             $('#btn-nova-ocorrencia').click(() => abrirModalOcorrencia());
+            $('#btn-adicionar-unidade').click(adicionarUnidade);
             $('#form-ocorrencia').submit(function(e) {
                 e.preventDefault();
                 salvarOcorrencia();
             });
-            $('#filtro-fase').change(carregarOcorrencias);
-            carregarOcorrencias();
+            $('#filtro-fase').change(carregarTodasOcorrencias);
+            $('#btn-minhas-ocorrencias').click(toggleMinhasOcorrencias);
             
-            $('#user-name').text('<?php echo htmlspecialchars(getUsuarioNome()); ?>');
-            $('#user-email').text('<?php echo htmlspecialchars(getUsuarioEmail()); ?>');
+            // Carregar dados iniciais
+            if (PODE_LISTAR_TODAS || EH_ADMIN_DEV) {
+                carregarTodasOcorrencias();
+            }
+            if (PODE_VER_DETALHES || PODE_CRIAR || EH_ADMIN_DEV) {
+                carregarMinhasOcorrencias();
+            }
         });
         
         function fazerLogout() {
             window.location.href = 'logout.php';
         }
-
-        function temPapelEdicao(fase) {
-            return isAdmin || ['protocolar', 'diligente', 'promotor'].some(p => <?php echo json_encode(getPapeisUsuario()); ?>.includes(p));
-        }
-
-        async function editarOcorrencia(id) {
-            try {
-                const response = await fetch(API_BASE_URL_PHP + '/ocorrencias.php?id=' + id);
-                if (!response.ok) throw new Error('Erro ao carregar ocorrência');
-                const occ = await response.json();
-                ocorrenciasData = ocorrenciasData.map(o => o.id === id ? occ : o);
-                abrirModalOcorrencia(id);
-            } catch (error) {
-                M.toast({html: 'Erro ao carregar ocorrência', classes: 'red'});
+        
+        function toggleMinhasOcorrencias() {
+            mostrandoMinhas = !mostrandoMinhas;
+            if (mostrandoMinhas) {
+                $('#btn-minhas-ocorrencias').removeClass('btn').addClass('btn-flat');
+                $('#btn-minhas-ocorrencias').html('<i class="material-icons">list</i> Todas');
+                $('#section-minhas-ocorrencias').show();
+                if (PODE_LISTAR_TODAS || EH_ADMIN_DEV) {
+                    $('#section-todas-ocorrencias').hide();
+                }
+                carregarMinhasOcorrencias();
+            } else {
+                $('#btn-minhas-ocorrencias').removeClass('btn-flat').addClass('btn');
+                $('#btn-minhas-ocorrencias').html('<i class="material-icons">person</i> Minhas');
+                $('#section-minhas-ocorrencias').hide();
+                if (PODE_LISTAR_TODAS || EH_ADMIN_DEV) {
+                    $('#section-todas-ocorrencias').show();
+                }
             }
         }
 
-        async function carregarOcorrencias() {
+        async function carregarTodasOcorrencias() {
+            if (!PODE_LISTAR_TODAS && !EH_ADMIN_DEV) return;
+            
             const tbody = $('#ocorrencias-table-body');
-            tbody.html('<tr><td colspan="7" style="text-align: center;">Carregando...</td></tr>');
+            tbody.html('<tr><td colspan="6" style="text-align: center;">Carregando...</td></tr>');
             
             const fase = $('#filtro-fase').val();
             let url = API_BASE_URL_PHP + '/ocorrencias.php';
@@ -201,37 +305,100 @@ requirePapel(['protocolar', 'diligente', 'promotor', 'admin', 'dev']);
                 tbody.empty();
                 
                 if (ocorrenciasData.length === 0) {
-                    tbody.html('<tr><td colspan="7" style="text-align: center;">Nenhuma ocorrência encontrada.</td></tr>');
+                    tbody.html('<tr><td colspan="6" style="text-align: center;">Nenhuma ocorrência encontrada.</td></tr>');
                     return;
                 }
                 
                 ocorrenciasData.forEach(o => {
-                    const faseClass = 'fase-' + o.fase;
-                    const faseLabel = o.fase.replace('_', ' ');
-                    const unidades = o.unidades || '-';
-                    const excluirBtn = isAdmin ? 
-                        `<button class="btn-floating btn-small red" onclick="excluirOcorrencia(${o.id})" title="Excluir"><i class="material-icons">delete</i></button>` : '';
-                    const podeEditarOcor = temPapelEdicao(o.fase);
-                    
-                    tbody.append(`
-                        <tr>
-                            <td>${o.id}</td>
-                            <td>${o.titulo}</td>
-                            <td>${unidades}</td>
-                            <td>${formatDate(o.data_fato)}</td>
-                            <td><span class="fase-badge ${faseClass}">${faseLabel}</span></td>
-                            <td>
-                                <a href="ocorrencia_detalhe.php?id=${o.id}" class="btn-floating btn-small blue" title="Ver">
-                                    <i class="material-icons">visibility</i>
-                                </a>
-                                ${podeEditarOcor ? `<button class="btn-floating btn-small orange" onclick="editarOcorrencia(${o.id})" title="Editar"><i class="material-icons">edit</i></button>` : ''}
-                                ${excluirBtn}
-                            </td>
-                        </tr>
-                    `);
+                    renderLinhaOcorrencia(tbody, o);
                 });
             } catch (error) {
-                tbody.html('<tr><td colspan="7" style="color: red;">Erro: ' + error.message + '</td></tr>');
+                tbody.html('<tr><td colspan="6" style="color: red;">Erro: ' + error.message + '</td></tr>');
+            }
+        }
+
+        async function carregarMinhasOcorrencias() {
+            if (!PODE_VER_DETALHES && !EH_ADMIN_DEV && !PODE_CRIAR) return;
+            
+            const tbody = $('#minhas-ocorrencias-table-body');
+            tbody.html('<tr><td colspan="6" style="text-align: center;">Carregando...</td></tr>');
+            
+            try {
+                const response = await fetch(API_BASE_URL_PHP + '/ocorrencias.php?minhas=1');
+                if (!response.ok) throw new Error('Erro ao carregar.');
+                const minhas = await response.json();
+                tbody.empty();
+                
+                if (minhas.length === 0) {
+                    tbody.html('<tr><td colspan="6" style="text-align: center;">Nenhuma ocorrência criada por você.</td></tr>');
+                    return;
+                }
+                
+                minhas.forEach(o => {
+                    renderLinhaOcorrencia(tbody, o);
+                });
+            } catch (error) {
+                tbody.html('<tr><td colspan="6" style="color: red;">Erro: ' + error.message + '</td></tr>');
+            }
+        }
+
+        function podeEditarOcorrencia(ocorrencia) {
+            if (EH_ADMIN_DEV) return true;
+            if (PODE_EDITAR) return true;
+            if (PODE_EDITAR_PROPRIA && ocorrencia.created_by === USUARIO_ID) return true;
+            return false;
+        }
+
+        function renderLinhaOcorrencia(tbody, o) {
+            const faseClass = 'fase-' + o.fase;
+            const faseLabel = o.fase.replace('_', ' ');
+            const unidades = o.unidades || '-';
+            const podeEditar = podeEditarOcorrencia(o);
+            
+            let botoes = '';
+            
+            // Ver detalhes - sempre disponível se tem acesso
+            if (PODE_VER_DETALHES || EH_ADMIN_DEV) {
+                botoes += `<a href="ocorrencia_detalhe.php?id=${o.id}" class="btn-floating btn-small blue" title="Ver">
+                    <i class="material-icons">visibility</i>
+                </a>`;
+            }
+            
+            // Editar - baseado na fase e permissões
+            if (podeEditar) {
+                botoes += `<button class="btn-floating btn-small orange" onclick="editarOcorrencia(${o.id})" title="Editar">
+                    <i class="material-icons">edit</i>
+                </button>`;
+            }
+            
+            // Excluir - apenas se tem permissão
+            if (PODE_EXCLUIR) {
+                botoes += `<button class="btn-floating btn-small red" onclick="excluirOcorrencia(${o.id})" title="Excluir">
+                    <i class="material-icons">delete</i>
+                </button>`;
+            }
+            
+            tbody.append(`
+                <tr>
+                    <td>${o.id}</td>
+                    <td>${o.titulo}</td>
+                    <td>${unidades}</td>
+                    <td>${formatDate(o.data_fato)}</td>
+                    <td><span class="fase-badge ${faseClass}">${faseLabel}</span></td>
+                    <td>${botoes}</td>
+                </tr>
+            `);
+        }
+
+        async function editarOcorrencia(id) {
+            try {
+                const response = await fetch(API_BASE_URL_PHP + '/ocorrencias.php?id=' + id);
+                if (!response.ok) throw new Error('Erro ao carregar ocorrência');
+                const occ = await response.json();
+                ocorrenciasData = ocorrenciasData.map(o => o.id === id ? occ : o);
+                abrirModalOcorrencia(id);
+            } catch (error) {
+                M.toast({html: 'Erro ao carregar ocorrência', classes: 'red'});
             }
         }
 
@@ -249,7 +416,8 @@ requirePapel(['protocolar', 'diligente', 'promotor', 'admin', 'dev']);
                 if (!response.ok) throw new Error(result.message);
                 
                 M.toast({html: result.message, classes: 'green'});
-                carregarOcorrencias();
+                carregarTodasOcorrencias();
+                carregarMinhasOcorrencias();
             } catch (error) {
                 M.toast({html: error.message, classes: 'red'});
             }
@@ -318,11 +486,6 @@ requirePapel(['protocolar', 'diligente', 'promotor', 'admin', 'dev']);
             ).join(''));
         }
 
-        function removerUnidade(index) {
-            unidadesSelecionadas.splice(index, 1);
-            renderUnidadesSelecionadas();
-        }
-
         async function salvarOcorrencia() {
             const id = $('#ocorrencia_id').val();
             const titulo = $('#ocorrencia_titulo').val().trim();
@@ -355,7 +518,8 @@ requirePapel(['protocolar', 'diligente', 'promotor', 'admin', 'dev']);
                 
                 M.toast({html: result.message, classes: 'green'});
                 M.Modal.getInstance($('#modal-ocorrencia')).close();
-                carregarOcorrencias();
+                carregarTodasOcorrencias();
+                carregarMinhasOcorrencias();
             } catch (error) {
                 M.toast({html: error.message, classes: 'red'});
             }
