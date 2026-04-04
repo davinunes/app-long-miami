@@ -67,7 +67,7 @@
 </div>
 
 <div class="form-group">
-    <label>Fundamentação Legal:</label>
+    <label>Fundamentação Legal: <span id="artigos-count-badge" class="badge" style="display: none; background: #667eea; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px;"></span></label>
     
     <div class="regimento-busca">
         <input type="text" id="regimento-search" placeholder="Buscar artigo (número ou palavra-chave)...">

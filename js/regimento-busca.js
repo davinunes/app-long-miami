@@ -8,6 +8,7 @@ function getSelectedArticles() {
 
 function setSelectedArticles(articles) {
     selectedArticles = articles || [];
+    console.log('Artigos carregados:', selectedArticles);
     updateSelectedArticlesUI();
 }
 
@@ -76,15 +77,17 @@ function renderResults(items) {
     if (items.length === 0) {
         resultsContainer.innerHTML = '<div class="regimento-result-item">Nenhum resultado encontrado.</div>';
     } else {
-        resultsContainer.innerHTML = items.map(item => `
-            <div class="regimento-result-item ${selectedArticles.some(a => a.notation === item.notacao) ? 'selected' : ''}" 
+        resultsContainer.innerHTML = items.map(item => {
+            const isSelected = selectedArticles.some(a => a.notation === item.notacao);
+            return `
+            <div class="regimento-result-item ${isSelected ? 'selected' : ''}" 
                  data-notation="${item.notacao}" 
                  data-text="${item.texto.replace(/"/g, '&quot;')}">
-                <span class="notation">Art. ${item.notacao}</span>
+                <span class="notation">Art. ${item.notacao} ${isSelected ? '<small style="color:#fff;font-size:10px;">(selecionado)</small>' : ''}</span>
                 <p class="text">${item.texto}</p>
                 ${item.capitulo ? `<span class="capitulo">${item.capitulo.titulo || ''}</span>` : ''}
             </div>
-        `).join('');
+        `}).join('');
     }
     
     resultsContainer.classList.add('show');
@@ -105,13 +108,20 @@ function toggleArticleSelection(notation, text) {
 function updateSelectedArticlesUI() {
     const container = document.getElementById('selected-articles');
     const list = document.getElementById('selected-articles-list');
+    const badge = document.getElementById('artigos-count-badge');
     
     if (selectedArticles.length === 0) {
         container.style.display = 'none';
+        if (badge) badge.style.display = 'none';
         return;
     }
     
     container.style.display = 'block';
+    if (badge) {
+        badge.style.display = 'inline';
+        badge.textContent = selectedArticles.length + ' artigo(s)';
+    }
+    
     list.innerHTML = selectedArticles.map(article => `
         <span class="selected-article-tag">
             Art. ${article.notation}
