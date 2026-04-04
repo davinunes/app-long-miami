@@ -58,6 +58,7 @@ requireLogin();
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
     <script src="js/funcs.js?v=<?php echo time(); ?>"></script>
     <script src="js/main.js?v=<?php echo time(); ?>"></script>
+    <script src="js/regimento-busca.js?v=<?php echo time(); ?>"></script>
     <script>
         const NOTIFICACAO_ID = <?php echo isset($_GET['id']) ? (int)$_GET['id'] : 'null'; ?>;
         
@@ -74,6 +75,7 @@ requireLogin();
             $('select').formSelect();
             configurarCampoBloco();
             vincularCamposUnidadeBloco();
+            inicializarBuscaRegimento();
             
             $('#tipo_id').on('change', function() {
                 toggleMultaField();

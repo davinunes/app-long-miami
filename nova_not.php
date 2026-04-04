@@ -59,6 +59,7 @@ requireLogin();
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
     <script src="js/funcs.js?v=<?php echo time(); ?>"></script>
     <script src="js/main.js?v=<?php echo time(); ?>"></script>
+    <script src="js/regimento-busca.js?v=<?php echo time(); ?>"></script>
     <script>
         $(document).ready(function() {
             $('.sidenav').sidenav({edge: 'left'});
@@ -74,7 +75,10 @@ requireLogin();
             $('select').formSelect();
             configurarCampoBloco();
             vincularCamposUnidadeBloco();
+            inicializarBuscaRegimento();
             await fetchProximoNumero();
+            
+            $('#btnSalvar').on('click', salvarNotificacao);
         });
     </script>
 </body>

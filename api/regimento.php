@@ -2,31 +2,8 @@
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
 
-require_once __DIR__ . '/../config.php';
-require_once __DIR__ . '/../lib/jwt_loader.php';
-
-use Firebase\JWT\JWT;
-
-$authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '';
-if (!$authHeader) {
-    $headers = getallheaders();
-    $authHeader = $headers['Authorization'] ?? $headers['authorization'] ?? '';
-}
-
-if (!$authHeader || !preg_match('/^Bearer\s+(.+)$/i', $authHeader, $matches)) {
-    http_response_code(401);
-    echo json_encode(['error' => 'Token não fornecido.']);
-    exit;
-}
-
-$token = $matches[1];
-try {
-    JWT::decode($token, new Firebase\JWT\Key(JWT_SECRET_KEY, JWT_ALGORITHM));
-} catch (Exception $e) {
-    http_response_code(401);
-    echo json_encode(['error' => 'Token inválido.']);
-    exit;
-}
+require_once __DIR__ . '/helpers.php';
+requireApiLogin();
 
 $dbFile = __DIR__ . '/../regimento.json';
 if (!file_exists($dbFile)) {

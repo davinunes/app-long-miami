@@ -21,9 +21,7 @@ async function inicializarBuscaRegimento() {
 
         debounceTimer = setTimeout(async () => {
             try {
-                const response = await fetch(`${API_BASE_URL_PHP}/regimento.php?q=${encodeURIComponent(query)}`, {
-                    headers: { 'Authorization': `Bearer ${localStorage.getItem('accessToken')}` }
-                });
+                const response = await fetch(`${API_BASE_URL_PHP}/regimento.php?q=${encodeURIComponent(query)}`);
                 
                 if (!response.ok) throw new Error('Erro na busca');
                 
