@@ -42,8 +42,21 @@ if (typeof fazerLogout === 'undefined') {
     }
 }
 
-// Lógica de toggle do menu lateral (Sidenav)
-// Usamos delegação de eventos diretamente no document para garantir que funcione em qualquer página/estado
+// Lógica de Permissões no JS
+const PERMISSOES_USUARIO = <?php echo json_encode(getPermissoesUsuario()); ?>;
+const USUARIO_LOGADO_ID = <?php echo (int)getUsuarioId(); ?>;
+const EH_ADMIN_DEV = <?php echo isAdmin() ? 'true' : 'false'; ?>;
+
+function temPermissao(permissao) {
+    if (EH_ADMIN_DEV) return true;
+    return PERMISSOES_USUARIO.includes(permissao);
+}
+
+function temAlgumaPermissao(permissoesArray) {
+    if (EH_ADMIN_DEV) return true;
+    return permissoesArray.some(p => PERMISSOES_USUARIO.includes(p));
+}
+
 (function() {
     function closeSidenav() {
         const sidenav = document.querySelector('.sidenav');

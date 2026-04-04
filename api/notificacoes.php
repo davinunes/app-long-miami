@@ -16,22 +16,44 @@ $usuario = requireApiLogin();
 
 require_once '../config.php';
 
-$metodo = $_SERVER['REQUEST_METHOD'];
-$pdo = getDbConnection();
+// Verificar permissões
+$isAdminDev = in_array($usuario['role'], ['admin', 'dev']);
+$podeListar = $isAdminDev || temPermissao('notificacao.listar');
+$podeCriar = $isAdminDev || temPermissao('notificacao.criar');
+$podeVerDetalhes = $isAdminDev || temPermissao('notificacao.ver');
+$podeEditar = $isAdminDev || temPermissao('notificacao.editar');
+$podeExcluir = $isAdminDev || temPermissao('notificacao.excluir');
+$podeAltFase = $isAdminDev || temPermissao('notificacao.alterar_fase');
+$podeLavrar = $isAdminDev || temPermissao('notificacao.lavrar');
+$podeEnviar = $isAdminDev || temPermissao('notificacao.marcar_enviada');
+$podeRegistrarCiencia = $isAdminDev || temPermissao('notificacao.registrar_ciencia');
+$podeEncerrar = $isAdminDev || temPermissao('notificacao.encerrar');
+$podeMarcarCobranca = $isAdminDev || temPermissao('notificacao.marcar_cobranca');
+$podeReabrir = $isAdminDev || temPermissao('notificacao.reabrir');
 
-if (!$pdo) {
-    http_response_code(500);
-    echo json_encode(['message' => 'Falha na conexão com o banco de dados.']);
+if ($metodo === 'GET' && !isset($_GET['id']) && !isset($_GET['proximo_numero']) && !isset($_GET['buscar_ocorrencias']) && !$podeListar) {
+    http_response_code(403);
+    echo json_encode(['message' => 'Permissão insuficiente para listar notificações.']);
     exit();
 }
 
 switch ($metodo) {
     case 'GET':
         if (isset($_GET['id'])) {
+            if (!$podeVerDetalhes) {
+                http_response_code(403);
+                echo json_encode(['message' => 'Permissão insuficiente para ver detalhes.']);
+                exit();
+            }
             buscarNotificacao($pdo, (int)$_GET['id'], $usuario);
         } elseif (isset($_GET['proximo_numero'])) {
             buscarProximoNumero($pdo);
         } elseif (isset($_GET['buscar_ocorrencias'])) {
+            if (!$podeCriar) {
+                http_response_code(403);
+                echo json_encode(['message' => 'Permissão insuficiente para buscar ocorrências.']);
+                exit();
+            }
             buscarOcorrenciasParaVincular($pdo, $_GET['buscar_ocorrencias']);
         } else {
             listarNotificacoes($pdo);
@@ -42,14 +64,46 @@ switch ($metodo) {
         $dados = json_decode(file_get_contents("php://input"));
         
         if (isset($dados->action) && $dados->action === 'sincronizar_evidencias') {
+            if (!$isAdminDev && !temPermissao('notificacao.imagem.sincronizar')) {
+                http_response_code(403);
+                echo json_encode(['message' => 'Permissão insuficiente.']);
+                exit();
+            }
             sincronizarEvidencias($pdo, $dados, $usuario);
+        } elseif (isset($dados->mudar_fase)) {
+            if (!$podeAltFase) {
+                http_response_code(403);
+                echo json_encode(['message' => 'Permissão insuficiente para alterar fase.']);
+                exit();
+            }
+            mudarFase($pdo, $dados, $usuario);
         } elseif (isset($dados->deletar_imagem)) {
+            if (!$isAdminDev && !temPermissao('notificacao.imagem.remover')) {
+                http_response_code(403);
+                echo json_encode(['message' => 'Permissão insuficiente.']);
+                exit();
+            }
             deletarImagem($pdo, $dados, $usuario);
         } elseif (isset($dados->vincular_evidencias)) {
+            if (!$isAdminDev && !temPermissao('notificacao.imagem.anexar')) {
+                http_response_code(403);
+                echo json_encode(['message' => 'Permissão insuficiente.']);
+                exit();
+            }
             vincularEvidencias($pdo, $dados, $usuario);
         } elseif (isset($dados->id) && !empty($dados->id)) {
+            if (!$podeEditar) {
+                http_response_code(403);
+                echo json_encode(['message' => 'Permissão insuficiente para editar.']);
+                exit();
+            }
             atualizarNotificacao($pdo, $dados, $usuario);
         } else {
+            if (!$podeCriar) {
+                http_response_code(403);
+                echo json_encode(['message' => 'Permissão insuficiente para criar.']);
+                exit();
+            }
             criarNotificacao($pdo, $dados, $usuario);
         }
         break;
@@ -63,9 +117,12 @@ switch ($metodo) {
 function buscarNotificacao($pdo, $id, $usuario) {
     try {
         $stmt = $pdo->prepare("
-            SELECT n.*, o.titulo as ocorrencia_titulo, o.fase as ocorrencia_fase, o.id as ocorrencia_id
+            SELECT n.*, o.titulo as ocorrencia_titulo, o.fase as ocorrencia_fase, o.id as ocorrencia_id,
+                   u_lav.nome as lavrada_por_nome, ns.slug as status_slug, ns.nome as status_nome
             FROM notificacoes n 
             LEFT JOIN ocorrencias o ON n.ocorrencia_id = o.id 
+            LEFT JOIN usuarios u_lav ON n.lavrada_por = u_lav.id
+            LEFT JOIN notificacao_status ns ON n.status_id = ns.id
             WHERE n.id = ?
         ");
         $stmt->execute([$id]);
@@ -76,6 +133,17 @@ function buscarNotificacao($pdo, $id, $usuario) {
             echo json_encode(['message' => 'Notificação não encontrada.']);
             exit();
         }
+
+        // Histórico de fases
+        $stmt_log = $pdo->prepare("
+            SELECT fl.*, u.nome as usuario_nome 
+            FROM notificacao_fase_log fl 
+            LEFT JOIN usuarios u ON fl.usuario_id = u.id 
+            WHERE fl.notificacao_id = ? 
+            ORDER BY fl.created_at DESC
+        ");
+        $stmt_log->execute([$id]);
+        $notificacao['fase_log'] = $stmt_log->fetchAll();
         
         if (!$notificacao['ocorrencia_id']) {
             $stmt_link = $pdo->prepare("
@@ -581,6 +649,173 @@ function sincronizarEvidencias($pdo, $dados, $usuario) {
     } catch (Exception $e) {
         http_response_code(500);
         echo json_encode(['message' => 'Erro ao sincronizar evidências: ' . $e->getMessage()]);
+    }
+}
+
+function registrarHistoricoNotificacao($pdo, $notificacaoId, $usuarioId, $faseAnterior, $faseNova, $observacao = '') {
+    $stmt = $pdo->prepare("INSERT INTO notificacao_fase_log (notificacao_id, usuario_id, fase_anterior, fase_nova, observacao) VALUES (?, ?, ?, ?, ?)");
+    $stmt->execute([$notificacaoId, $usuarioId, $faseAnterior, $faseNova, $observacao]);
+}
+
+function mudarFase($pdo, $dados, $usuario) {
+    if (empty($dados->id) || empty($dados->nova_fase)) {
+        http_response_code(400);
+        echo json_encode(['message' => 'ID e nova fase são obrigatórios.']);
+        exit();
+    }
+    
+    $id = (int)$dados->id;
+    $novaFaseSlug = $dados->nova_fase;
+    $observacao = $dados->observacao ?? '';
+    $isAdminDev = in_array($usuario['role'], ['admin', 'dev']);
+    
+    try {
+        $stmt = $pdo->prepare("
+            SELECT n.status_id, ns.slug as status_slug 
+            FROM notificacoes n 
+            JOIN notificacao_status ns ON n.status_id = ns.id 
+            WHERE n.id = ?
+        ");
+        $stmt->execute([$id]);
+        $notificacao = $stmt->fetch();
+        
+        if (!$notificacao) {
+            http_response_code(404);
+            echo json_encode(['message' => 'Notificação não encontrada.']);
+            exit();
+        }
+        
+        $faseAnteriorSlug = $notificacao['status_slug'];
+        
+        // --- LÓGICA ESPECIAL: REABRIR ---
+        if ($novaFaseSlug === 'reabrir') {
+            if (!$isAdminDev && !temPermissao('notificacao.reabrir')) {
+                http_response_code(403);
+                echo json_encode(['message' => "Você não tem permissão para reabrir notificações."]);
+                exit();
+            }
+            
+            // Buscar a última fase válida antes da atual
+            $stmt_last = $pdo->prepare("
+                SELECT fase_anterior FROM notificacao_fase_log 
+                WHERE notificacao_id = ? AND fase_nova = ? 
+                ORDER BY created_at DESC LIMIT 1
+            ");
+            $stmt_last->execute([$id, $faseAnteriorSlug]);
+            $last = $stmt_last->fetch();
+            
+            if (!$last || !$last['fase_anterior']) {
+                http_response_code(400);
+                echo json_encode(['message' => "Não foi possível identificar a fase anterior para reabertura."]);
+                exit();
+            }
+            $novaFaseSlug = $last['fase_anterior'];
+        }
+
+        // Buscar o ID do novo status
+        $stmt_status = $pdo->prepare("SELECT id FROM notificacao_status WHERE slug = ?");
+        $stmt_status->execute([$novaFaseSlug]);
+        $novoStatus = $stmt_status->fetch();
+        
+        if (!$novoStatus) {
+            http_response_code(400);
+            echo json_encode(['message' => "Status '{$novaFaseSlug}' não encontrado no sistema."]);
+            exit();
+        }
+        
+        $novoStatusId = $novoStatus['id'];
+        
+        // Verificar permissões específicas por transição
+        if (!$isAdminDev) {
+            $permissaoNecessaria = '';
+            
+            if ($novaFaseSlug === 'lavrada') $permissaoNecessaria = 'notificacao.lavrar';
+            elseif ($novaFaseSlug === 'rascunho' && $faseAnteriorSlug === 'lavrada') $permissaoNecessaria = 'notificacao.retornar_rascunho';
+            elseif ($novaFaseSlug === 'enviada') $permissaoNecessaria = 'notificacao.marcar_enviada';
+            elseif ($novaFaseSlug === 'ciente') $permissaoNecessaria = 'notificacao.registrar_ciencia';
+            elseif ($novaFaseSlug === 'em_recurso') $permissaoNecessaria = 'notificacao.registrar_recurso';
+            elseif (in_array($novaFaseSlug, ['recurso_deferido', 'recurso_indeferido'])) $permissaoNecessaria = 'notificacao.julgar_recurso';
+            elseif ($novaFaseSlug === 'cobranca') $permissaoNecessaria = 'notificacao.marcar_cobranca';
+            elseif ($novaFaseSlug === 'encerrada') $permissaoNecessaria = 'notificacao.encerrar';
+            
+            if ($permissaoNecessaria && !temPermissao($permissaoNecessaria)) {
+                http_response_code(403);
+                echo json_encode(['message' => "Você não tem permissão para esta ação ({$permissaoNecessaria})."]);
+                exit();
+            }
+        }
+
+        // --- LÓGICA ESPECIAL: CONDIÇÕES PARA COBRANÇA ---
+        if ($novaFaseSlug === 'cobranca' && !$isAdminDev) {
+            $stmt_check = $pdo->prepare("SELECT data_ciencia, recurso_status, status_id FROM notificacoes WHERE id = ?");
+            $stmt_check->execute([$id]);
+            $n = $stmt_check->fetch();
+            
+            $podeIrCobranca = false;
+            
+            // Caso 1: Recurso Indeferido
+            if ($n['recurso_status'] === 'indeferido') {
+                $podeIrCobranca = true;
+            } 
+            // Caso 2: 7 dias após ciência (sem recurso pendente)
+            elseif ($n['data_ciencia']) {
+                $dataCiencia = new DateTime($n['data_ciencia']);
+                $hoje = new DateTime();
+                $diff = $hoje->diff($dataCiencia)->days;
+                if ($diff >= 7 && $faseAnteriorSlug !== 'em_recurso') {
+                    $podeIrCobranca = true;
+                }
+            }
+
+            if (!$podeIrCobranca) {
+                http_response_code(400);
+                echo json_encode(['message' => "A cobrança só estará disponível 7 dias após a ciência ou se o recurso for indeferido."]);
+                exit();
+            }
+        }
+        
+        $pdo->beginTransaction();
+        
+        // Atualizar campos específicos dependendo da fase
+        $sqlExtra = "";
+        $paramsExtra = [];
+        
+        if ($novaFaseSlug === 'lavrada') {
+            $sqlExtra = ", data_lavratura = NOW(), lavrada_por = ?";
+            $paramsExtra[] = $usuario['id'];
+        } elseif ($novaFaseSlug === 'ciente') {
+            $sqlExtra = ", data_ciencia = NOW(), ciencia_por = ?";
+            $paramsExtra[] = $dados->metodo_ciencia ?? 'Sistema';
+        } elseif ($novaFaseSlug === 'em_recurso') {
+            $sqlExtra = ", tem_recurso = 1, data_recurso = NOW(), recurso_texto = ?";
+            $paramsExtra[] = $dados->recurso_texto ?? '';
+        } elseif ($novaFaseSlug === 'recurso_deferido' || $novaFaseSlug === 'recurso_indeferido') {
+            $sqlExtra = ", recurso_status = ?";
+            $paramsExtra[] = ($novaFaseSlug === 'recurso_deferido' ? 'deferido' : 'indeferido');
+        } elseif ($novaFaseSlug === 'cobranca') {
+            $sqlExtra = ", encerrada = 0, data_encerramento = NULL"; // Reset caso reaberto
+        } elseif ($novaFaseSlug === 'encerrada') {
+            $sqlExtra = ", encerrada = 1, data_encerramento = NOW(), motivo_encerramento = ?";
+            $paramsExtra[] = $dados->motivo_encerramento ?? 'Lançamento efetuado';
+        }
+        
+        $sql = "UPDATE notificacoes SET status_id = ? $sqlExtra WHERE id = ?";
+        $params = array_merge([$novoStatusId], $paramsExtra, [$id]);
+        
+        $stmt_upd = $pdo->prepare($sql);
+        $stmt_upd->execute($params);
+        
+        registrarHistoricoNotificacao($pdo, $id, $usuario['id'], $faseAnteriorSlug, $novaFaseSlug, $observacao);
+        
+        $pdo->commit();
+        
+        http_response_code(200);
+        echo json_encode(['message' => 'Fase atualizada com sucesso!', 'nova_fase' => $novaFaseSlug]);
+        
+    } catch (Exception $e) {
+        if ($pdo->inTransaction()) $pdo->rollBack();
+        http_response_code(500);
+        echo json_encode(['message' => 'Erro ao mudar fase: ' . $e->getMessage()]);
     }
 }
 ?>
