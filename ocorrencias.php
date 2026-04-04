@@ -96,88 +96,6 @@
     </form>
 </div>
 
-<!-- Modal Detalhes da Ocorrência -->
-<div id="modal-detalhes" class="modal modal-fixed-footer" style="width: 90%; max-width: 1000px;">
-    <div class="modal-content">
-        <h4 id="detalhes-titulo">Detalhes da Ocorrência</h4>
-        
-        <div class="row">
-            <div class="col s12 m8">
-                <div class="card">
-                    <div class="card-content">
-                        <span class="card-title" id="detalhes-titulo-card">-</span>
-                        <p id="detalhes-descricao">-</p>
-                        <hr>
-                        <p><strong>Data do Fato:</strong> <span id="detalhes-data-fato">-</span></p>
-                        <p><strong>Unidades:</strong> <span id="detalhes-unidades">-</span></p>
-                        <p><strong>Fase:</strong> <span id="detalhes-fase">-</span></p>
-                        <p><strong>Criado por:</strong> <span id="detalhes-autor">-</span></p>
-                    </div>
-                </div>
-            </div>
-            <div class="col s12 m4">
-                <div class="card">
-                    <div class="card-content">
-                        <h6>Mudar Fase</h6>
-                        <select id="nova-fase" class="browser-default" style="margin-bottom: 10px;">
-                            <option value="nova">Nova</option>
-                            <option value="em_analise">Em Análise</option>
-                            <option value="recusada">Recusada</option>
-                            <option value="homologada">Homologada</option>
-                        </select>
-                        <input type="text" id="fase-observacao" placeholder="Observação (opcional)">
-                        <button class="btn waves-effect waves-light" onclick="mudarFase()">Alterar Fase</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="row">
-            <div class="col s12">
-                <ul class="tabs">
-                    <li class="tab col s3"><a href="#tab-mensagens" class="active">Mensagens</a></li>
-                    <li class="tab col s3"><a href="#tab-anexos">Anexos</a></li>
-                    <li class="tab col s3"><a href="#tab-historico">Histórico</a></li>
-                </ul>
-            </div>
-            <div id="tab-mensagens" class="col s12" style="padding: 20px 0;">
-                <div id="mensagens-container" style="max-height: 300px; overflow-y: auto; margin-bottom: 15px;"></div>
-                <div class="row">
-                    <div class="input-field col s8">
-                        <input id="nova-mensagem" type="text" placeholder="Digite uma mensagem...">
-                    </div>
-                    <div class="col s4">
-                        <label style="display: flex; align-items: center;">
-                            <input type="checkbox" id="msg-eh-evidencia">
-                            <span>É evidência</span>
-                        </label>
-                    </div>
-                </div>
-                <button class="btn waves-effect waves-light" onclick="enviarMensagem()">Enviar</button>
-            </div>
-            <div id="tab-anexos" class="col s12" style="padding: 20px 0;">
-                <div id="anexos-container"></div>
-                <div class="file-field input-field" style="margin-top: 20px;">
-                    <div class="btn">
-                        <span>Anexar</span>
-                        <input type="file" id="anexo-file" accept="image/*,.pdf,.doc,.docx">
-                    </div>
-                    <div class="file-path-wrapper">
-                        <input class="file-path validate" type="text" placeholder="Selecione um arquivo">
-                    </div>
-                </div>
-                <button class="btn waves-effect waves-light" onclick="uploadAnexo()">Upload</button>
-            </div>
-            <div id="tab-historico" class="col s12" style="padding: 20px 0;">
-                <ul id="historico-container" class="collection"></ul>
-            </div>
-        </div>
-    </div>
-    <div class="modal-footer">
-        <a href="#!" class="modal-close waves-effect waves-green btn-flat">Fechar</a>
-    </div>
-</div>
-
 <style>
 .fase-badge {
     display: inline-block;
@@ -256,20 +174,15 @@
 <script>
 let ocorrenciasData = [];
 let unidadesSelecionadas = [];
-let ocorrenciaAtualId = null;
 
 $(document).ready(function() {
     $('.modal').modal();
-    $('.tabs').tabs();
     $('#btn-nova-ocorrencia').click(() => abrirModalOcorrencia());
     $('#form-ocorrencia').submit(function(e) {
         e.preventDefault();
         salvarOcorrencia();
     });
     $('#filtro-fase').change(carregarOcorrencias);
-    $('#nova-mensagem').keypress(function(e) {
-        if (e.which === 13) enviarMensagem();
-    });
     carregarOcorrencias();
 });
 
@@ -309,9 +222,9 @@ async function carregarOcorrencias() {
                     <td><span class="fase-badge ${faseClass}">${faseLabel}</span></td>
                     <td>${o.total_evidencias || 0}</td>
                     <td>
-                        <button class="btn-floating btn-small blue" onclick="abrirDetalhes(${o.id})">
+                        <a href="ocorrencia_detalhe.php?id=${o.id}" class="btn-floating btn-small blue">
                             <i class="material-icons">visibility</i>
-                        </button>
+                        </a>
                     </td>
                 </tr>
             `);
@@ -424,199 +337,6 @@ async function salvarOcorrencia() {
         
         M.toast({html: result.message, classes: 'green'});
         M.Modal.getInstance($('#modal-ocorrencia')).close();
-        carregarOcorrencias();
-        
-    } catch (error) {
-        M.toast({html: error.message, classes: 'red'});
-    }
-}
-
-async function abrirDetalhes(id) {
-    ocorrenciaAtualId = id;
-    
-    try {
-        const response = await fetch(`${API_BASE_URL_PHP}/ocorrencias.php?id=${id}`, {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('accessToken')}` }
-        });
-        if (!response.ok) throw new Error('Erro ao carregar ocorrência.');
-        
-        const occ = await response.json();
-        
-        $('#detalhes-titulo').text(`Ocorrência #${occ.id}`);
-        $('#detalhes-titulo-card').text(occ.titulo);
-        $('#detalhes-descricao').text(occ.descricao_fato);
-        $('#detalhes-data-fato').text(formatDate(occ.data_fato));
-        $('#detalhes-unidades').text(occ.unidades?.map(u => `${u.unidade_bloco || ''}${u.unidade_numero}`).join(', ') || '-');
-        $('#detalhes-fase').html(`<span class="fase-badge fase-${occ.fase}">${occ.fase.replace('_', ' ')}</span>`);
-        $('#detalhes-autor').text(occ.autor_nome || '-');
-        $('#nova-fase').val(occ.fase);
-        
-        renderMensagens(occ.mensagens || []);
-        renderAnexos(occ.anexos || []);
-        renderHistorico(occ.fase_log || []);
-        
-        M.Tabs.getInstance($('.tabs')[0]).select('tab-mensagens');
-        M.Modal.getInstance($('#modal-detalhes')).open();
-        
-    } catch (error) {
-        M.toast({html: error.message, classes: 'red'});
-    }
-}
-
-function renderMensagens(mensagens) {
-    const container = $('#mensagens-container');
-    if (mensagens.length === 0) {
-        container.html('<p style="color: #999; text-align: center;">Nenhuma mensagem.</p>');
-        return;
-    }
-    
-    container.html(mensagens.map(m => `
-        <div class="mensagem-item ${m.eh_evidencia ? 'evidencia' : ''}">
-            <span class="autor">${m.autor_nome}</span>
-            <span class="hora">${formatDateTime(m.created_at)}</span>
-            <p style="margin: 5px 0;">${m.mensagem}</p>
-            ${m.anexo_url ? `<a href="${m.anexo_url}" target="_blank">Ver anexo</a>` : ''}
-        </div>
-    `).join(''));
-    container.scrollTop(container[0].scrollHeight);
-}
-
-function renderAnexos(anexos) {
-    const container = $('#anexos-container');
-    if (anexos.length === 0) {
-        container.html('<p style="color: #999; text-align: center;">Nenhum anexo.</p>');
-        return;
-    }
-    
-    container.html(anexos.map(a => `
-        <div class="anexo-item">
-            <i class="material-icons">${getIconeTipo(a.tipo)}</i>
-            <div>
-                <a href="${a.url}" target="_blank">${a.nome_original}</a>
-                <small style="display: block; color: #999;">${formatFileSize(a.tamanho_bytes)}</small>
-            </div>
-        </div>
-    `).join(''));
-}
-
-function renderHistorico(logs) {
-    const container = $('#historico-container');
-    if (logs.length === 0) {
-        container.html('<li class="collection-item">Nenhum histórico.</li>');
-        return;
-    }
-    
-    container.html(logs.map(l => `
-        <li class="collection-item">
-            <strong>${l.fase_anterior || 'Início'}</strong> → <strong>${l.fase_nova}</strong>
-            ${l.observacao ? `<p>${l.observacao}</p>` : ''}
-            <small style="color: #999;">${formatDateTime(l.created_at)}</small>
-        </li>
-    `).join(''));
-}
-
-async function enviarMensagem() {
-    const mensagem = $('#nova-mensagem').val().trim();
-    if (!mensagem) return;
-    
-    const ehEvidencia = $('#msg-eh-evidencia').is(':checked');
-    
-    try {
-        const response = await fetch(`${API_BASE_URL_PHP}/ocorrencias.php`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-            },
-            body: JSON.stringify({
-                ocorrencia_id: ocorrenciaAtualId,
-                mensagem,
-                eh_evidencia: ehEvidencia
-            })
-        });
-        
-        const result = await response.json();
-        if (!response.ok) throw new Error(result.message);
-        
-        $('#nova-mensagem').val('');
-        $('#msg-eh-evidencia').prop('checked', false);
-        abrirDetalhes(ocorrenciaAtualId);
-        
-    } catch (error) {
-        M.toast({html: error.message, classes: 'red'});
-    }
-}
-
-async function uploadAnexo() {
-    const input = document.getElementById('anexo-file');
-    if (!input.files[0]) {
-        M.toast({html: 'Selecione um arquivo.', classes: 'red'});
-        return;
-    }
-    
-    const file = input.files[0];
-    const reader = new FileReader();
-    
-    reader.onload = async function(e) {
-        const dados = {
-            ocorrencia_id: ocorrenciaAtualId,
-            tipo: file.type.startsWith('image/') ? 'imagem' : 'documento',
-            nome_original: file.name,
-            dados: e.target.result.split(',')[1],
-            mime_type: file.type,
-            tamanho_bytes: file.size
-        };
-        
-        try {
-            const response = await fetch(`${API_BASE_URL_PHP}/ocorrencias.php?upload=1`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-                },
-                body: JSON.stringify(dados)
-            });
-            
-            const result = await response.json();
-            if (!response.ok) throw new Error(result.message);
-            
-            M.toast({html: 'Anexo enviado!', classes: 'green'});
-            input.value = '';
-            abrirDetalhes(ocorrenciaAtualId);
-            
-        } catch (error) {
-            M.toast({html: error.message, classes: 'red'});
-        }
-    };
-    
-    reader.readAsDataURL(file);
-}
-
-async function mudarFase() {
-    const novaFase = $('#nova-fase').val();
-    const observacao = $('#fase-observacao').val().trim();
-    
-    try {
-        const response = await fetch(`${API_BASE_URL_PHP}/ocorrencias.php`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
-            },
-            body: JSON.stringify({
-                mudar_fase: true,
-                id: ocorrenciaAtualId,
-                nova_fase: novaFase,
-                observacao
-            })
-        });
-        
-        const result = await response.json();
-        if (!response.ok) throw new Error(result.message);
-        
-        M.toast({html: result.message, classes: 'green'});
-        $('#fase-observacao').val('');
-        abrirDetalhes(ocorrenciaAtualId);
         carregarOcorrencias();
         
     } catch (error) {

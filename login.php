@@ -36,6 +36,20 @@ if (!$usuario || !password_verify($senha, $usuario['senha'])) {
 }
 
 try {
+    // Buscar papéis do usuário
+    $stmtPapeis = $pdo->prepare("
+        SELECT DISTINCT papel_slug FROM (
+            SELECT papel_slug FROM usuario_papeis WHERE usuario_id = ?
+            UNION
+            SELECT gp.papel_slug FROM usuario_grupos ug 
+            JOIN grupo_papeis gp ON ug.grupo_id = gp.grupo_id 
+            WHERE ug.usuario_id = ?
+        ) AS todos_papeis
+    ");
+    $stmtPapeis->execute([$usuario['id'], $usuario['id']]);
+    $papeis = $stmtPapeis->fetchAll(PDO::FETCH_COLUMN);
+    $papeis[] = $usuario['role'];
+    
     // ---- Access Token (curto: 15 minutos) ----
     $iat = time();
     $exp_access = $iat + 900;
@@ -46,8 +60,9 @@ try {
 		'data' => [
 			'userId' => $usuario['id'], 
 			'role' => $usuario['role'],
-			'nome' => $usuario['nome'],   // <<-- LINHA NOVA
-			'email' => $usuario['email'] // <<-- LINHA NOVA
+			'nome' => $usuario['nome'],
+			'email' => $usuario['email'],
+			'papeis' => $papeis
 		]
 	];
     $accessToken = JWT::encode($payload_access, JWT_SECRET_KEY, JWT_ALGORITHM);
