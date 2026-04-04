@@ -231,7 +231,8 @@ requireLogin();
                 const result = await response.json();
                 
                 if (response.ok) {
-                    M.toast({html: `Sincronizado! ${result.images_count || 0} imagem(ns) vinculada(s). Recarregue a página para ver as imagens.`, classes: 'green'});
+                    M.toast({html: result.message || `Sincronizado!`, classes: 'green'});
+                    window.location.reload();
                 } else {
                     M.toast({html: 'Erro: ' + (result.message || 'Falha na sincronização'), classes: 'red'});
                 }

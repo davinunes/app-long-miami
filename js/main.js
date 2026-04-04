@@ -374,20 +374,7 @@ async function inicializarFormularioEdicao() {
                 document.getElementById('ver_ocorrencia_link').href = `ocorrencia_detalhe.php?id=${data.ocorrencia_id}`;
                 document.getElementById('ocorrencia_info').style.display = 'block';
                 document.getElementById('ocorrencia_busca_section').style.display = 'none';
-                
-                const evidenciasSection = document.getElementById('evidencias_ocorrencia_section');
-                const evidenciasContainer = document.getElementById('evidencias-ocorrencia');
-                if (data.todas_evidencias_ocorrencia && data.todas_evidencias_ocorrencia.length > 0) {
-                    evidenciasSection.style.display = 'block';
-                    evidenciasContainer.innerHTML = data.todas_evidencias_ocorrencia.map(img => `
-                        <div class="img-preview-item">
-                            <img src="${img.url}" alt="${img.nome_original}" style="max-width: 150px; max-height: 150px; cursor: pointer;" onclick="window.open('${img.url}', '_blank')">
-                            <small>${img.nome_original}</small>
-                        </div>
-                    `).join('');
-                } else {
-                    evidenciasSection.style.display = 'none';
-                }
+                document.getElementById('evidencias_ocorrencia_section').style.display = 'none';
             } else {
                 document.getElementById('ocorrencia_id').value = '';
                 document.getElementById('ocorrencia_info').style.display = 'none';
@@ -407,26 +394,6 @@ async function inicializarFormularioEdicao() {
             } else {
                 addFato();
             }
-
-            let imagensDesativadas = [];
-
-            window.marcarImgOcorrenciaDesativada = function(imageId) {
-                const previewItem = document.getElementById(`imagem-salva-${imageId}`);
-                const jaDesativada = imagensDesativadas.includes(imageId);
-
-                if (jaDesativada) {
-                    imagensDesativadas = imagensDesativadas.filter(id => id !== imageId);
-                    previewItem.classList.remove('marcada-para-delecao');
-                } else {
-                    imagensDesativadas.push(imageId);
-                    previewItem.classList.add('marcada-para-delecao');
-                }
-                console.log("Imagens de ocorrência marcadas para desativar:", imagensDesativadas);
-            };
-
-            window.getImagensDesativadas = function() {
-                return imagensDesativadas;
-            };
 
             window.toggleImgOcorrencia = function(imageId) {
                 const previewItem = document.getElementById(`img-ocorrencia-${imageId}`);

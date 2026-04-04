@@ -352,14 +352,14 @@ main#main-content .header p { margin: 5px 0 0; color: #ccc; }
 .add-fato { background: #27ae60; color: white; border: none; border-radius: 5px; padding: 10px 15px; cursor: pointer; margin-bottom: 10px; }
 .image-preview-container { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; padding: 10px; border: 2px dashed #e9ecef; border-radius: 8px; min-height: 50px; background-color: #fff; position: relative; }
 .img-preview-item { position: relative; width: 100px; height: 100px; }
-.img-preview-item img { width: 100%; height: 100%; object-fit: cover; border-radius: 5px; border: 1px solid #ddd; }
+.img-preview-item img { width: 100%; height: 100%; object-fit: cover; border-radius: 5px; border: 1px solid #ddd; display: block; }
 .remove-img, .remove-btn-existing {
     position: absolute; top: -5px; right: -5px; background: #e74c3c; color: white; border: none;
-    border-radius: 50%; width: 22px; height: 22px; cursor: pointer; font-weight: bold; line-height: 22px; text-align: center;
+    border-radius: 50%; width: 22px; height: 22px; cursor: pointer; font-weight: bold; line-height: 22px; text-align: center; z-index: 10;
 }
 .img-preview-item.marcada-para-delecao img { opacity: 0.3; border: 2px solid #e74c3c; }
-.img-preview-item .img-label { display: block; font-size: 10px; color: #666; text-align: center; margin-top: 2px; }
-.img-preview-item .toggle-btn { position: absolute; bottom: -5px; right: -5px; }
+.img-preview-item .img-label { display: none; }
+.img-preview-item .toggle-btn { position: absolute; bottom: -5px; right: -5px; z-index: 10; font-size: 9px; padding: 2px 4px; }
 .img-preview-item.inativa img { opacity: 0.3; border: 2px solid #e74c3c; }
 .img-preview-item.inativa .toggle-btn { background: #e74c3c !important; }
 

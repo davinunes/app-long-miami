@@ -500,9 +500,16 @@ function sincronizarEvidencias($pdo, $dados, $usuario) {
         $stmt_anexos->execute([$ocorrencia_id]);
         $anexos = $stmt_anexos->fetchAll();
         
-        $stmt_existente = $pdo->prepare("SELECT anexo_ocorrencia_id FROM notificacao_imagens WHERE notificacao_id = ? AND anexo_ocorrencia_id IS NOT NULL");
+        $stmt_existente = $pdo->prepare("SELECT anexo_ocorrencia_id, id FROM notificacao_imagens WHERE notificacao_id = ? AND anexo_ocorrencia_id IS NOT NULL");
         $stmt_existente->execute([$notificacao_id]);
-        $ja_vinculados = array_column($stmt_existente->fetchAll(), 'anexo_ocorrencia_id');
+        $ja_vinculados = [];
+        $ids_inativos = [];
+        foreach ($stmt_existente->fetchAll() as $row) {
+            $ja_vinculados[] = $row['anexo_ocorrencia_id'];
+            if ($row['anexo_ocorrencia_id']) {
+                $ids_inativos[$row['anexo_ocorrencia_id']] = $row['id'];
+            }
+        }
         
         $sql_img = "INSERT INTO notificacao_imagens (notificacao_id, caminho_arquivo, nome_original, ocorrencia_id, anexo_ocorrencia_id) VALUES (?, ?, ?, ?, ?)";
         $stmt_img = $pdo->prepare($sql_img);
@@ -510,28 +517,38 @@ function sincronizarEvidencias($pdo, $dados, $usuario) {
         $sql_evidencia = "INSERT IGNORE INTO evidencia_compartilhada (ocorrencia_anexo_id, notificacao_id) VALUES (?, ?)";
         $stmt_evidencia = $pdo->prepare($sql_evidencia);
         
-        $count = 0;
+        $count_novas = 0;
+        $count_reativadas = 0;
+        
         foreach ($anexos as $anexo) {
-            if (in_array($anexo['id'], $ja_vinculados)) {
-                continue;
+            if (isset($ids_inativos[$anexo['id']])) {
+                $stmt_reativar = $pdo->prepare("UPDATE notificacao_imagens SET inactive = 0, deleted_at = NULL WHERE id = ?");
+                $stmt_reativar->execute([$ids_inativos[$anexo['id']]]);
+                $count_reativadas++;
+            } elseif (!in_array($anexo['id'], $ja_vinculados)) {
+                $caminho_relativo = ltrim($anexo['url'], '/');
+                
+                $stmt_img->execute([
+                    $notificacao_id,
+                    $caminho_relativo,
+                    $anexo['nome_original'],
+                    $ocorrencia_id,
+                    $anexo['id']
+                ]);
+                
+                $stmt_evidencia->execute([$anexo['id'], $notificacao_id]);
+                $count_novas++;
             }
-            
-            $caminho_relativo = ltrim($anexo['url'], '/');
-            
-            $stmt_img->execute([
-                $notificacao_id,
-                $caminho_relativo,
-                $anexo['nome_original'],
-                $ocorrencia_id,
-                $anexo['id']
-            ]);
-            
-            $stmt_evidencia->execute([$anexo['id'], $notificacao_id]);
-            $count++;
         }
         
+        $total = $count_novas + $count_reativadas;
         http_response_code(200);
-        echo json_encode(['message' => 'Evidências sincronizadas com sucesso!', 'images_count' => $count]);
+        echo json_encode([
+            'message' => "Sincronizado: {$count_novas} nova(s), {$count_reativadas} reativada(s).",
+            'images_count' => $total,
+            'novas' => $count_novas,
+            'reativadas' => $count_reativadas
+        ]);
     } catch (Exception $e) {
         http_response_code(500);
         echo json_encode(['message' => 'Erro ao sincronizar evidências: ' . $e->getMessage()]);
