@@ -1,5 +1,3 @@
-<?php include 'header.php'; ?>
-
 <div class="container">
     <div class="header">
         <h1>Ocorrências</h1>
@@ -656,5 +654,3 @@ function getIconeTipo(tipo) {
     return icones[tipo] || 'attach_file';
 }
 </script>
-
-<?php include 'footer.php'; ?>
