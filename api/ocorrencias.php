@@ -287,7 +287,7 @@ function adicionarMensagem($pdo, $dados, $usuario) {
             $dados->ocorrencia_id,
             $usuario->userId,
             $dados->mensagem,
-            $dados->eh_evidencia ?? false,
+            !empty($dados->eh_evidencia) ? 1 : 0,
             $dados->tipo_anexo ?? null,
             $dados->anexo_url ?? null,
             $dados->anexo_nome ?? null
