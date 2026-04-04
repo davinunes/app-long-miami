@@ -1,41 +1,20 @@
 <?php
+/**
+ * API PHP para gerar PDF de notificação
+ * Substitui a verificação JWT pela sessão PHP
+ */
+
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization');
+header('Access-Control-Allow-Headers: Content-Type');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit;
 }
 
-require_once __DIR__ . '/../config.php';
-require_once __DIR__ . '/../lib/jwt_loader.php';
-
-use Firebase\JWT\JWT;
-
-$authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? '';
-
-if (!$authHeader) {
-    $headers = getallheaders();
-    $authHeader = $headers['Authorization'] ?? $headers['authorization'] ?? '';
-}
-
-if (!$authHeader || !preg_match('/^Bearer\s+(.+)$/i', $authHeader, $matches)) {
-    http_response_code(401);
-    header('Content-Type: application/json; charset=utf-8');
-    echo json_encode(['error' => 'Token não fornecido.']);
-    exit;
-}
-
-$token = $matches[1];
-try {
-    JWT::decode($token, new Firebase\JWT\Key(JWT_SECRET_KEY, JWT_ALGORITHM));
-} catch (Exception $e) {
-    http_response_code(401);
-    header('Content-Type: application/json; charset=utf-8');
-    echo json_encode(['error' => 'Token inválido ou expirado.']);
-    exit;
-}
+require_once __DIR__ . '/helpers.php';
+requireApiLogin();
 
 $input = json_decode(file_get_contents('php://input'), true);
 if (!$input) {
