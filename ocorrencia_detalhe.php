@@ -490,7 +490,7 @@ function renderHistorico(logs) {
     }
     return logs.map(function(l) {
         return '<div class="historico-item">' +
-            '<div class="historico-fase">' + (l.fase_anterior ? l.fase_anterior + ' → ' : '') + l.fase_nova + '</div>' +
+            '<div class="historico-fase">' + (l.fase_anterior ? l.fase_anterior + ' → ' : '') + l.fase_nova + (l.usuario_nome ? ' <span style="color:#666;font-weight:normal;">por ' + l.usuario_nome + '</span>' : '') + '</div>' +
             (l.observacao ? '<div class="historico-obs">' + l.observacao + '</div>' : '') +
             '<div class="historico-data">' + formatDateTime(l.created_at) + '</div>' +
             '</div>';

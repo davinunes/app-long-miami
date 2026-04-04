@@ -183,7 +183,7 @@ function buscarOcorrencia($pdo, $id, $usuario) {
     $stmt->execute([$id]);
     $ocorrencia['anexos'] = $stmt->fetchAll();
     
-    $stmt = $pdo->prepare("SELECT * FROM ocorrencia_fase_log WHERE ocorrencia_id = ? ORDER BY created_at DESC");
+    $stmt = $pdo->prepare("SELECT fl.*, u.nome as usuario_nome FROM ocorrencia_fase_log fl LEFT JOIN usuarios u ON fl.usuario_id = u.id WHERE fl.ocorrencia_id = ? ORDER BY fl.created_at DESC");
     $stmt->execute([$id]);
     $ocorrencia['fase_log'] = $stmt->fetchAll();
     
