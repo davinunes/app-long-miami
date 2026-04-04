@@ -33,6 +33,8 @@
     <li><a class="waves-effect" href="logout.php"><i class="material-icons">exit_to_app</i>Sair</a></li>
 </ul>
 
+<div class="sidenav-overlay"></div>
+
 <script>
 if (typeof fazerLogout === 'undefined') {
     function fazerLogout() {

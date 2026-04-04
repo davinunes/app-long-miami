@@ -22,22 +22,46 @@ $(document).ready(function() {
     function mostrarTelaDashboard() {
         $('#login-container').hide();
         $('#dashboard-container').show();
-        $('.sidenav').sidenav({
-            edge: 'left',
-            onOpenStart: function() {
-                $('.sidenav').addClass('sidenav-open');
-                $('body').append('<div class="sidenav-overlay"></div>');
-            },
-            onCloseEnd: function() {
-                $('.sidenav').removeClass('sidenav-open');
-                $('.sidenav-overlay').remove();
+        
+        function initSidenav() {
+            const sidenav = document.querySelector('.sidenav');
+            const overlay = document.querySelector('.sidenav-overlay');
+            
+            function closeSidenav() {
+                if (sidenav) sidenav.classList.remove('sidenav-open');
+                if (overlay) overlay.classList.remove('active');
             }
-        });
-
-        $(document).on('click', '.sidenav-overlay', function() {
-            M.Sidenav.getInstance($('.sidenav')).close();
-        });
-
+            
+            function openSidenav() {
+                if (sidenav) sidenav.classList.add('sidenav-open');
+                if (overlay) overlay.classList.add('active');
+            }
+            
+            if (overlay) {
+                overlay.addEventListener('click', closeSidenav);
+            }
+            
+            const hamburger = document.querySelector('.mobile-menu-btn');
+            if (hamburger) {
+                hamburger.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    if (sidenav && sidenav.classList.contains('sidenav-open')) {
+                        closeSidenav();
+                    } else {
+                        openSidenav();
+                    }
+                });
+            }
+            
+            $(document).on('click', '.sidenav li a', function() {
+                if (window.innerWidth <= 992) {
+                    closeSidenav();
+                }
+            });
+        }
+        
+        initSidenav();
+        
         const payload = decodeJwt(localStorage.getItem('accessToken'));
         if (payload && payload.data) {
             $('#user-name').text(payload.data.nome || 'Usuário');

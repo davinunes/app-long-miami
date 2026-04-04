@@ -389,11 +389,17 @@ textarea { min-height: 100px; resize: vertical; overflow: hidden; }
         height: auto;
     }
     
-    header nav.sidenav,
-    header .sidenav {
+    header > .sidenav,
+    header .sidenav,
+    .sidenav {
         position: fixed !important;
-        transform: translateX(-105%) !important;
+        left: 0;
+        top: 0;
+        height: 100vh;
+        transform: translateX(-100%) !important;
         z-index: 999;
+        width: 280px !important;
+        transition: transform 0.3s ease;
     }
     
     .sidenav.sidenav-open {
@@ -408,7 +414,7 @@ textarea { min-height: 100px; resize: vertical; overflow: hidden; }
         position: fixed;
         top: 15px;
         left: 15px;
-        z-index: 998;
+        z-index: 1000;
         width: 45px;
         height: 45px;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -417,6 +423,8 @@ textarea { min-height: 100px; resize: vertical; overflow: hidden; }
         align-items: center;
         justify-content: center;
         box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        cursor: pointer;
+        border: none;
     }
     
     .mobile-menu-btn i {
@@ -431,7 +439,12 @@ textarea { min-height: 100px; resize: vertical; overflow: hidden; }
         right: 0;
         bottom: 0;
         background: rgba(0,0,0,0.5);
-        z-index: 996;
+        z-index: 998;
+        display: none;
+    }
+    
+    .sidenav-overlay.active {
+        display: block;
     }
 }
 
