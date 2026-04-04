@@ -146,7 +146,8 @@ window.adicionarArtigosATextarea = function() {
     }).join('\n');
     
     fundamentacao.value += conteudo;
+    fundamentacao.style.height = 'auto';
+    fundamentacao.style.height = fundamentacao.scrollHeight + 'px';
     
-    selectedArticles = [];
-    updateSelectedArticlesUI();
+    M.toast({html: `${selectedArticles.length} artigo(s) adicionado(s) à fundamentação. Serão salvos ao salvar a notificação.`, classes: 'green'});
 };
