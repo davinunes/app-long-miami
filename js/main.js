@@ -331,7 +331,8 @@ async function inicializarFormularioEdicao() {
         dados.id = notificacaoId;
         dados.status_id = 1;
         dados.imagens_para_deletar = imagensParaDeletar;
-        dados.imagens_ocorrencia_desativar = window.getImagensDesativadas ? window.getImagensDesativadas() : [];
+        dados.imagens_ocorrencia_ativar = Array.from(window.imagensOcorrenciaAtivas || []);
+        dados.imagens_ocorrencia_desativar = Array.from(window.imagensOcorrenciaInativas || []);
 
         showStatus('Atualizando notificação...', 'loading');
 
@@ -427,6 +428,26 @@ async function inicializarFormularioEdicao() {
                 return imagensDesativadas;
             };
 
+            window.toggleImgOcorrencia = function(imageId) {
+                const previewItem = document.getElementById(`img-ocorrencia-${imageId}`);
+                const btn = previewItem.querySelector('.toggle-btn');
+                
+                if (previewItem.classList.contains('inativa')) {
+                    window.imagensOcorrenciaAtivas.add(imageId);
+                    window.imagensOcorrenciaInativas.delete(imageId);
+                    previewItem.classList.remove('inativa');
+                    btn.textContent = 'Desativar';
+                } else {
+                    window.imagensOcorrenciaAtivas.delete(imageId);
+                    window.imagensOcorrenciaInativas.add(imageId);
+                    previewItem.classList.add('inativa');
+                    btn.textContent = 'Ativar';
+                }
+            };
+
+            window.imagensOcorrenciaAtivas = new Set();
+            window.imagensOcorrenciaInativas = new Set();
+
             const previewContainer = document.getElementById('preview-container');
             if (data.imagens && data.imagens.length > 0) {
                 data.imagens.forEach(img => {
@@ -435,18 +456,19 @@ async function inicializarFormularioEdicao() {
                         : `/uploads/imagens/${img.caminho_arquivo}`;
                     const item = document.createElement('div');
                     item.className = 'img-preview-item existing-image';
-                    item.id = `imagem-salva-${img.id}`;
+                    item.id = `img-ocorrencia-${img.id}`;
                     
                     if (img.ocorrencia_id) {
+                        window.imagensOcorrenciaAtivas.add(img.id);
                         item.innerHTML = `
-                            <img src="${imageUrl}" alt="${img.nome_original}" style="max-width: 150px; max-height: 150px; cursor: pointer;" onclick="window.open('${imageUrl}', '_blank')">
-                            <small>Evidência da Ocorrência</small>
-                            <button type="button" class="remove-btn-existing" onclick="marcarImgOcorrenciaDesativada(${img.id})" title="Desativar">&times;</button>
+                            <img src="${imageUrl}" alt="" style="max-width: 150px; max-height: 150px; cursor: pointer;" onclick="window.open('${imageUrl}', '_blank')">
+                            <span class="img-label">Evidência da Ocorrência</span>
+                            <button type="button" class="toggle-btn" onclick="toggleImgOcorrencia(${img.id})" style="background: #27ae60; color: white; border: none; padding: 2px 6px; border-radius: 3px; cursor: pointer; font-size: 10px;">Desativar</button>
                         `;
                     } else {
                         item.innerHTML = `
-                            <img src="${imageUrl}" alt="${img.nome_original}">
-                            <small>Salva</small>
+                            <img src="${imageUrl}" alt="">
+                            <span class="img-label">Salva</span>
                             <button type="button" class="remove-btn-existing" onclick="marcarParaDeletar(${img.id})">&times;</button>
                         `;
                     }

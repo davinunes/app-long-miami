@@ -313,6 +313,20 @@ function atualizarNotificacao($pdo, $dados, $usuario) {
             }
         }
 
+        if (!empty($dados->imagens_ocorrencia_ativar)) {
+            $ids_ativar = array_map('intval', $dados->imagens_ocorrencia_ativar);
+            if (!empty($ids_ativar)) {
+                $placeholders = str_repeat('?,', count($ids_ativar) - 1) . '?';
+                $stmt_ativar = $pdo->prepare("
+                    UPDATE notificacao_imagens 
+                    SET inactive = 0, deleted_at = NULL 
+                    WHERE id IN ($placeholders) AND notificacao_id = ? AND ocorrencia_id IS NOT NULL
+                ");
+                $params = array_merge($ids_ativar, [$id]);
+                $stmt_ativar->execute($params);
+            }
+        }
+
         $sql_update = "UPDATE notificacoes SET unidade=?, bloco=?, numero=?, ano=?, data_emissao=?, fundamentacao_legal=?, valor_multa=?, url_recurso=?, assunto_id=?, tipo_id=?, status_id=?, ocorrencia_id=?, data_atualizacao=CURRENT_TIMESTAMP WHERE id=?";
         $stmt_update = $pdo->prepare($sql_update);
         $stmt_update->execute([ 

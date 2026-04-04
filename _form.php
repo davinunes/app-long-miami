@@ -56,9 +56,8 @@
 </div>
 
 <div class="form-group" id="evidencias_ocorrencia_section" style="display: none;">
-    <label>Evidências da Ocorrência:</label>
+    <label>Evidências da Ocorrência Vinculada:</label>
     <div class="evidencias-grid" id="evidencias-ocorrencia" style="display: flex; flex-wrap: wrap; gap: 10px; margin: 10px 0;"></div>
-    <p style="color: #666; font-size: 12px; margin-top: 5px;"><i class="material-icons" style="font-size: 14px; vertical-align: middle;">info</i> As evidências da ocorrência estão disponíveis acima. Você pode adicionar mais fotos manualmente abaixo.</p>
 </div>
 
 <div class="form-group">
