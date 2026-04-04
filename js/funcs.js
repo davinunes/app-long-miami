@@ -212,6 +212,41 @@ function fazerLogout() {
     window.location.href = 'logout.php';
 }
 
+async function gerarPDF() {
+    const dados = getFormData(true);
+    if (!dados.numero || !dados.unidade) {
+        showStatus('Preencha pelo menos Número e Unidade para gerar o preview.', 'error');
+        return;
+    }
+    showStatus('Gerando preview do PDF...', 'loading');
+    
+    try {
+        const response = await fetch(`${API_BASE_URL_PHP}/gerar_pdf.php`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(dados)
+        });
+        if (response.ok) {
+            const pdfBlob = await response.blob();
+            currentPdfUrl = URL.createObjectURL(pdfBlob);
+            document.getElementById('pdfPlaceholder').style.display = 'none';
+            const pdfViewer = document.getElementById('pdfViewer');
+            if (pdfViewer) {
+                pdfViewer.src = currentPdfUrl;
+                pdfViewer.style.display = 'block';
+            }
+            const btnDownload = document.getElementById('btnDownload');
+            if (btnDownload) btnDownload.style.display = 'block';
+            showStatus('Preview gerado com sucesso!', 'success');
+        } else {
+            const errorData = await response.json().catch(() => ({}));
+            showStatus(`Erro ao gerar PDF: ${errorData.error || errorData.message || 'Erro desconhecido'}`, 'error');
+        }
+    } catch (error) {
+        showStatus(`Erro de conexão: ${error.message}`, 'error');
+    }
+}
+
 function getFormData(forPDF = false) {
     const tipoSelect = document.getElementById('tipo_id');
     const selectedTipoOption = tipoSelect.options[tipoSelect.selectedIndex];

@@ -389,6 +389,14 @@ async function inicializarFormularioEdicao() {
             }
 
             toggleMultaField();
+            
+            if (data.valor_multa) {
+                const multaInput = document.getElementById('valor_multa');
+                if (multaInput) multaInput.value = data.valor_multa;
+                const multaGroup = document.getElementById('valor_multa_group');
+                if (multaGroup) multaGroup.classList.remove('hidden');
+            }
+            
             console.log("Formulário preenchido com sucesso.");
         } catch (error) {
             console.error("Erro ao preencher o formulário:", error);

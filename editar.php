@@ -75,8 +75,14 @@ requireLogin();
             configurarCampoBloco();
             vincularCamposUnidadeBloco();
             
+            $('#tipo_id').on('change', function() {
+                toggleMultaField();
+            });
+            
             if (NOTIFICACAO_ID) {
                 await inicializarFormularioEdicao();
+            } else {
+                $('#btnSalvar').on('click', salvarNotificacao);
             }
         });
     </script>
