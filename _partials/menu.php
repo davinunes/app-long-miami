@@ -3,6 +3,9 @@
         <div class="user-view">
             <div class="sidenav-header">
                 <i class="material-icons">dashboard</i>
+                <button class="sidenav-collapse-btn" onclick="toggleSidenav()" title="Recolher menu">
+                    <i class="material-icons">chevron_left</i>
+                </button>
             </div>
             <a href="#!user"><span id="user-name" class="white-text name">Usuário</span></a>
             <a href="#!email"><span id="user-email" class="white-text email">email@exemplo.com</span></a>
@@ -37,6 +40,25 @@
 if (typeof fazerLogout === 'undefined') {
     function fazerLogout() {
         window.location.href = 'logout.php';
+    }
+}
+
+function toggleSidenav() {
+    const sidenav = document.querySelector('.sidenav');
+    const mainContent = document.getElementById('main-content') || document.querySelector('main.main-content');
+    const btn = document.querySelector('.sidenav-collapse-btn i');
+    
+    sidenav.classList.toggle('sidenav-collapsed');
+    mainContent.classList.toggle('sidenav-collapsed');
+    
+    if (sidenav.classList.contains('sidenav-collapsed')) {
+        sidenav.style.transform = 'translateX(-280px)';
+        btn.textContent = 'chevron_right';
+        if (mainContent) mainContent.style.marginLeft = '0';
+    } else {
+        sidenav.style.transform = 'translateX(0)';
+        btn.textContent = 'chevron_left';
+        if (mainContent) mainContent.style.marginLeft = '280px';
     }
 }
 </script>
