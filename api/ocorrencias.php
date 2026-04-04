@@ -117,7 +117,7 @@ function buscarOcorrencia($pdo, $id, $usuario) {
     $ocorrencia['fase_log'] = $stmt->fetchAll();
     
     if ($ocorrencia['notificacao_id']) {
-        $stmt = $pdo->prepare("SELECT id, numero, ano, status_id, ns.nome as status FROM notificacoes n JOIN notificacao_status ns ON n.status_id = ns.id WHERE n.id = ?");
+        $stmt = $pdo->prepare("SELECT n.id, n.numero, n.ano, n.status_id, ns.nome as status FROM notificacoes n JOIN notificacao_status ns ON n.status_id = ns.id WHERE n.id = ?");
         $stmt->execute([$ocorrencia['notificacao_id']]);
         $ocorrencia['notificacao'] = $stmt->fetch();
     }
