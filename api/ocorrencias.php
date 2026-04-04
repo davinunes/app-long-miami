@@ -14,6 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 
 require_once '../api/helpers.php';
 requireApiPapel(['protocolar', 'diligente', 'promotor', 'admin', 'dev']);
+$usuario = getApiUsuario();
 
 require_once '../config.php';
 
@@ -543,17 +544,9 @@ function usuarioTemPapel($usuario, $papel) {
 }
 
 function deletarOcorrencia($pdo, $dados, $usuario) {
-    error_log("DEBUG deletarOcorrencia - SESSION: " . print_r($_SESSION, true));
-    
     if (!usuarioTemPapel($usuario, 'admin') && !usuarioTemPapel($usuario, 'dev')) {
         http_response_code(403);
-        echo json_encode([
-            'message' => 'Apenas administradores podem excluir ocorrências.',
-            'debug' => [
-                'usuario' => $usuario,
-                'session' => $_SESSION
-            ]
-        ]);
+        echo json_encode(['message' => 'Apenas administradores podem excluir ocorrências.']);
         exit();
     }
     
