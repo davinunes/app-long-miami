@@ -6,7 +6,17 @@
 <div id="ocorrencia_info" class="form-group" style="display: none; background: #e3f2fd; padding: 15px; border-radius: 8px; border-left: 4px solid #2196F3;">
     <label style="color: #1976D2; font-weight: bold;">Ocorrência Vinculada:</label>
     <p id="ocorrencia_titulo" style="margin: 5px 0; color: #333;"></p>
-    <a href="#" id="ver_ocorrencia_link" class="btn-small" style="margin-top: 5px;">Ver Ocorrência</a>
+    <a href="#" id="ver_ocorrencia_link" class="btn-small" target="_blank" style="margin-top: 5px;">Ver Ocorrência</a>
+</div>
+
+<div id="ocorrencia_busca_section" class="form-group" style="background: #fff3e0; padding: 15px; border-radius: 8px; border-left: 4px solid #FF9800;">
+    <label style="color: #E65100; font-weight: bold;">Vincular Ocorrência:</label>
+    <p style="color: #666; font-size: 12px; margin: 5px 0;">Busque uma ocorrência homologada para vincular.</p>
+    <div style="display: flex; gap: 10px;">
+        <input type="text" id="ocorrencia_busca" placeholder="Buscar por título ou descrição..." style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+        <button type="button" class="btn orange" onclick="buscarOcorrencias()">Buscar</button>
+    </div>
+    <div id="ocorrencia_busca_resultados" style="margin-top: 10px; max-height: 200px; overflow-y: auto;"></div>
 </div>
 
 <div class="form-group">

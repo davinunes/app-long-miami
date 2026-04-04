@@ -377,6 +377,39 @@ function criarNotificacao($pdo, $dados, $usuario) {
         if (!empty($dados->ocorrencia_id)) {
             $pdo->prepare("UPDATE ocorrencias SET notificacao_id = ? WHERE id = ?")->execute([$notificacao_id, $dados->ocorrencia_id]);
             $pdo->prepare("INSERT INTO ocorrencia_notificacoes (ocorrencia_id, notificacao_id, tipo_vinculo) VALUES (?, ?, 'gerada')")->execute([$dados->ocorrencia_id, $notificacao_id]);
+            
+            $stmt_anexos = $pdo->prepare("SELECT * FROM ocorrencia_anexos WHERE ocorrencia_id = ? AND inactive = 0");
+            $stmt_anexos->execute([$dados->ocorrencia_id]);
+            $anexos = $stmt_anexos->fetchAll(PDO::FETCH_ASSOC);
+            
+            if (!empty($anexos)) {
+                if (!is_dir(UPLOADS_PATH)) { mkdir(UPLOADS_PATH, 0755, true); }
+                
+                $sql_copia_img = "INSERT INTO notificacao_imagens (notificacao_id, caminho_arquivo, nome_original, ocorrencia_id, anexo_ocorrencia_id) VALUES (?, ?, ?, ?, ?)";
+                $stmt_copia_img = $pdo->prepare($sql_copia_img);
+                
+                $sql_evidencia = "INSERT INTO evidencia_compartilhada (ocorrencia_anexo_id, notificacao_id) VALUES (?, ?)";
+                $stmt_evidencia = $pdo->prepare($sql_evidencia);
+                
+                foreach ($anexos as $anexo) {
+                    $nome_arquivo = uniqid('img_notif_' . $notificacao_id . '_', true) . '.jpg';
+                    $caminho_origem = dirname(__DIR__) . '/' . $anexo['url'];
+                    $caminho_destino = UPLOADS_PATH . $nome_arquivo;
+                    
+                    if (file_exists($caminho_origem)) {
+                        if (copy($caminho_origem, $caminho_destino)) {
+                            $stmt_copia_img->execute([
+                                $notificacao_id,
+                                $nome_arquivo,
+                                $anexo['nome_original'],
+                                $dados->ocorrencia_id,
+                                $anexo['id']
+                            ]);
+                            $stmt_evidencia->execute([$anexo['id'], $notificacao_id]);
+                        }
+                    }
+                }
+            }
         }
         
         if (!empty($dados->fatos)) {

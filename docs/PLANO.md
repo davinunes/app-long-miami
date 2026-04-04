@@ -422,7 +422,10 @@ app-long-miami/
 
 **Regras de Negócio:**
 1. Botão "Criar Notificação" só aparece para ocorrências homologadas e usuários com papel `notificador`, `admin` ou `dev`
-2. Ao criar notificação a partir de ocorrência, pré-preenche: unidade, descrição, evidências
+2. Ao criar notificação a partir de ocorrência:
+   - Pré-preenche: unidade, descrição
+   - **Copia automaticamente** imagens da ocorrência para a notificação
+   - Registra vínculo em `evidencia_compartilhada`
 3. Imagens vinculadas a ocorrência → soft delete (flag `inactive=1`) quando removidas da notificação
 4. Imagens uploadadas diretamente na notificação → hard delete (remove do disco)
 5. Evidências compartilhadas são rastreadas na tabela `evidencia_compartilhada`
@@ -443,3 +446,4 @@ app-long-miami/
 - [x] Hard delete para imagens diretas
 - [x] Pré-preenchimento de notificação com dados da ocorrência
 - [x] Exibição de evidências da ocorrência na notificação
+- [x] Cópia de imagens da ocorrência para notificação (criarNotificacao atualizada)

@@ -61,6 +61,7 @@ requireLogin();
     <script src="js/regimento-busca.js?v=<?php echo time(); ?>"></script>
     <script>
         const NOTIFICACAO_ID = <?php echo isset($_GET['id']) ? (int)$_GET['id'] : 'null'; ?>;
+        let ocorrenciaVinculadaData = null;
         
         $(document).ready(function() {
             $('.sidenav').sidenav({edge: 'left'});
@@ -81,12 +82,117 @@ requireLogin();
                 toggleMultaField();
             });
             
+            $('#ocorrencia_busca').on('keypress', function(e) {
+                if (e.which === 13) {
+                    e.preventDefault();
+                    buscarOcorrencias();
+                }
+            });
+            
             if (NOTIFICACAO_ID) {
                 await inicializarFormularioEdicao();
             } else {
                 $('#btnSalvar').on('click', salvarNotificacao);
             }
         });
+
+        async function buscarOcorrencias() {
+            const busca = document.getElementById('ocorrencia_busca').value.trim();
+            const container = document.getElementById('ocorrencia_busca_resultados');
+            
+            if (busca.length < 2 && busca.length > 0) {
+                container.innerHTML = '<p style="color: #666;">Digite pelo menos 2 caracteres para buscar.</p>';
+                return;
+            }
+            
+            container.innerHTML = '<p style="color: #666;">Buscando...</p>';
+            
+            try {
+                const url = `${API_BASE_URL_PHP}/notificacoes.php?buscar_ocorrencias=${encodeURIComponent(busca)}`;
+                const response = await fetch(url);
+                
+                if (!response.ok) throw new Error('Erro ao buscar');
+                
+                const ocorrencias = await response.json();
+                
+                if (ocorrencias.length === 0) {
+                    container.innerHTML = '<p style="color: #666;">Nenhuma ocorrência homologada disponível encontrada.</p>';
+                    return;
+                }
+                
+                container.innerHTML = '<div style="display: flex; flex-direction: column; gap: 8px;">' + 
+                    ocorrencias.map(o => `
+                        <div style="background: #f5f5f5; padding: 10px; border-radius: 4px; cursor: pointer;" onclick="vincularOcorrencia(${o.id})">
+                            <strong>#${o.id}</strong> - ${o.titulo}
+                            <br><small style="color: #666;">${o.unidades || 'Sem unidades'} | ${formatDate(o.data_fato)}</small>
+                        </div>
+                    `).join('') + '</div>';
+                
+            } catch (error) {
+                container.innerHTML = '<p style="color: red;">Erro ao buscar ocorrências.</p>';
+                console.error(error);
+            }
+        }
+
+        async function vincularOcorrencia(id) {
+            try {
+                const response = await fetch(`${API_BASE_URL_PHP}/ocorrencias.php?id=${id}`);
+                if (!response.ok) throw new Error('Erro ao carregar ocorrência');
+                
+                ocorrenciaVinculadaData = await response.json();
+                
+                document.getElementById('ocorrencia_id').value = ocorrenciaVinculadaData.id;
+                document.getElementById('ocorrencia_titulo').textContent = `Ocorrência #${ocorrenciaVinculadaData.id}: ${ocorrenciaVinculadaData.titulo}`;
+                document.getElementById('ver_ocorrencia_link').href = `ocorrencia_detalhe.php?id=${ocorrenciaVinculadaData.id}`;
+                document.getElementById('ocorrencia_info').style.display = 'block';
+                document.getElementById('ocorrencia_busca_section').style.display = 'none';
+                document.getElementById('ocorrencia_busca_resultados').innerHTML = '';
+                
+                const unidade = ocorrenciaVinculadaData.unidades && ocorrenciaVinculadaData.unidades.length > 0 
+                    ? ocorrenciaVinculadaData.unidades[0] 
+                    : null;
+                if (unidade) {
+                    document.getElementById('unidade').value = unidade.unidade_numero || '';
+                    document.getElementById('bloco').value = unidade.unidade_bloco || '';
+                }
+                
+                if (ocorrenciaVinculadaData.descricao_fato) {
+                    document.getElementById('fatos-container').innerHTML = '';
+                    addFato(ocorrenciaVinculadaData.descricao_fato);
+                }
+                
+                renderEvidenciasOcorrencia(ocorrenciaVinculadaData.anexos || []);
+                
+                M.toast({html: 'Ocorrência vinculada!', classes: 'green'});
+                
+            } catch (error) {
+                M.toast({html: 'Erro ao vincular ocorrência', classes: 'red'});
+                console.error(error);
+            }
+        }
+
+        function renderEvidenciasOcorrencia(anexos) {
+            const container = document.getElementById('evidencias-ocorrencia');
+            if (!container) return;
+            
+            const section = document.getElementById('evidencias_ocorrencia_section');
+            
+            const imagens = anexos.filter(a => a.tipo === 'imagem');
+            
+            if (imagens.length === 0) {
+                if (section) section.style.display = 'none';
+                return;
+            }
+            
+            if (section) section.style.display = 'block';
+            
+            container.innerHTML = imagens.map(img => `
+                <div class="img-preview-item">
+                    <img src="${img.url}" alt="${img.nome_original}" style="max-width: 150px; max-height: 150px; cursor: pointer;" onclick="window.open('${img.url}', '_blank')">
+                    <small>${img.nome_original}</small>
+                </div>
+            `).join('');
+        }
     </script>
 </body>
 </html>
