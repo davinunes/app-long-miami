@@ -283,44 +283,60 @@ app-long-miami/
 
 ## Notas
 
-- O grupo `dev` é hardcoded com acesso total em `verificar_token.php`
-- Todas as APIs devem usar autenticação JWT
-- Frontend usa padrão SPA com AJAX
-- Migrate 002 executado no servidor (10.0.0.208)
+- Autenticação via **Sessões PHP** (não JWT) - mais simples e fácil de manter
+- Arquivo `auth.php` contém funções: `estaLogado()`, `temPapel()`, `requireLogin()`, `requirePapel()`
+- APIs usam `api/helpers.php` para verificar sessão
+- Frontend PHP com proteção via `requireLogin()` ou `requirePapel()`
+
+---
+
+## Status: REFATORAÇÃO CONCLUÍDA (03/04/2026)
+
+### Nova Arquitetura de Autenticação
+
+**Arquivos:**
+- `auth.php` - Funções de autenticação via sessão PHP
+- `api/helpers.php` - Helper para APIs com sessão
+- `index.php` - Login via POST (sem JS JWT)
+- `logout.php` - Logout simples
+- `dashboard_content.php` - Dashboard protegido
+- `lista.php`, `usuarios.php`, `ocorrencias.php` - Protegidos com requireLogin/requirePapel
+
+**Vantagens:**
+- Sem JWT para gerenciar no frontend
+- Sessão PHP disponível em todas as páginas
+- Depuração direta com var_dump/echo
+- Menos código JavaScript
 
 ---
 
 ## Status: FASE 1 CONCLUÍDA ✓
 
-### Implementado em 03/04/2026:
-
 **Backend:**
 - `api/grupos.php` - CRUD completo de grupos
-- `api/usuarios.php` - Atualizado com suporte a grupos/papéis
-- `api/config.php` - Retorna papéis e grupos disponíveis
-- `verificar_token.php` - Verifica papéis do banco
+- `api/usuarios.php` - Com suporte a grupos/papéis
+- `api/config.php` - Retorna papéis e grupos
 
 **Frontend:**
 - `usuarios.php` - Interface com modais de usuário e grupos
-- `js/main.js` - Funções: carregarListaUsuarios, abrirModalUsuario, salvarUsuarioModal, carregarListaGrupos, criarGrupo, editarGrupo, deletarGrupo
+- `js/main.js` - Funções de CRUD
 
 ---
 
 ## Status: FASE 2 CONCLUÍDA ✓
 
-### Implementado em 03/04/2026:
-
 **Database (003_ocorrencias.sql):**
-- `ocorrencias` - Tabela principal com fases (nova, em_analise, recusada, homologada)
-- `ocorrencia_unidades` - Vínculo N:N com unidades
-- `ocorrencia_mensagens` - Sistema de chat com evidências
+- `ocorrencias` - Fases: nova, em_analise, recusada, homologada
+- `ocorrencia_unidades` - Unidades envolvidas
+- `ocorrencia_mensagens` - Chat com evidências
 - `ocorrencia_anexos` - Arquivos anexados
-- `ocorrencia_fase_log` - Log de mudanças de fase
-- `unidades` - Catálogo de unidades do condomínio
+- `ocorrencia_fase_log` - Log de fases
+- `unidades` - Catálogo
 
 **APIs:**
-- `api/ocorrencias.php` - CRUD completo com fases, mensagens, anexos
-- `api/unidades.php` - CRUD de unidades com importação em lote
+- `api/ocorrencias.php` - CRUD com fases, mensagens, anexos
+- `api/unidades.php` - CRUD de unidades
 
 **Frontend:**
-- `ocorrencias.php` - Interface completa com tabs de mensagens/anexos/histórico
+- `ocorrencias.php` - Lista com filtros
+- `ocorrencia_detalhe.php` - Página completa com seções lineares

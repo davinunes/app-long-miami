@@ -1,7 +1,6 @@
 <?php
 // Endpoint: /api/ocorrencias.php
 // Métodos: GET, POST
-// Requer: autenticação JWT
 
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
@@ -13,10 +12,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     exit();
 }
 
-require_once '../verificar_token.php';
-require_once '../config.php';
+require_once '../api/helpers.php';
+requireApiPapel(['protocolar', 'diligente', 'promotor', 'admin', 'dev']);
 
-$usuario = verificarTokenEAutorizar(['protocolar', 'diligente', 'promotor', 'admin', 'dev']);
+require_once '../config.php';
 
 $metodo = $_SERVER['REQUEST_METHOD'];
 $pdo = getDbConnection();
@@ -54,6 +53,9 @@ switch ($metodo) {
         }
         elseif (isset($_GET['upload'])) {
             fazerUpload($pdo, $usuario);
+        }
+        elseif (isset($dados->gerar_notificacao)) {
+            gerarNotificacao($pdo, $dados, $usuario);
         }
         else {
             criarOuAtualizar($pdo, $dados, $usuario);
@@ -104,6 +106,16 @@ function buscarOcorrencia($pdo, $id, $usuario) {
     $stmt->execute([$id]);
     $ocorrencia['fase_log'] = $stmt->fetchAll();
     
+    if ($ocorrencia['notificacao_id']) {
+        $stmt = $pdo->prepare("SELECT id, numero, ano, status_id, ns.nome as status FROM notificacoes n JOIN notificacao_status ns ON n.status_id = ns.id WHERE n.id = ?");
+        $stmt->execute([$ocorrencia['notificacao_id']]);
+        $ocorrencia['notificacao'] = $stmt->fetch();
+    }
+    
+    $stmt = $pdo->prepare("SELECT notificacao_id, tipo_vinculo, criado_em FROM ocorrencia_notificacoes WHERE ocorrencia_id = ?");
+    $stmt->execute([$id]);
+    $ocorrencia['historico_notificacoes'] = $stmt->fetchAll();
+    
     http_response_code(200);
     echo json_encode($ocorrencia);
 }
@@ -112,7 +124,7 @@ function listarOcorrencias($pdo) {
     $fase = $_GET['fase'] ?? null;
     
     $sql = "
-        SELECT o.*, u.nome as autor_nome,
+        SELECT o.id, o.titulo, o.descricao_fato, o.data_fato, o.data_criacao, o.fase, o.fase_obs, o.created_by, o.updated_at, o.created_at, o.notificacao_id, u.nome as autor_nome,
                GROUP_CONCAT(CONCAT(COALESCE(ou.unidade_bloco, ''), ou.unidade_numero) SEPARATOR ', ') as unidades
         FROM ocorrencias o
         LEFT JOIN usuarios u ON o.created_by = u.id
@@ -436,6 +448,83 @@ function fazerUpload($pdo, $usuario) {
     } catch (Exception $e) {
         http_response_code(500);
         echo json_encode(['message' => 'Erro ao salvar anexo: ' . $e->getMessage()]);
+    }
+}
+
+function gerarNotificacao($pdo, $dados, $usuario) {
+    if (empty($dados->ocorrencia_id)) {
+        http_response_code(400);
+        echo json_encode(['message' => 'ID da ocorrência é obrigatório.']);
+        exit();
+    }
+    
+    $stmt = $pdo->prepare("SELECT * FROM ocorrencias WHERE id = ?");
+    $stmt->execute([$dados->ocorrencia_id]);
+    $ocorrencia = $stmt->fetch();
+    
+    if (!$ocorrencia) {
+        http_response_code(404);
+        echo json_encode(['message' => 'Ocorrência não encontrada.']);
+        exit();
+    }
+    
+    if ($ocorrencia['fase'] !== 'homologada') {
+        http_response_code(400);
+        echo json_encode(['message' => 'Só é possível gerar notificação para ocorrências homologadas.']);
+        exit();
+    }
+    
+    if ($ocorrencia['notificacao_id']) {
+        http_response_code(400);
+        echo json_encode(['message' => 'Esta ocorrência já possui uma notificação vinculada.', 'notificacao_id' => $ocorrencia['notificacao_id']]);
+        exit();
+    }
+    
+    try {
+        $stmt = $pdo->prepare("SELECT MAX(CAST(numero AS UNSIGNED)) as max_num FROM notificacoes WHERE ano = ?");
+        $stmt->execute([date('Y')]);
+        $resultado = $stmt->fetch();
+        $proximo_numero = ($resultado && $resultado['max_num']) ? $resultado['max_num'] + 1 : 1;
+        
+        $stmt = $pdo->prepare("SELECT unidade_bloco, unidade_numero FROM ocorrencia_unidades WHERE ocorrencia_id = ? LIMIT 1");
+        $stmt->execute([$dados->ocorrencia_id]);
+        $unidade = $stmt->fetch();
+        
+        $unidadeStr = $unidade ? trim(($unidade['unidade_bloco'] ?? '') . ' ' . $unidade['unidade_numero']) : '';
+        $bloco = $unidade['unidade_bloco'] ?? null;
+        
+        $stmt = $pdo->prepare("
+            INSERT INTO notificacoes (unidade, bloco, numero, ano, data_emissao, cidade_emissao, texto_descritivo, assunto_id, tipo_id, status_id, ocorrencia_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)
+        ");
+        $stmt->execute([
+            $unidadeStr,
+            $bloco,
+            sprintf('%03d', $proximo_numero),
+            date('Y'),
+            date('Y-m-d'),
+            $dados->cidade_emissao ?? null,
+            $ocorrencia['descricao_fato'],
+            $dados->assunto_id ?? 11,
+            $dados->tipo_id ?? 2,
+            $ocorrencia['id']
+        ]);
+        $notificacao_id = $pdo->lastInsertId();
+        
+        $pdo->prepare("UPDATE ocorrencias SET notificacao_id = ? WHERE id = ?")->execute([$notificacao_id, $ocorrencia['id']]);
+        
+        $pdo->prepare("INSERT INTO ocorrencia_notificacoes (ocorrencia_id, notificacao_id, tipo_vinculo) VALUES (?, ?, 'gerada')")->execute([$ocorrencia['id'], $notificacao_id]);
+        
+        http_response_code(201);
+        echo json_encode([
+            'message' => 'Notificação gerada com sucesso!',
+            'notificacao_id' => $notificacao_id,
+            'numero' => sprintf('%03d/%s', $proximo_numero, date('Y'))
+        ]);
+        
+    } catch (Exception $e) {
+        http_response_code(500);
+        echo json_encode(['message' => 'Erro ao gerar notificação: ' . $e->getMessage()]);
     }
 }
 ?>

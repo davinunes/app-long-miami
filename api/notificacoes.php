@@ -1,28 +1,19 @@
 <?php
 // Endpoint: /api/notificacoes.php
 
-// --- PASSO 1: Declarar TODOS os headers CORS primeiro ---
-// É crucial que 'Authorization' esteja em 'Allow-Headers'
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
-header("Access-Control-Allow-Methods: POST, GET, OPTIONS"); // Adicionamos OPTIONS
+header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
-// --- PASSO 2: Lidar com a requisição Preflight (OPTIONS) ---
-// Se for uma requisição OPTIONS, apenas retornamos OK (200) e saímos.
-// Isso diz ao navegador "Sim, eu aceito os headers que você quer enviar".
 if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     http_response_code(200);
     exit();
 }
 
-// --- PASSO 3: AGORA sim, verificamos o token ---
-// Se o script chegou aqui, não era um OPTIONS, então deve ser um GET ou POST.
-// Agora podemos exigir o token de autorização.
-require_once '../verificar_token.php';
-$dadosUsuario = verificarTokenEAutorizar();
+require_once '../api/helpers.php';
+$usuario = requireApiLogin();
 
-// --- PASSO 4: O resto do seu script continua normal ---
 require_once '../config.php';
 
 $metodo = $_SERVER['REQUEST_METHOD'];
@@ -39,7 +30,7 @@ switch ($metodo) {
         if (isset($_GET['id'])) {
             try {
                 $id = (int)$_GET['id'];
-                $stmt = $pdo->prepare("SELECT * FROM notificacoes WHERE id = ?");
+                $stmt = $pdo->prepare("SELECT n.*, o.titulo as ocorrencia_titulo, o.fase as ocorrencia_fase FROM notificacoes n LEFT JOIN ocorrencias o ON n.ocorrencia_id = o.id WHERE n.id = ?");
                 $stmt->execute([$id]);
                 $notificacao = $stmt->fetch();
                 if (!$notificacao) { http_response_code(404); echo json_encode(['message' => 'Notificação não encontrada.']); exit(); }
@@ -72,7 +63,7 @@ switch ($metodo) {
             }
         } else {
             try {
-                $sql = "SELECT n.id, n.numero, n.ano, n.unidade, n.bloco, a.descricao as assunto, nt.nome as tipo, ns.nome as status, n.data_emissao FROM notificacoes n JOIN assuntos a ON n.assunto_id = a.id JOIN notificacao_tipos nt ON n.tipo_id = nt.id JOIN notificacao_status ns ON n.status_id = ns.id ORDER BY n.id DESC";
+                $sql = "SELECT n.id, n.numero, n.ano, n.unidade, n.bloco, a.descricao as assunto, nt.nome as tipo, ns.nome as status, n.data_emissao, n.ocorrencia_id FROM notificacoes n JOIN assuntos a ON n.assunto_id = a.id JOIN notificacao_tipos nt ON n.tipo_id = nt.id JOIN notificacao_status ns ON n.status_id = ns.id ORDER BY n.id DESC";
                 $stmt = $pdo->query($sql);
                 $notificacoes = $stmt->fetchAll();
                 http_response_code(200);
@@ -112,10 +103,9 @@ switch ($metodo) {
                     }
                 }
 
-                $sql_update = "UPDATE notificacoes SET unidade=?, bloco=?, numero=?, ano=?, data_emissao=?, fundamentacao_legal=?, valor_multa=?, url_recurso=?, assunto_id=?, tipo_id=?, status_id=?, data_atualizacao=CURRENT_TIMESTAMP WHERE id=?";
+                $sql_update = "UPDATE notificacoes SET unidade=?, bloco=?, numero=?, ano=?, data_emissao=?, fundamentacao_legal=?, valor_multa=?, url_recurso=?, assunto_id=?, tipo_id=?, status_id=?, ocorrencia_id=?, data_atualizacao=CURRENT_TIMESTAMP WHERE id=?";
                 $stmt_update = $pdo->prepare($sql_update);
-                $partes_numero = explode('/', $dados->numero);
-                $stmt_update->execute([ $dados->unidade, $dados->bloco ?? null, $partes_numero[0], $partes_numero[1], $dados->data_emissao, $dados->fundamentacao_legal ?? null, $dados->valor_multa ?? null, $dados->url_recurso ?? null, $dados->assunto_id, $dados->tipo_id, $dados->status_id, $id ]);
+                $stmt_update->execute([ $dados->unidade, $dados->bloco ?? null, $partes_numero[0], $partes_numero[1], $dados->data_emissao, $dados->fundamentacao_legal ?? null, $dados->valor_multa ?? null, $dados->url_recurso ?? null, $dados->assunto_id, $dados->tipo_id, $dados->status_id, $dados->ocorrencia_id ?? null, $id ]);
                 
                 $pdo->prepare("DELETE FROM notificacao_fatos WHERE notificacao_id = ?")->execute([$id]);
                 if (!empty($dados->fatos)) {
@@ -154,11 +144,15 @@ switch ($metodo) {
                     throw new Exception("Dados incompletos.");
                 }
                 $pdo->beginTransaction();
-                $sql = "INSERT INTO notificacoes (unidade, bloco, numero, ano, data_emissao, cidade_emissao, fundamentacao_legal, texto_descritivo, valor_multa, url_recurso, prazo_recurso, assunto_id, tipo_id, status_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                $sql = "INSERT INTO notificacoes (unidade, bloco, numero, ano, data_emissao, cidade_emissao, fundamentacao_legal, texto_descritivo, valor_multa, url_recurso, prazo_recurso, assunto_id, tipo_id, status_id, ocorrencia_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                 $stmt = $pdo->prepare($sql);
-                $partes_numero = explode('/', $dados->numero);
-                $stmt->execute([ $dados->unidade, $dados->bloco ?? null, $partes_numero[0], $partes_numero[1], $dados->data_emissao, $dados->cidade_emissao ?? null, $dados->fundamentacao_legal ?? null, null, $dados->valor_multa ?? null, $dados->url_recurso ?? null, $dados->prazo_recurso ?? 5, $dados->assunto_id, $dados->tipo_id, 1 ]);
+                $stmt->execute([ $dados->unidade, $dados->bloco ?? null, $partes_numero[0], $partes_numero[1], $dados->data_emissao, $dados->cidade_emissao ?? null, $dados->fundamentacao_legal ?? null, null, $dados->valor_multa ?? null, $dados->url_recurso ?? null, $dados->prazo_recurso ?? 5, $dados->assunto_id, $dados->tipo_id, 1, $dados->ocorrencia_id ?? null ]);
                 $notificacao_id = $pdo->lastInsertId();
+                
+                if (!empty($dados->ocorrencia_id)) {
+                    $pdo->prepare("UPDATE ocorrencias SET notificacao_id = ? WHERE id = ?")->execute([$notificacao_id, $dados->ocorrencia_id]);
+                    $pdo->prepare("INSERT INTO ocorrencia_notificacoes (ocorrencia_id, notificacao_id, tipo_vinculo) VALUES (?, ?, 'gerada')")->execute([$dados->ocorrencia_id, $notificacao_id]);
+                }
                 if (!empty($dados->fatos)) {
                     $sql_fatos = "INSERT INTO notificacao_fatos (notificacao_id, descricao, ordem) VALUES (?, ?, ?)";
                     $stmt_fatos = $pdo->prepare($sql_fatos);

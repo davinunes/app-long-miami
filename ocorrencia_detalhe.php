@@ -1,9 +1,16 @@
+<?php
+require_once 'auth.php';
+requirePapel(['protocolar', 'diligente', 'promotor', 'admin', 'dev']);
+
+$usuario = getUsuario();
+$podeMudarFase = temAlgumPapel(['promotor', 'admin', 'dev']);
+?>
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detalhes da Ocorrência</title>
+    <title>Detalhes da Ocorrência - App Long Miami</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
@@ -18,12 +25,7 @@
             align-items: center;
         }
         .simple-header a { color: white; text-decoration: none; }
-        .simple-nav a {
-            color: white;
-            margin-left: 20px;
-            text-decoration: none;
-            font-size: 14px;
-        }
+        .simple-nav a { color: white; margin-left: 20px; text-decoration: none; font-size: 14px; }
         .simple-nav a:hover { text-decoration: underline; }
         
         .fase-badge {
@@ -95,11 +97,7 @@
         }
         .mensagem-chat p { margin: 8px 0 0 0; }
 
-        .anexo-lista {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
+        .anexo-lista { display: flex; flex-wrap: wrap; gap: 10px; }
         .anexo-item {
             display: flex;
             align-items: center;
@@ -111,10 +109,7 @@
         .anexo-item i { margin-right: 8px; color: #666; }
         .anexo-item a { color: #1976D2; }
 
-        .historico-item {
-            padding: 12px 0;
-            border-bottom: 1px solid #f0f0f0;
-        }
+        .historico-item { padding: 12px 0; border-bottom: 1px solid #f0f0f0; }
         .historico-item:last-child { border-bottom: none; }
         .historico-fase { font-weight: bold; color: #333; }
         .historico-obs { color: #666; font-size: 13px; margin: 5px 0; }
@@ -129,11 +124,11 @@
         <div class="simple-nav">
             <a href="lista.php">Notificações</a>
             <a href="usuarios.php">Usuários</a>
-            <a href="#" onclick="fazerLogout(); return false;">Sair</a>
+            <a href="logout.php">Sair</a>
         </div>
     </div>
 
-    <main id="main-content-ocorrencia" class="main-content">
+    <main class="main-content">
         <div class="container">
             <div class="header">
                 <h1 id="page-title">Ocorrência</h1>
@@ -162,74 +157,32 @@
 const API_BASE_URL_PHP = window.location.origin + '/api';
 const urlParams = new URLSearchParams(window.location.search);
 const ocorrenciaId = urlParams.get('id');
-
-let userPapeis = [];
-
-function getJwtPayload() {
-    const token = localStorage.getItem('accessToken');
-    if (!token) return null;
-    try {
-        const payloadBase64 = token.split('.')[1];
-        return JSON.parse(atob(payloadBase64));
-    } catch (e) {
-        return null;
-    }
-}
-
-function fazerLogout() {
-    localStorage.removeItem('accessToken');
-    document.cookie = "refreshToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-    window.location.href = 'index.php';
-}
-
-window.fazerLogout = fazerLogout;
+const podeMudarFase = <?php echo $podeMudarFase ? 'true' : 'false'; ?>;
 
 $(document).ready(async function() {
-    const accessToken = localStorage.getItem('accessToken');
-    if (!accessToken) {
-        fazerLogout();
-        return;
-    }
-    
     if (!ocorrenciaId) {
         $('#ocorrencia-content').html('<p style="color: red;">ID da ocorrência não fornecido.</p>');
         return;
     }
-    
-    const payload = getJwtPayload();
-    if (payload && payload.data && payload.data.papeis) {
-        userPapeis = payload.data.papeis;
-    }
-    
     await carregarOcorrencia();
 });
 
 async function carregarOcorrencia() {
     try {
-        const response = await fetch(API_BASE_URL_PHP + '/ocorrencias.php?id=' + ocorrenciaId, {
-            headers: { 'Authorization': 'Bearer ' + localStorage.getItem('accessToken') }
-        });
-        
+        const response = await fetch(API_BASE_URL_PHP + '/ocorrencias.php?id=' + ocorrenciaId);
         if (!response.ok) {
             const err = await response.json();
             throw new Error(err.message || 'Erro ao carregar.');
         }
-        
         const occ = await response.json();
         renderOcorrencia(occ);
-        
     } catch (error) {
         $('#ocorrencia-content').html('<p style="color: red;">Erro: ' + error.message + '</p>');
     }
 }
 
-function podeMudarFase() {
-    return userPapeis.includes('promotor') || userPapeis.includes('admin') || userPapeis.includes('dev');
-}
-
 function renderOcorrencia(occ) {
     var faseLabel = occ.fase.replace('_', ' ');
-    
     $('#page-title').text('Ocorrência #' + occ.id);
     $('#fase-container').html('<span class="fase-badge fase-' + occ.fase + '">' + faseLabel + '</span>');
     
@@ -243,7 +196,7 @@ function renderOcorrencia(occ) {
     }
     
     var faseControlsHtml = '';
-    if (podeMudarFase()) {
+    if (podeMudarFase) {
         faseControlsHtml = '<div class="section-card">' +
             '<div class="section-title">Alterar Fase</div>' +
             '<div style="display: flex; gap: 10px; align-items: center;">' +
@@ -258,11 +211,24 @@ function renderOcorrencia(occ) {
             '</div></div>';
     }
     
-    var mensagensHtml = renderMensagens(occ.mensagens || []);
-    var anexosHtml = renderAnexos(occ.anexos || []);
-    var historicoHtml = renderHistorico(occ.fase_log || []);
+    var notificacaoHtml = '';
+    if (occ.notificacao) {
+        notificacaoHtml = '<div class="section-card">' +
+            '<div class="section-title">Notificação Vinculada</div>' +
+            '<div style="display: flex; align-items: center; gap: 15px;">' +
+            '<span class="fase-badge fase-' + (occ.notificacao.status === 'Deferido' ? 'homologada' : 'em_analise') + '">' + occ.notificacao.status + '</span>' +
+            '<span><strong>Notificação #' + occ.notificacao.numero + '/' + occ.notificacao.ano + '</strong></span>' +
+            '<a href="notificacao_detalhe.php?id=' + occ.notificacao.id + '" class="btn-small blue">Ver Notificação</a>' +
+            '</div></div>';
+    } else if (occ.fase === 'homologada') {
+        notificacaoHtml = '<div class="section-card">' +
+            '<div class="section-title">Notificação</div>' +
+            '<p style="color: #666; margin-bottom: 15px;">Esta ocorrência homologada ainda não possui uma notificação vinculada.</p>' +
+            '<button class="btn green" onclick="gerarNotificacao()"><i class="material-icons">add</i> Gerar Notificação</button>' +
+            '</div>';
+    }
     
-    var html = faseControlsHtml + 
+    var html = faseControlsHtml + notificacaoHtml + 
         '<div class="section-card">' +
         '<div class="section-title">Dados da Ocorrência</div>' +
         '<h4 style="margin: 0 0 15px 0;">' + occ.titulo + '</h4>' +
@@ -277,7 +243,7 @@ function renderOcorrencia(occ) {
         
         '<div class="section-card">' +
         '<div class="section-title">Mensagens e Evidências</div>' +
-        '<div id="mensagens-container" style="max-height: 400px; overflow-y: auto;">' + mensagensHtml + '</div>' +
+        '<div id="mensagens-container" style="max-height: 400px; overflow-y: auto;">' + renderMensagens(occ.mensagens || []) + '</div>' +
         '<hr style="margin: 15px 0; border: none; border-top: 1px solid #eee;">' +
         '<div style="display: flex; gap: 10px; align-items: center;">' +
         '<input type="text" id="nova-mensagem" placeholder="Digite uma mensagem..." style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">' +
@@ -287,7 +253,7 @@ function renderOcorrencia(occ) {
         
         '<div class="section-card">' +
         '<div class="section-title">Anexos</div>' +
-        '<div class="anexo-lista" id="anexos-container">' + anexosHtml + '</div>' +
+        '<div class="anexo-lista" id="anexos-container">' + renderAnexos(occ.anexos || []) + '</div>' +
         '<hr style="margin: 15px 0; border: none; border-top: 1px solid #eee;">' +
         '<div style="display: flex; gap: 10px; align-items: center;">' +
         '<input type="file" id="anexo-file" accept="image/*,.pdf,.doc,.docx" style="flex: 1;">' +
@@ -296,7 +262,7 @@ function renderOcorrencia(occ) {
         
         '<div class="section-card">' +
         '<div class="section-title">Histórico de Alterações</div>' +
-        '<div id="historico-container">' + historicoHtml + '</div>' +
+        '<div id="historico-container">' + renderHistorico(occ.fase_log || []) + '</div>' +
         '</div>';
     
     $('#ocorrencia-content').html(html);
@@ -306,13 +272,11 @@ function renderMensagens(mensagens) {
     if (!mensagens || mensagens.length === 0) {
         return '<p style="color: #999; text-align: center; padding: 20px;">Nenhuma mensagem.</p>';
     }
-    
     return mensagens.map(function(m) {
         return '<div class="mensagem-chat ' + (m.eh_evidencia ? 'evidencia' : '') + '">' +
             '<span class="msg-autor">' + (m.autor_nome || 'Sistema') + '</span>' +
             '<span class="msg-hora">' + formatDateTime(m.created_at) + '</span>' +
             '<p>' + m.mensagem + '</p>' +
-            (m.anexo_url ? '<a href="' + m.anexo_url + '" target="_blank" style="font-size: 12px;">Ver anexo</a>' : '') +
             '</div>';
     }).join('');
 }
@@ -321,20 +285,17 @@ function renderAnexos(anexos) {
     if (!anexos || anexos.length === 0) {
         return '<p style="color: #999;">Nenhum anexo.</p>';
     }
-    
     return anexos.map(function(a) {
         var conteudo = '';
-        
         if (a.tipo === 'imagem') {
-            conteudo = '<div style="margin-top: 10px;"><img src="' + a.url + '" alt="' + a.nome_original + '" style="max-width: 100%; max-height: 300px; border-radius: 6px; cursor: pointer;" onclick="window.open(\'' + a.url + '\', \'_blank\')"><div style="margin-top: 5px;"><small style="color: #666;">' + a.nome_original + '</small></div></div>';
+            conteudo = '<div style="margin-top: 10px;"><img src="' + a.url + '" alt="' + a.nome_original + '" style="max-width: 100%; max-height: 300px; border-radius: 6px; cursor: pointer;" onclick="window.open(\'' + a.url + '\', \'_blank\')"></div>';
         } else if (a.tipo === 'audio') {
-            conteudo = '<div style="margin-top: 10px;"><audio controls style="width: 100%;"><source src="' + a.url + '" type="' + (a.mime_type || 'audio/mpeg') + '">Seu navegador não suporta áudio.</audio><div style="margin-top: 5px;"><small style="color: #666;">' + a.nome_original + '</small></div></div>';
+            conteudo = '<div style="margin-top: 10px;"><audio controls style="width: 100%;"><source src="' + a.url + '" type="' + (a.mime_type || 'audio/mpeg') + '"></audio></div>';
         } else if (a.tipo === 'video') {
-            conteudo = '<div style="margin-top: 10px;"><video controls style="max-width: 100%; max-height: 300px; border-radius: 6px;"><source src="' + a.url + '" type="' + (a.mime_type || 'video/mp4') + '">Seu navegador não suporta vídeo.</video><div style="margin-top: 5px;"><small style="color: #666;">' + a.nome_original + '</small></div></div>';
+            conteudo = '<div style="margin-top: 10px;"><video controls style="max-width: 100%; max-height: 300px; border-radius: 6px;"><source src="' + a.url + '" type="' + (a.mime_type || 'video/mp4') + '"></video></div>';
         } else {
-            conteudo = '<div><a href="' + a.url + '" target="_blank" download="' + a.nome_original + '"><i class="material-icons" style="vertical-align: middle;">' + getIconeTipo(a.tipo) + '</i> ' + a.nome_original + '</a><small style="display: block; color: #999;">' + formatFileSize(a.tamanho_bytes) + '</small></div>';
+            conteudo = '<a href="' + a.url + '" target="_blank" download="' + a.nome_original + '"><i class="material-icons">' + getIconeTipo(a.tipo) + '</i> ' + a.nome_original + '</a>';
         }
-        
         return '<div class="anexo-item">' + conteudo + '</div>';
     }).join('');
 }
@@ -343,7 +304,6 @@ function renderHistorico(logs) {
     if (!logs || logs.length === 0) {
         return '<p style="color: #999;">Nenhum histórico.</p>';
     }
-    
     return logs.map(function(l) {
         return '<div class="historico-item">' +
             '<div class="historico-fase">' + (l.fase_anterior ? l.fase_anterior + ' → ' : '') + l.fase_nova + '</div>' +
@@ -356,30 +316,19 @@ function renderHistorico(logs) {
 async function enviarMensagem() {
     var mensagem = $('#nova-mensagem').val().trim();
     if (!mensagem) return;
-    
     var ehEvidencia = $('#msg-evidencia').is(':checked');
     
     try {
         var response = await fetch(API_BASE_URL_PHP + '/ocorrencias.php', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + localStorage.getItem('accessToken')
-            },
-            body: JSON.stringify({
-                ocorrencia_id: ocorrenciaId,
-                mensagem: mensagem,
-                eh_evidencia: ehEvidencia
-            })
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ocorrencia_id: ocorrenciaId, mensagem: mensagem, eh_evidencia: ehEvidencia })
         });
-        
         var result = await response.json();
         if (!response.ok) throw new Error(result.message);
-        
         $('#nova-mensagem').val('');
         $('#msg-evidencia').prop('checked', false);
         carregarOcorrencia();
-        
     } catch (error) {
         alert(error.message);
     }
@@ -391,7 +340,6 @@ async function uploadAnexo() {
         alert('Selecione um arquivo.');
         return;
     }
-    
     var file = input.files[0];
     var reader = new FileReader();
     
@@ -408,24 +356,17 @@ async function uploadAnexo() {
         try {
             var response = await fetch(API_BASE_URL_PHP + '/ocorrencias.php?upload=1', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + localStorage.getItem('accessToken')
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(dados)
             });
-            
             var result = await response.json();
             if (!response.ok) throw new Error(result.message);
-            
             input.value = '';
             carregarOcorrencia();
-            
         } catch (error) {
             alert(error.message);
         }
     };
-    
     reader.readAsDataURL(file);
 }
 
@@ -436,23 +377,30 @@ async function mudarFase() {
     try {
         var response = await fetch(API_BASE_URL_PHP + '/ocorrencias.php', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + localStorage.getItem('accessToken')
-            },
-            body: JSON.stringify({
-                mudar_fase: true,
-                id: ocorrenciaId,
-                nova_fase: novaFase,
-                observacao: observacao
-            })
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ mudar_fase: true, id: ocorrenciaId, nova_fase: novaFase, observacao: observacao })
         });
-        
         var result = await response.json();
         if (!response.ok) throw new Error(result.message);
-        
         carregarOcorrencia();
-        
+    } catch (error) {
+        alert(error.message);
+    }
+}
+
+async function gerarNotificacao() {
+    if (!confirm('Deseja gerar uma notificação para esta ocorrência?')) return;
+    
+    try {
+        var response = await fetch(API_BASE_URL_PHP + '/ocorrencias.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ gerar_notificacao: true, ocorrencia_id: ocorrenciaId })
+        });
+        var result = await response.json();
+        if (!response.ok) throw new Error(result.message);
+        alert('Notificação #' + result.numero + ' gerada com sucesso!');
+        carregarOcorrencia();
     } catch (error) {
         alert(error.message);
     }
@@ -470,21 +418,8 @@ function formatDateTime(data) {
     return d.toLocaleDateString('pt-BR') + ' ' + d.toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'});
 }
 
-function formatFileSize(bytes) {
-    if (!bytes) return '-';
-    if (bytes < 1024) return bytes + ' B';
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-}
-
 function getIconeTipo(tipo) {
-    var icones = {
-        imagem: 'image',
-        video: 'movie',
-        audio: 'audiotrack',
-        documento: 'description',
-        link: 'link'
-    };
+    var icones = { imagem: 'image', video: 'movie', audio: 'audiotrack', documento: 'description', link: 'link' };
     return icones[tipo] || 'attach_file';
 }
     </script>

@@ -1,7 +1,6 @@
 <?php
 // Endpoint: /api/grupos.php
 // Métodos: GET, POST
-// Requer: autenticação JWT
 
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
@@ -13,10 +12,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     exit();
 }
 
-require_once '../verificar_token.php';
-require_once '../config.php';
+require_once '../api/helpers.php';
+requireApiPapel(['admin', 'dev']);
 
-$usuario = verificarTokenEAutorizar(['admin', 'dev']);
+require_once '../config.php';
 
 $metodo = $_SERVER['REQUEST_METHOD'];
 $pdo = getDbConnection();
