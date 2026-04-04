@@ -212,14 +212,14 @@ function renderOcorrencia(occ) {
     if (podeMudarFase) {
         faseControlsHtml = '<div class="section-card">' +
             '<div class="section-title">Alterar Fase</div>' +
-            '<div style="display: flex; gap: 10px; align-items: center;">' +
-            '<select id="nova-fase" class="browser-default" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px;">' +
+            '<div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">' +
+            '<select id="nova-fase" class="browser-default" style="padding: 10px; border: 1px solid #ddd; border-radius: 4px; min-width: 150px; background: white;">' +
             '<option value="nova"' + (occ.fase === 'nova' ? ' selected' : '') + '>Nova</option>' +
             '<option value="em_analise"' + (occ.fase === 'em_analise' ? ' selected' : '') + '>Em Análise</option>' +
             '<option value="recusada"' + (occ.fase === 'recusada' ? ' selected' : '') + '>Recusada</option>' +
             '<option value="homologada"' + (occ.fase === 'homologada' ? ' selected' : '') + '>Homologada</option>' +
             '</select>' +
-            '<input type="text" id="fase-obs" placeholder="Observação" style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">' +
+            '<input type="text" id="fase-obs" placeholder="Observação" style="flex: 1; min-width: 200px; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">' +
             '<button class="btn blue" onclick="mudarFase()">Alterar</button>' +
             '</div></div>';
     }

@@ -340,3 +340,67 @@ app-long-miami/
 **Frontend:**
 - `ocorrencias.php` - Lista com filtros
 - `ocorrencia_detalhe.php` - Página completa com seções lineares
+
+---
+
+## Status: FASE 3 CONCLUÍDA ✓ (04/04/2026)
+
+### Migração JWT → Sessões PHP
+
+**Problema:** JWT adicionou complexidade desnecessária ao projeto.
+
+**Solução:** Sessões PHP são mais simples de manter e depurar.
+
+**Arquivos Modificados:**
+- `auth.php` - Sistema de autenticação via sessão
+- `api/helpers.php` - Verificação de sessão para APIs
+- `api/gerar_pdf.php` - Atualizado para usar sessão PHP
+- `index.php` - Login via POST (sem JS JWT)
+- `logout.php` - Logout com destruição de sessão
+- Todas as páginas protegidas - Atualizadas
+- `js/main.js` - Removido código JWT, agora usa APIs PHP
+- `js/funcs.js` - Funções compartilhadas atualizadas
+
+### Funcionalidades Adicionadas
+
+**1. Excluir Ocorrência (Admin only)**
+- `DELETE` / `POST` endpoint em `api/ocorrencias.php`
+- Remove arquivos do disco
+- Limpa todas as referências no banco
+
+**2. Excluir Anexos e Mensagens**
+- Admin ou criador podem excluir (enquanto fase ≠ homologada)
+- Remove arquivos do disco para anexos
+- Endpoint: `deletar_anexo`, `deletar_mensagem`
+
+**3. Histórico de Criação Automático**
+- Ao criar ocorrência, registra automaticamente no `ocorrencia_fase_log`
+- Registra: usuário, data/hora e observação
+
+**4. Edição Condicional**
+- Admin/dev sempre pode editar
+- Criador pode editar enquanto fase ≠ homologada
+- anexos/mensagens: admin ou criador podem excluir
+
+### Migration 004: Vinculação Ocorrência → Notificação
+
+**Adicionado:**
+- `ocorrencia_id` na tabela `notificacoes`
+- `notificacao_id` na tabela `ocorrencias`
+- Tabela `ocorrencia_notificacoes` (histórico de vínculos)
+
+**APIs atualizadas:**
+- `api/notificacoes.php` - Aceita e armazena `ocorrencia_id`
+- `api/ocorrencias.php` - Novo endpoint `gerar_notificacao`
+
+**Frontend atualizado:**
+- `ocorrencia_detalhe.php` - Mostra notificação vinculada e botão gerar
+
+---
+
+## Tarefas Pendentes
+
+- [ ] Função de **editar mensagem** (não implementada)
+- [ ] FASE 4: Notificações melhoradas
+- [ ] FASE 5: Sistema de Despacho
+- [ ] FASE 6: API para Conselho
