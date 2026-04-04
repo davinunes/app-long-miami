@@ -12,8 +12,13 @@
     <li><a class="waves-effect ajax-link" href="dashboard_content.php"><i class="material-icons">dashboard</i>Dashboard</a></li>
     <li><a class="waves-effect ajax-link" href="lista.php"><i class="material-icons">notifications</i>Notificações</a></li>
     <li><a class="waves-effect ajax-link" href="ocorrencias.php"><i class="material-icons">report_problem</i>Ocorrências</a></li>
-  	
-	<li><a class="waves-effect ajax-link" href="usuarios.php"><i class="material-icons">people</i>Usuários</a></li>
+   	
+ 	<li><a class="waves-effect ajax-link" href="usuarios.php"><i class="material-icons">people</i>Usuários</a></li>
+    
+    <?php if (in_array('admin', getUsuarioPapeis()) || in_array('dev', getUsuarioPapeis())): ?>
+    <li><div class="divider"></div></li>
+    <li><a class="waves-effect ajax-link" href="configuracoes.php"><i class="material-icons">settings</i>Configurações</a></li>
+    <?php endif; ?>
     
     <li><div class="divider"></div></li>
     

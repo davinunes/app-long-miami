@@ -49,6 +49,10 @@ function getPapeisUsuario() {
     return $_SESSION['usuario']['papeis'] ?? [];
 }
 
+function getUsuarioPapeis() {
+    return getPapeisUsuario();
+}
+
 function requireLogin() {
     if (!estaLogado()) {
         header('Location: index.php');
