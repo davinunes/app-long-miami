@@ -29,7 +29,6 @@ if (!$pdo) {
 
 switch ($metodo) {
     case 'GET':
-        // Listar um usuário específico
         if (isset($_GET['id'])) {
             $id = (int)$_GET['id'];
             $stmt = $pdo->prepare("SELECT id, nome, email, role, grupo_principal_id FROM usuarios WHERE id = ?");
@@ -42,29 +41,21 @@ switch ($metodo) {
                 exit();
             }
             
-            // Busca grupos do usuário
             $stmt = $pdo->prepare("SELECT g.id, g.nome FROM grupos g JOIN usuario_grupos ug ON g.id = ug.grupo_id WHERE ug.usuario_id = ?");
             $stmt->execute([$id]);
             $user['grupos'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
             
-            // Busca papéis diretos do usuário
-            $stmt = $pdo->prepare("SELECT papel_slug FROM usuario_papeis WHERE usuario_id = ?");
-            $stmt->execute([$id]);
-            $user['papeis'] = $stmt->fetchAll(PDO::FETCH_COLUMN);
-            
             http_response_code(200);
             echo json_encode($user);
         }
-        // Listar todos os usuários
         else {
             $stmt = $pdo->query("
                 SELECT u.id, u.nome, u.email, u.role, u.grupo_principal_id,
-                       GROUP_CONCAT(DISTINCT g.nome) as grupos,
-                       GROUP_CONCAT(DISTINCT up.papel_slug) as papeis
+                       GROUP_CONCAT(DISTINCT g.id) as grupo_ids,
+                       GROUP_CONCAT(DISTINCT g.nome) as grupos
                 FROM usuarios u
                 LEFT JOIN usuario_grupos ug ON u.id = ug.usuario_id
                 LEFT JOIN grupos g ON ug.grupo_id = g.id
-                LEFT JOIN usuario_papeis up ON u.id = up.usuario_id
                 GROUP BY u.id
                 ORDER BY u.nome ASC
             ");
@@ -72,7 +63,6 @@ switch ($metodo) {
             
             foreach ($usuarios as &$u) {
                 $u['grupos'] = $u['grupos'] ? explode(',', $u['grupos']) : [];
-                $u['papeis'] = $u['papeis'] ? explode(',', $u['papeis']) : [];
             }
             
             http_response_code(200);
@@ -144,22 +134,10 @@ switch ($metodo) {
                 }
             }
             
-            // Atualiza papéis diretos se fornecidos
-            if (isset($dados->papeis)) {
-                $pdo->prepare("DELETE FROM usuario_papeis WHERE usuario_id = ?")->execute([$id]);
-                if (is_array($dados->papeis)) {
-                    $stmt = $pdo->prepare("INSERT INTO usuario_papeis (usuario_id, papel_slug) VALUES (?, ?)");
-                    foreach ($dados->papeis as $papel) {
-                        $stmt->execute([$id, $papel]);
-                    }
-                }
-            }
-            
             http_response_code(200);
             echo json_encode(['message' => 'Usuário atualizado com sucesso!', 'id' => $id]);
 
         } else {
-            // CRIAR
             if (empty($dados->senha)) {
                 http_response_code(400);
                 echo json_encode(['message' => 'A senha é obrigatória para criar um novo usuário.']);
@@ -173,19 +151,10 @@ switch ($metodo) {
                 $stmt->execute([$dados->nome, $dados->email, $senhaHash, $dados->role ?? 'condomino']);
                 $novo_id = $pdo->lastInsertId();
                 
-                // Adiciona grupos se fornecidos
                 if (!empty($dados->grupos) && is_array($dados->grupos)) {
                     $stmt = $pdo->prepare("INSERT INTO usuario_grupos (usuario_id, grupo_id) VALUES (?, ?)");
                     foreach ($dados->grupos as $grupo_id) {
                         $stmt->execute([$novo_id, (int)$grupo_id]);
-                    }
-                }
-                
-                // Adiciona papéis se fornecidos
-                if (!empty($dados->papeis) && is_array($dados->papeis)) {
-                    $stmt = $pdo->prepare("INSERT INTO usuario_papeis (usuario_id, papel_slug) VALUES (?, ?)");
-                    foreach ($dados->papeis as $papel) {
-                        $stmt->execute([$novo_id, $papel]);
                     }
                 }
                 

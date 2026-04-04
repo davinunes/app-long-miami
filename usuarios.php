@@ -16,12 +16,11 @@
                     <th>Nome</th>
                     <th>Email</th>
                     <th>Grupos</th>
-                    <th>Papéis</th>
                     <th>Ações</th>
                 </tr>
             </thead>
             <tbody id="usuarios-table-body">
-                <tr><td colspan="5" style="text-align: center;">Carregando...</td></tr>
+                <tr><td colspan="4" style="text-align: center;">Carregando...</td></tr>
             </tbody>
         </table>
     </div>
@@ -53,16 +52,6 @@
                     </select>
                     <label>Grupos</label>
                     <span class="helper-text">Grupos aos quais o usuário pertence</span>
-                </div>
-            </div>
-            
-            <div class="row">
-                <div class="input-field col s12">
-                    <select id="usuario_papeis" multiple>
-                        <option value="" disabled>Selecione os papéis</option>
-                    </select>
-                    <label>Papéis Diretos</label>
-                    <span class="helper-text">Papéis adicionais além dos grupos</span>
                 </div>
             </div>
             

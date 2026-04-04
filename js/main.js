@@ -29,7 +29,7 @@ function setupEventListenersUsuarios() {
 
 async function carregarListaUsuarios() {
     const tbody = $('#usuarios-table-body');
-    tbody.html('<tr><td colspan="5" style="text-align: center;">Carregando...</td></tr>');
+    tbody.html('<tr><td colspan="4" style="text-align: center;">Carregando...</td></tr>');
     
     try {
         const response = await fetch(`${API_BASE_URL_PHP}/usuarios.php`, {
@@ -45,16 +45,13 @@ async function carregarListaUsuarios() {
         tbody.empty();
 
         if (usuarios.length === 0) {
-            tbody.html('<tr><td colspan="5" style="text-align: center;">Nenhum usuário encontrado.</td></tr>');
+            tbody.html('<tr><td colspan="4" style="text-align: center;">Nenhum usuário encontrado.</td></tr>');
             return;
         }
 
         usuarios.forEach(user => {
             const gruposDisplay = Array.isArray(user.grupos) && user.grupos.length > 0 
-                ? user.grupos.join(', ') 
-                : '<span style="color: #999;">-</span>';
-            const papeisDisplay = Array.isArray(user.papeis) && user.papeis.length > 0 
-                ? user.papeis.map(p => `<span class="chip">${p}</span>`).join(' ') 
+                ? user.grupos.map(g => `<span class="chip">${typeof g === 'string' ? g : g.nome}</span>`).join(' ') 
                 : '<span style="color: #999;">-</span>';
             
             const row = `
@@ -62,7 +59,6 @@ async function carregarListaUsuarios() {
                     <td>${user.nome}</td>
                     <td>${user.email}</td>
                     <td>${gruposDisplay}</td>
-                    <td>${papeisDisplay}</td>
                     <td>
                         <button class="btn-floating btn-small waves-effect waves-light blue modal-trigger" data-id="${user.id}" onclick="abrirModalUsuario(${user.id})">
                             <i class="material-icons">edit</i>
@@ -75,7 +71,7 @@ async function carregarListaUsuarios() {
 
     } catch (error) {
         console.error('Erro ao buscar usuários:', error);
-        tbody.html(`<tr><td colspan="5" style="text-align: center; color: red;">Erro: ${error.message}</td></tr>`);
+        tbody.html(`<tr><td colspan="4" style="text-align: center; color: red;">Erro: ${error.message}</td></tr>`);
     }
 }
 
@@ -84,7 +80,7 @@ async function abrirModalUsuario(id) {
     const form = $('#form-usuario');
     
     form[0].reset();
-    popularSelectsGruposPapeis();
+    popularSelectGrupos();
     
     if (id) {
         $('#modal-usuario-titulo').text('Editar Usuário');
@@ -106,9 +102,6 @@ async function abrirModalUsuario(id) {
                 const grupoIds = user.grupos.map(g => String(g.id || g));
                 $('#usuario_grupos').val(grupoIds);
             }
-            if (user.papeis) {
-                $('#usuario_papeis').val(user.papeis);
-            }
             
         } catch (error) {
             alert(error.message);
@@ -127,20 +120,12 @@ async function abrirModalUsuario(id) {
     M.Modal.getInstance(modal).open();
 }
 
-function popularSelectsGruposPapeis() {
+function popularSelectGrupos() {
     const gruposSelect = $('#usuario_grupos');
     gruposSelect.html('<option value="" disabled>Selecione os grupos</option>');
     if (configDataGlobal.grupos) {
         configDataGlobal.grupos.forEach(g => {
             gruposSelect.append(`<option value="${g.id}">${g.nome}</option>`);
-        });
-    }
-    
-    const papeisSelect = $('#usuario_papeis');
-    papeisSelect.html('<option value="" disabled>Selecione os papéis</option>');
-    if (configDataGlobal.papeis) {
-        configDataGlobal.papeis.forEach(p => {
-            papeisSelect.append(`<option value="${p.slug}">${p.nome}</option>`);
         });
     }
 }
@@ -164,8 +149,7 @@ async function salvarUsuarioModal() {
     const dados = {
         nome: nome,
         email: email,
-        grupos: $('#usuario_grupos').val() || [],
-        papeis: $('#usuario_papeis').val() || []
+        grupos: $('#usuario_grupos').val() || []
     };
     
     if (senha) {
