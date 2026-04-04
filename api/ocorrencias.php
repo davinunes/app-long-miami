@@ -67,6 +67,12 @@ switch ($metodo) {
         elseif (isset($dados->excluir_ocorrencia)) {
             deletarOcorrencia($pdo, $dados, $usuario);
         }
+        elseif (isset($dados->adicionar_unidade)) {
+            adicionarUnidade($pdo, $dados, $usuario);
+        }
+        elseif (isset($dados->remover_unidade)) {
+            removerUnidade($pdo, $dados, $usuario);
+        }
         else {
             criarOuAtualizar($pdo, $dados, $usuario);
         }
@@ -674,6 +680,72 @@ function deletarMensagem($pdo, $dados, $usuario) {
     } catch (Exception $e) {
         http_response_code(500);
         echo json_encode(['message' => 'Erro ao excluir mensagem: ' . $e->getMessage()]);
+    }
+}
+
+function adicionarUnidade($pdo, $dados, $usuario) {
+    if (empty($dados->ocorrencia_id) || empty($dados->numero)) {
+        http_response_code(400);
+        echo json_encode(['message' => 'Ocorrência e número da unidade são obrigatórios.']);
+        exit();
+    }
+    
+    $stmt = $pdo->prepare("SELECT fase FROM ocorrencias WHERE id = ?");
+    $stmt->execute([$dados->ocorrencia_id]);
+    $ocorrencia = $stmt->fetch();
+    
+    if (!$ocorrencia) {
+        http_response_code(404);
+        echo json_encode(['message' => 'Ocorrência não encontrada.']);
+        exit();
+    }
+    
+    try {
+        $stmt = $pdo->prepare("
+            INSERT INTO ocorrencia_unidades (ocorrencia_id, unidade_bloco, unidade_numero)
+            VALUES (?, ?, ?)
+        ");
+        $stmt->execute([
+            $dados->ocorrencia_id,
+            $dados->bloco ?? null,
+            $dados->numero
+        ]);
+        
+        http_response_code(201);
+        echo json_encode(['message' => 'Unidade vinculada com sucesso.', 'id' => $pdo->lastInsertId()]);
+        
+    } catch (Exception $e) {
+        http_response_code(500);
+        echo json_encode(['message' => 'Erro ao vincular unidade: ' . $e->getMessage()]);
+    }
+}
+
+function removerUnidade($pdo, $dados, $usuario) {
+    if (empty($dados->unidade_id)) {
+        http_response_code(400);
+        echo json_encode(['message' => 'ID da unidade é obrigatório.']);
+        exit();
+    }
+    
+    $stmt = $pdo->prepare("SELECT ou.*, o.fase FROM ocorrencia_unidades ou JOIN ocorrencias o ON ou.ocorrencia_id = o.id WHERE ou.id = ?");
+    $stmt->execute([$dados->unidade_id]);
+    $unidade = $stmt->fetch();
+    
+    if (!$unidade) {
+        http_response_code(404);
+        echo json_encode(['message' => 'Unidade não encontrada.']);
+        exit();
+    }
+    
+    try {
+        $pdo->prepare("DELETE FROM ocorrencia_unidades WHERE id = ?")->execute([$dados->unidade_id]);
+        
+        http_response_code(200);
+        echo json_encode(['message' => 'Unidade removida com sucesso.']);
+        
+    } catch (Exception $e) {
+        http_response_code(500);
+        echo json_encode(['message' => 'Erro ao remover unidade: ' . $e->getMessage()]);
     }
 }
 ?>

@@ -206,10 +206,26 @@ function renderOcorrencia(occ) {
     var unidadesHtml = '';
     if (occ.unidades && occ.unidades.length > 0) {
         unidadesHtml = occ.unidades.map(function(u) {
-            return '<span class="unidade-tag">' + (u.unidade_bloco || '') + u.unidade_numero + '</span>';
+            return '<span class="unidade-tag">' + (u.unidade_bloco || '') + u.unidade_numero + 
+                (isAdmin || podeMudarFase ? ' <button onclick="removerUnidade(' + u.id + ')" style="background:none;border:none;cursor:pointer;color:#999;padding:0;">×</button>' : '') + 
+                '</span>';
         }).join('');
     } else {
         unidadesHtml = '<span style="color: #999;">Nenhuma</span>';
+    }
+    
+    var unidadesForm = '';
+    if (isAdmin || podeMudarFase) {
+        unidadesForm = '<div style="margin-top: 15px; padding-top: 15px; border-top: 1px dashed #ddd;">' +
+            '<div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">' +
+            '<select id="unidade-bloco" class="browser-default" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; min-width: 80px;">' +
+            '<option value="">Bloco</option>' +
+            '<option value="A">A</option><option value="B">B</option><option value="C">C</option>' +
+            '<option value="D">D</option><option value="E">E</option><option value="F">F</option>' +
+            '</select>' +
+            '<input type="text" id="unidade-numero" placeholder="Número" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; width: 100px;">' +
+            '<button class="btn-small blue" onclick="adicionarUnidadeFromForm()">+ Vincular</button>' +
+            '</div></div>';
     }
     
     var faseControlsHtml = '';
@@ -258,7 +274,7 @@ function renderOcorrencia(occ) {
         '<hr style="margin: 20px 0; border: none; border-top: 1px solid #eee;">' +
         '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">' +
         '<div><strong style="color: #666; font-size: 12px;">DATA DO FATO</strong><p style="margin: 5px 0;">' + formatDate(occ.data_fato) + '</p></div>' +
-        '<div><strong style="color: #666; font-size: 12px;">UNIDADES</strong><p style="margin: 5px 0;">' + unidadesHtml + '</p></div>' +
+        '<div><strong style="color: #666; font-size: 12px;">UNIDADES</strong><p style="margin: 5px 0;">' + unidadesHtml + '</p>' + unidadesForm + '</div>' +
         '<div><strong style="color: #666; font-size: 12px;">CRIADO POR</strong><p style="margin: 5px 0;">' + (occ.autor_nome || '-') + '</p></div>' +
         '<div><strong style="color: #666; font-size: 12px;">CRIADO EM</strong><p style="margin: 5px 0;">' + formatDateTime(occ.data_criacao) + '</p></div>' +
         '</div></div>' +
@@ -505,22 +521,9 @@ document.addEventListener('paste', async function(e) {
                 await processarColagemImagem(file);
             }
             break;
-        } else if (item.type === 'text/plain') {
-            e.preventDefault();
-            const text = await getTextFromClipboard();
-            if (text && text.trim()) {
-                await enviarMensagemTexto(text.trim());
-            }
-            break;
         }
     }
 });
-
-async function getTextFromClipboard() {
-    return new Promise((resolve) => {
-        navigator.clipboard.readText().then(text => resolve(text)).catch(() => resolve(''));
-    });
-}
 
 async function processarColagemImagem(file) {
     M.toast({html: 'Processando imagem...', classes: 'blue'});
@@ -553,22 +556,45 @@ async function processarColagemImagem(file) {
     reader.readAsDataURL(file);
 }
 
-async function enviarMensagemTexto(texto) {
+async function adicionarUnidade(bloco, numero) {
     try {
         var response = await fetch(API_BASE_URL_PHP + '/ocorrencias.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
+                adicionar_unidade: true,
                 ocorrencia_id: ocorrenciaId,
-                mensagem: texto
+                bloco: bloco,
+                numero: numero
             })
         });
         var result = await response.json();
         if (!response.ok) throw new Error(result.message);
-        M.toast({html: 'Mensagem colada!', classes: 'green'});
+        M.toast({html: 'Unidade vinculada!', classes: 'green'});
         carregarOcorrencia();
     } catch (error) {
-        M.toast({html: 'Erro ao colar mensagem: ' + error.message, classes: 'red'});
+        M.toast({html: 'Erro ao vincular unidade: ' + error.message, classes: 'red'});
+    }
+}
+
+async function removerUnidade(id) {
+    if (!confirm('Remover esta unidade?')) return;
+    
+    try {
+        var response = await fetch(API_BASE_URL_PHP + '/ocorrencias.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                remover_unidade: true,
+                unidade_id: id
+            })
+        });
+        var result = await response.json();
+        if (!response.ok) throw new Error(result.message);
+        M.toast({html: 'Unidade removida!', classes: 'green'});
+        carregarOcorrencia();
+    } catch (error) {
+        M.toast({html: 'Erro ao remover unidade: ' + error.message, classes: 'red'});
     }
 }
     </script>
