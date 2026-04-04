@@ -1,4 +1,4 @@
-let configDataGlobal = { grupos: [], papeis: [] };
+let configDataGlobal = { grupos: [], permissoes: [], permissoesPorModulo: {} };
 
 async function inicializarGerenciadorUsuarios() {
     console.log('Inicializando gerenciador de usuários...');
@@ -667,14 +667,48 @@ async function carregarListaGrupos() {
     const lista = $('#grupos-lista');
     lista.html('<li class="collection-item">Carregando...</li>');
     
-    console.log('Carregando lista de grupos...');
-    
     try {
         const response = await fetch(`${API_BASE_URL_PHP}/grupos.php`);
         if (!response.ok) {
             const err = await response.json().catch(() => ({}));
             throw new Error(err.message || 'Erro ao buscar grupos: ' + response.status);
         }
+        
+        const grupos = await response.json();
+        console.log('Grupos carregados:', grupos);
+        lista.empty();
+        
+        if (grupos.length === 0) {
+            lista.html('<li class="collection-item">Nenhum grupo encontrado.</li>');
+            return;
+        }
+        
+        grupos.forEach(g => {
+            const permissoesHtml = g.permissoes && g.permissoes.length > 0 
+                ? g.permissoes.map(p => `<span class="chip" title="${p}">${p.substring(0, 15)}${p.length > 15 ? '...' : ''}</span>`).join(' ')
+                : '<span style="color: #999;">Sem permissões</span>';
+            
+            lista.append(`
+                <li class="collection-item">
+                    <div>
+                        <strong>${g.nome}</strong>
+                        ${g.descricao ? `<p style="margin: 5px 0; color: #666;">${g.descricao}</p>` : ''}
+                        <div style="margin-top: 5px; max-height: 60px; overflow-y: auto;">${permissoesHtml}</div>
+                    </div>
+                    <div style="float: right;">
+                        <button class="btn-small blue" onclick="editarGrupo(${g.id})"><i class="material-icons">edit</i></button>
+                        <button class="btn-small red" onclick="deletarGrupo(${g.id})"><i class="material-icons">delete</i></button>
+                    </div>
+                </li>
+            `);
+        });
+        
+        popularFormularioNovoGrupo();
+        
+    } catch (error) {
+        lista.html(`<li class="collection-item" style="color: red;">Erro: ${error.message}</li>`);
+    }
+}
         
         const grupos = await response.json();
         console.log('Grupos carregados:', grupos);
@@ -713,23 +747,67 @@ async function carregarListaGrupos() {
 }
 
 function popularFormularioNovoGrupo() {
-    const container = $('#novo-grupo-papeis');
+    const container = $('#novo-grupo-permissoes');
     container.empty();
     
-    if (!configDataGlobal.papeis || configDataGlobal.papeis.length === 0) return;
+    if (!configDataGlobal.permissoesPorModulo || Object.keys(configDataGlobal.permissoesPorModulo).length === 0) {
+        container.html('<p class="grey-text">Carregando permissões...</p>');
+        return;
+    }
     
-    container.html('<label style="margin-bottom: 10px;">Papéis do Grupo</label>');
+    const modulos = Object.keys(configDataGlobal.permissoesPorModulo);
     
-    configDataGlobal.papeis.forEach(p => {
+    modulos.forEach(modulo => {
+        const permissoes = configDataGlobal.permissoesPorModulo[modulo];
+        const moduloIcone = getModuloIcone(modulo);
+        
         container.append(`
-            <p>
-                <label>
-                    <input type="checkbox" class="novo-grupo-papel" value="${p.slug}">
-                    <span>${p.nome}</span>
-                </label>
-            </p>
+            <div class="modulo-permissoes" data-modulo="${modulo}">
+                <h6>${moduloIcone} ${formatarModulo(modulo)}</h6>
+                <div class="permissao-lista">
+                    ${permissoes.map(p => `
+                        <div class="permissao-item">
+                            <label>
+                                <input type="checkbox" class="novo-grupo-permissao" value="${p.id}" data-modulo="${modulo}">
+                                <span class="permissao-info">
+                                    <span class="permissao-nome">${p.nome}</span>
+                                    <span class="permissao-desc">${p.slug}</span>
+                                </span>
+                            </label>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
         `);
     });
+    
+    // Adicionar listener para marcar/desmarcar todos do módulo
+    container.find('.modulo-permissoes').each(function() {
+        const modulo = $(this).data('modulo');
+        $(this).find('h6').append(`<span class="select-all-modulo" data-modulo="${modulo}">Selecionar todos</span>`);
+    });
+    
+    $(document).off('click', '.select-all-modulo').on('click', '.select-all-modulo', function() {
+        const modulo = $(this).data('modulo');
+        const checked = $(this).text() === 'Selecionar todos';
+        $(`.novo-grupo-permissao[data-modulo="${modulo}"]`).prop('checked', checked);
+        $(this).text(checked ? 'Desmarcar todos' : 'Selecionar todos');
+    });
+}
+
+function getModuloIcone(modulo) {
+    const icones = {
+        'ocorrencia': '<i class="material-icons">report</i>',
+        'notificacao': '<i class="material-icons">notifications</i>',
+        'configuracao': '<i class="material-icons">settings</i>',
+        'usuario': '<i class="material-icons">person</i>',
+        'grupo': '<i class="material-icons">group</i>'
+    };
+    return icones[modulo] || '<i class="material-icons">check_circle</i>';
+}
+
+function formatarModulo(modulo) {
+    return modulo.charAt(0).toUpperCase() + modulo.slice(1);
 }
 
 async function criarGrupo() {
@@ -741,9 +819,9 @@ async function criarGrupo() {
         return;
     }
     
-    const papeis = [];
-    $('.novo-grupo-papel:checked').each(function() {
-        papeis.push($(this).val());
+    const permissoes = [];
+    $('.novo-grupo-permissao:checked').each(function() {
+        permissoes.push(parseInt($(this).val()));
     });
     
     try {
@@ -754,7 +832,7 @@ async function criarGrupo() {
                 criar_grupo: true,
                 nome: nome,
                 descricao: desc,
-                papeis: papeis
+                permissoes: permissoes
             })
         });
         
@@ -764,7 +842,7 @@ async function criarGrupo() {
         M.toast({html: result.message, classes: 'green'});
         $('#novo_grupo_nome').val('');
         $('#novo_grupo_desc').val('');
-        $('.novo-grupo-papel').prop('checked', false);
+        $('.novo-grupo-permissao').prop('checked', false);
         carregarListaGrupos();
         carregarConfiguracoesUsuarios();
         
@@ -784,20 +862,60 @@ async function editarGrupo(id) {
         $('#grupo_nome').val(grupo.nome);
         $('#grupo_desc').val(grupo.descricao || '');
         
-        $('#grupo-papeis-checkboxes').empty();
-        if (configDataGlobal.papeis) {
-            configDataGlobal.papeis.forEach(p => {
-                const checked = grupo.papeis && grupo.papeis.includes(p.slug) ? 'checked' : '';
-                $('#grupo-papeis-checkboxes').append(`
-                    <p>
-                        <label>
-                            <input type="checkbox" class="grupo-papel-editar" value="${p.slug}" ${checked}>
-                            <span>${p.nome}</span>
-                        </label>
-                    </p>
-                `);
-            });
+        const container = $('#grupo-permissoes-container');
+        container.empty();
+        
+        if (!configDataGlobal.permissoesPorModulo || Object.keys(configDataGlobal.permissoesPorModulo).length === 0) {
+            container.html('<p class="grey-text">Carregando permissões...</p>');
+            M.updateTextFields();
+            M.Modal.getInstance($('#modal-editar-grupo')).open();
+            return;
         }
+        
+        // Garantir que permissoes seja um array de strings (slugs)
+        const permissoesAtivas = (grupo.permissoes || []).map(p => String(p).trim());
+        
+        const modulos = Object.keys(configDataGlobal.permissoesPorModulo);
+        
+        modulos.forEach(modulo => {
+            const permissoes = configDataGlobal.permissoesPorModulo[modulo];
+            const moduloIcone = getModuloIcone(modulo);
+            
+            container.append(`
+                <div class="modulo-permissoes" data-modulo="${modulo}">
+                    <h6>${moduloIcone} ${formatarModulo(modulo)}</h6>
+                    <div class="permissao-lista">
+                        ${permissoes.map(p => {
+                            const isChecked = permissoesAtivas.includes(String(p.id)) || permissoesAtivas.includes(p.slug);
+                            return `
+                                <div class="permissao-item">
+                                    <label>
+                                        <input type="checkbox" class="grupo-permissao-editar" value="${p.id}" data-modulo="${modulo}" ${isChecked ? 'checked' : ''}>
+                                        <span class="permissao-info">
+                                            <span class="permissao-nome">${p.nome}</span>
+                                            <span class="permissao-desc">${p.slug}</span>
+                                        </span>
+                                    </label>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `);
+        });
+        
+        // Adicionar listener para marcar/desmarcar todos do módulo
+        container.find('.modulo-permissoes').each(function() {
+            const modulo = $(this).data('modulo');
+            $(this).find('h6').append(`<span class="select-all-modulo" data-modulo="${modulo}">Selecionar todos</span>`);
+        });
+        
+        $(document).off('click', '.select-all-modulo').on('click', '.select-all-modulo', function() {
+            const modulo = $(this).data('modulo');
+            const checked = $(this).text() === 'Selecionar todos';
+            $(`.grupo-permissao-editar[data-modulo="${modulo}"]`).prop('checked', checked);
+            $(this).text(checked ? 'Desmarcar todos' : 'Selecionar todos');
+        });
         
         M.updateTextFields();
         M.Modal.getInstance($('#modal-editar-grupo')).open();
@@ -817,9 +935,9 @@ async function salvarGrupoModal() {
         return;
     }
     
-    const papeis = [];
-    $('.grupo-papel-editar:checked').each(function() {
-        papeis.push($(this).val());
+    const permissoes = [];
+    $('.grupo-permissao-editar:checked').each(function() {
+        permissoes.push(parseInt($(this).val()));
     });
     
     try {
@@ -830,7 +948,7 @@ async function salvarGrupoModal() {
                 id: parseInt(id),
                 nome: nome,
                 descricao: desc,
-                papeis: papeis
+                permissoes: permissoes
             })
         });
         

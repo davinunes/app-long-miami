@@ -126,7 +126,7 @@ requirePapel(['admin', 'dev']);
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col s12" id="novo-grupo-papeis"></div>
+                    <div class="col s12" id="novo-grupo-permissoes"></div>
                 </div>
                 <button class="btn waves-effect waves-light" id="btn-criar-grupo">Criar Grupo</button>
             </div>
@@ -139,7 +139,7 @@ requirePapel(['admin', 'dev']);
     <!-- Modal de Edição de Grupo -->
     <div id="modal-editar-grupo" class="modal modal-fixed-footer">
         <form id="form-grupo" onsubmit="return false;">
-            <div class="modal-content">
+            <div class="modal-content" style="max-height: 70vh; overflow-y: auto;">
                 <h4 id="modal-grupo-titulo">Editar Grupo</h4>
                 <input type="hidden" id="grupo_id">
                 
@@ -156,8 +156,8 @@ requirePapel(['admin', 'dev']);
                 
                 <div class="row">
                     <div class="col s12">
-                        <label>Papéis do Grupo</label>
-                        <div id="grupo-papeis-checkboxes" class="checkbox-grid"></div>
+                        <label>Permissões do Grupo</label>
+                        <div id="grupo-permissoes-container" class="permissoes-grid"></div>
                     </div>
                 </div>
             </div>
