@@ -709,42 +709,6 @@ async function carregarListaGrupos() {
         lista.html(`<li class="collection-item" style="color: red;">Erro: ${error.message}</li>`);
     }
 }
-        
-        const grupos = await response.json();
-        console.log('Grupos carregados:', grupos);
-        lista.empty();
-        
-        if (grupos.length === 0) {
-            lista.html('<li class="collection-item">Nenhum grupo encontrado.</li>');
-            return;
-        }
-        
-        grupos.forEach(g => {
-            const PapeisHtml = g.papeis && g.papeis.length > 0 
-                ? g.papeis.map(p => `<span class="chip">${p}</span>`).join(' ')
-                : '<span style="color: #999;">Sem papéis</span>';
-            
-            lista.append(`
-                <li class="collection-item">
-                    <div>
-                        <strong>${g.nome}</strong>
-                        ${g.descricao ? `<p style="margin: 5px 0; color: #666;">${g.descricao}</p>` : ''}
-                        <div style="margin-top: 5px;">${PapeisHtml}</div>
-                    </div>
-                    <div style="float: right;">
-                        <button class="btn-small blue" onclick="editarGrupo(${g.id})"><i class="material-icons">edit</i></button>
-                        <button class="btn-small red" onclick="deletarGrupo(${g.id})"><i class="material-icons">delete</i></button>
-                    </div>
-                </li>
-            `);
-        });
-        
-        popularFormularioNovoGrupo();
-        
-    } catch (error) {
-        lista.html(`<li class="collection-item" style="color: red;">Erro: ${error.message}</li>`);
-    }
-}
 
 function popularFormularioNovoGrupo() {
     const container = $('#novo-grupo-permissoes');
