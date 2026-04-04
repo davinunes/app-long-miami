@@ -41,7 +41,7 @@ $(document).ready(function() {
                 overlay.addEventListener('click', closeSidenav);
             }
             
-            const hamburger = document.querySelector('.mobile-menu-btn');
+            const hamburger = document.querySelector('.custom-sidenav-toggle');
             if (hamburger) {
                 hamburger.addEventListener('click', function(e) {
                     e.preventDefault();

@@ -17,7 +17,7 @@ requireLogin();
         <?php include '_partials/menu.php'; ?>
     </header>
 
-    <a href="#" data-target="slide-out" class="sidenav-trigger mobile-menu-btn">
+    <a href="#" class="custom-sidenav-toggle mobile-menu-btn">
         <i class="material-icons">menu</i>
     </a>
 
