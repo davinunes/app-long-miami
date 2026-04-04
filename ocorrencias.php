@@ -129,8 +129,8 @@ $podeVerMinhas = true;
                 </div>
                 <?php endif; ?>
                 
-                <?php if (($podeVerDetalhes || $podeCriarOcorrencia) && (!$podeListarTodas && !$isAdminDev)): ?>
-                <div id="section-minhas-ocorrencias">
+                <?php if ($podeVerMinhas): ?>
+                <div id="section-minhas-ocorrencias" <?php if ($podeListarTodas || $isAdminDev): ?>style="display:none"<?php endif; ?>>
                     <h5>Minhas Ocorrências</h5>
                     <table class="striped highlight">
                         <thead>
