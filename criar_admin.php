@@ -115,8 +115,13 @@ function criarAdmin($email, $senha, $nome = 'Administrador') {
         
         // Criar usuário
         $senhaHash = password_hash($senha, PASSWORD_DEFAULT);
+        
+        // Verificar se a coluna é 'password' ou 'senha'
+        $stmtCheck = $pdo->query("SHOW COLUMNS FROM usuarios LIKE 'password'");
+        $colunaSenha = $stmtCheck->fetch() ? 'password' : 'senha';
+        
         $stmt = $pdo->prepare("
-            INSERT INTO usuarios (nome, email, password, role, created_at) 
+            INSERT INTO usuarios (nome, email, {$colunaSenha}, role, created_at) 
             VALUES (?, ?, ?, 'admin', NOW())
         ");
         $stmt->execute([$nome, $email, $senhaHash]);
