@@ -140,48 +140,51 @@ $podeExcluir = isAdmin() || temPermissao('notificacao.excluir');
     </main>
 
     <!-- Modal Quick Edit -->
-    <div id="modal-quick-edit" class="modal modal-fixed-footer">
-        <div class="modal-content">
+    <div id="modal-quick-edit" class="modal">
+        <div class="modal-content" style="padding-bottom: 20px;">
             <h4 id="modal-qe-titulo">Editar Notificação</h4>
             <input type="hidden" id="qe-id">
             
-            <div class="row">
-                <div class="col s12 m6">
-                    <div class="input-field">
-                        <input type="datetime-local" id="qe-data-envio">
-                        <label for="qe-data-envio">Data de Envio</label>
-                    </div>
-                </div>
-                <div class="col s12 m6">
-                    <div class="input-field">
-                        <input type="datetime-local" id="qe-data-ciencia">
-                        <label for="qe-data-ciencia">Data da Ciência</label>
-                    </div>
+            <div style="margin-bottom: 25px;">
+                <label style="font-size: 14px; color: #666; margin-bottom: 8px; display: block;">Data de Envio</label>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <input type="datetime-local" id="qe-data-envio" style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                    <button type="button" class="btn-small blue" onclick="salvarCampoUnico('data_envio')">
+                        <i class="material-icons" style="font-size: 16px;">save</i>
+                    </button>
                 </div>
             </div>
             
-            <div class="row qe-recurso-row">
-                <div class="col s12">
-                    <div class="input-field">
-                        <select id="qe-recurso-status">
-                            <option value="">Selecione...</option>
-                            <option value="pendente">Recurso Pendente</option>
-                            <option value="deferido">Recurso Deferido</option>
-                            <option value="indeferido">Recurso Indeferido</option>
-                        </select>
-                        <label>Status do Recurso</label>
-                    </div>
+            <div style="margin-bottom: 25px;">
+                <label style="font-size: 14px; color: #666; margin-bottom: 8px; display: block;">Data da Ciência</label>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <input type="datetime-local" id="qe-data-ciencia" style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                    <button type="button" class="btn-small blue" onclick="salvarCampoUnico('data_ciencia')">
+                        <i class="material-icons" style="font-size: 16px;">save</i>
+                    </button>
+                </div>
+            </div>
+            
+            <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee;">
+                <label style="font-size: 14px; color: #666; margin-bottom: 8px; display: block;">Status do Recurso</label>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <select id="qe-recurso-status" style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px; display: block;">
+                        <option value="">Selecione...</option>
+                        <option value="pendente">Recurso Pendente</option>
+                        <option value="deferido">Recurso Deferido</option>
+                        <option value="indeferido">Recurso Indeferido</option>
+                    </select>
+                    <button type="button" class="btn-small blue" onclick="salvarCampoUnico('recurso_status')">
+                        <i class="material-icons" style="font-size: 16px;">save</i>
+                    </button>
                 </div>
             </div>
         </div>
-        <div class="modal-footer" style="display: flex; justify-content: space-between;">
+        <div class="modal-footer" style="display: flex; justify-content: space-between; padding: 15px 20px;">
             <button type="button" class="btn red" id="btn-qe-excluir" onclick="excluirNotificacao()">
                 <i class="material-icons left">delete</i> Excluir
             </button>
-            <div>
-                <a href="#!" class="modal-close btn-flat">Cancelar</a>
-                <button type="button" class="btn" id="btn-qe-salvar">Salvar</button>
-            </div>
+            <a href="#!" class="modal-close btn-flat">Fechar</a>
         </div>
     </div>
 
@@ -204,13 +207,6 @@ $podeExcluir = isAdmin() || temPermissao('notificacao.excluir');
             
             $('#user-name').text('<?php echo htmlspecialchars(getUsuarioNome()); ?>');
             $('#user-email').text('<?php echo htmlspecialchars(getUsuarioEmail()); ?>');
-            
-            $('#btn-qe-salvar').on('click', salvarQuickEdit);
-            
-            // Mostrar/ocultar campo de recurso baseado na permissão
-            if (!PODE_JULGAR_RECURSO && !EH_ADMIN_DEV) {
-                $('.qe-recurso-row').hide();
-            }
             
             // Mostrar/ocultar botão excluir baseado na permissão
             if (!PODE_EXCLUIR && !EH_ADMIN_DEV) {

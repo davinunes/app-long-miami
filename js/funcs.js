@@ -543,6 +543,44 @@ async function salvarQuickEdit() {
     }
 }
 
+async function salvarCampoUnico(campo) {
+    const id = document.getElementById('qe-id').value;
+    const dados = { quick_edit: true, id: parseInt(id) };
+    
+    if (campo === 'data_envio') {
+        dados.data_envio = document.getElementById('qe-data-envio').value || null;
+    } else if (campo === 'data_ciencia') {
+        dados.data_ciencia = document.getElementById('qe-data-ciencia').value || null;
+    } else if (campo === 'recurso_status') {
+        const podeEditarRecurso = (typeof PODE_JULGAR_RECURSO !== 'undefined' && PODE_JULGAR_RECURSO) || EH_ADMIN_DEV;
+        if (podeEditarRecurso) {
+            dados.recurso_status = document.getElementById('qe-recurso-status').value || null;
+        } else {
+            M.toast({html: 'Sem permissão para editar recurso', classes: 'orange'});
+            return;
+        }
+    }
+    
+    try {
+        const res = await fetch(`${API_BASE_URL_PHP}/notificacoes.php`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(dados)
+        });
+        
+        if (res.ok) {
+            const nomes = { data_envio: 'Data de Envio', data_ciencia: 'Data da Ciência', recurso_status: 'Status do Recurso' };
+            M.toast({html: nomes[campo] + ' atualizado!', classes: 'green'});
+            if (typeof carregarListaNotificacoes === 'function') carregarListaNotificacoes();
+        } else {
+            const err = await res.json();
+            M.toast({html: 'Erro: ' + (err.message || 'Falha'), classes: 'red'});
+        }
+    } catch (e) {
+        M.toast({html: 'Erro de conexão', classes: 'red'});
+    }
+}
+
 async function sincronizarEvidencias() {
     if (typeof NOTIFICACAO_ID === 'undefined' || !NOTIFICACAO_ID) {
         if (typeof M !== 'undefined') {
