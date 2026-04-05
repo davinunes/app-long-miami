@@ -214,7 +214,10 @@ $isAdminOrDev = in_array('dev', $usuarioLogado['papeis'] ?? []) || in_array('adm
     <!-- Modal de Grupos -->
     <div id="modal-grupos" class="modal modal-fixed-footer">
         <div class="modal-content">
-            <h4>Gerenciar Grupos</h4>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h4 style="margin: 0;">Gerenciar Grupos</h4>
+                <button class="btn-small green" id="btn-novo-grupo"><i class="material-icons">add</i> Novo Grupo</button>
+            </div>
             
             <ul class="collection" id="grupos-lista">
                 <li class="collection-item">Carregando...</li>

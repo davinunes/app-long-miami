@@ -75,6 +75,20 @@ function setupEventListenersUsuarios() {
         $('#modal-grupos').modal('open');
     });
     
+    $(document).on('click', '#btn-novo-grupo', function(e) {
+        e.preventDefault();
+        const section = $('#novo-grupo-section');
+        if (section.is(':hidden')) {
+            section.show();
+            $(this).html('<i class="material-icons">remove</i> Cancelar');
+            $(this).removeClass('green').addClass('red');
+        } else {
+            section.hide();
+            $(this).html('<i class="material-icons">add</i> Novo Grupo');
+            $(this).removeClass('red').addClass('green');
+        }
+    });
+    
     $(document).on('click', '#modal-salvar-usuario', salvarUsuarioModal);
     $(document).on('click', '#btn-salvar-grupo', salvarGrupoModal);
     $(document).on('click', '#btn-criar-grupo', criarGrupo);
