@@ -252,7 +252,7 @@ function carregarListaNotificacoes() {
             }
             
             if ((podeAcaoRapida && (typeof PODE_EDITAR_DATAS !== 'undefined' ? PODE_EDITAR_DATAS : false)) || EH_ADMIN_DEV) {
-                acoesHtml += ` <button class="btn-small purple" onclick="abrirQuickEdit(${n.id}, '${n.numero}/${n.ano}')" title="Editar datas"><i class="material-icons" style="font-size: 14px;">edit</i></button>`;
+                acoesHtml += ` <button class="btn-small purple" onclick="abrirQuickEdit(${n.id}, '${n.numero}/${n.ano}')" title="Editar datas"><i class="material-icons" style="font-size: 14px;">today</i></button>`;
             }
             
             // Botão excluir só para rascunhos
