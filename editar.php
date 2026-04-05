@@ -153,6 +153,12 @@ $podeAlterarFase = isAdmin() || temPermissao('notificacao.alterar_fase');
                 const response = await fetch(`${API_BASE_URL_PHP}/notificacoes.php?id=${NOTIFICACAO_ID}`);
                 if (!response.ok) throw new Error('Erro ao carregar notificação');
                 notificationData = await response.json();
+                
+                // Sincroniza artigos com o buscador do regimento (se disponível)
+                if (typeof setSelectedArticles === 'function') {
+                    setSelectedArticles(notificationData.artigos || []);
+                }
+                
                 renderNotificationView(notificationData);
             } catch (error) {
                 M.toast({html: 'Erro: ' + error.message, classes: 'red'});
@@ -162,6 +168,7 @@ $podeAlterarFase = isAdmin() || temPermissao('notificacao.alterar_fase');
         function renderNotificationView(data) {
             $('#page-title').text(`Notificação #${data.numero}/${data.ano}`);
             $('#status-badge-container').html(`<span class="status-badge status-${data.status_slug}">${data.status_nome}</span>`);
+            
             preencherFormulario(data);
             renderLifecycleActions(data);
             renderTimeline(data.fase_log || []);
@@ -194,80 +201,22 @@ $podeAlterarFase = isAdmin() || temPermissao('notificacao.alterar_fase');
             $('#data_emissao').val(data.data_emissao);
             $('#valor_multa').val(data.valor_multa);
             $('#url_recurso').val(data.url_recurso);
+            
             setTimeout(() => {
                 $('#tipo_id').val(data.tipo_id).formSelect();
                 $('#assunto_id').val(data.assunto_id).formSelect();
-                toggleMultaField();
+                if (typeof toggleMultaField === 'function') toggleMultaField();
             }, 500);
+
             $('#fatos-container').empty();
-            if (data.fatos && data.fatos.length > 0) data.fatos.forEach(fato => addFato(fato));
-            else addFato();
+            if (data.fatos && data.fatos.length > 0) {
+                data.fatos.forEach(fato => addFato(fato));
+            } else if (data.status_slug === 'rascunho') {
+                if (typeof addFato === 'function') addFato();
+            }
+            
             $('#fundamentacao_legal').val(data.fundamentacao_legal);
-            M.textareaAutoResize($('#fundamentacao_legal'));
-            if (data.artigos) renderSelectedArticles(data.artigos);
-        }
-
-        function toggleMultaField() {
-            const tipoId = $('#tipo_id').val();
-            // Se for multa (id=2), exibe o campo
-            if (tipoId == '2' || tipoId == 2) {
-                $('#valor_multa_container').slideDown();
-            } else {
-                $('#valor_multa_container').slideUp();
-            }
-        }
-
-        function addFato(texto = '') {
-            const container = $('#fatos-container');
-            const fatoHtml = $(`
-                <div class="fato-item">
-                    <textarea class="materialize-textarea fato-texto" placeholder="Descreva aqui o fato observado...">${texto}</textarea>
-                    <button type="button" class="btn-remove-fato red btn-flat" onclick="removerFato(this)">×</button>
-                </div>
-            `);
-            container.append(fatoHtml);
-            M.textareaAutoResize(fatoHtml.find('textarea'));
-        }
-
-        function removerFato(btn) {
-            const container = $('#fatos-container');
-            if (container.children().length > 1) {
-                $(btn).closest('.fato-item').remove();
-            } else {
-                $(btn).closest('.fato-item').find('textarea').val('');
-            }
-        }
-
-        function renderSelectedArticles(artigos) {
-            const container = $('#selected-articles-list');
-            container.empty();
-            if (!artigos || artigos.length === 0) {
-                container.append('<p style="color: #999;">Nenhum artigo selecionado.</p>');
-                return;
-            }
-            artigos.forEach((art, index) => {
-                const artHtml = $(`
-                    <div class="selected-article-item">
-                        <div class="article-notation">${art.notation}</div>
-                        <div class="article-text">${art.text || ''}</div>
-                        <button type="button" class="btn-remove-article" onclick="removerArtigo(${index})">×</button>
-                    </div>
-                `);
-                container.append(artHtml);
-            });
-        }
-
-        function removerArtigo(index) {
-            if (notificationData && notificationData.artigos) {
-                notificationData.artigos.splice(index, 1);
-                renderSelectedArticles(notificationData.artigos);
-            }
-        }
-
-        function formatDate(data) {
-            if (!data) return '-';
-            const d = new Date(data + 'T00:00:00');
-            return d.toLocaleDateString('pt-BR');
+            if (typeof autoExpand === 'function') autoExpand(document.getElementById('fundamentacao_legal'));
         }
 
         function renderLifecycleActions(data) {
@@ -279,9 +228,9 @@ $podeAlterarFase = isAdmin() || temPermissao('notificacao.alterar_fase');
             
             let carenciaPassou = false;
             if (data.data_ciencia) {
+                // Cálculo de 7 dias de carência simplificado
                 const dataCiencia = new Date(data.data_ciencia.split(' ')[0]);
                 const hoje = new Date();
-                hoje.setHours(0,0,0,0);
                 const diffTime = Math.abs(hoje - dataCiencia);
                 const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
                 if (diffDays >= 7) carenciaPassou = true;
@@ -296,22 +245,22 @@ $podeAlterarFase = isAdmin() || temPermissao('notificacao.alterar_fase');
                 if (PODE_CIENCIA) actions.push({ label: 'Registrar Ciência', icon: 'done_all', color: 'green', target: 'ciente' });
             } else if (slug === 'ciente') {
                 if (PODE_RECURSO) actions.push({ label: 'Registrar Recurso', icon: 'gavel', color: 'amber', target: 'em_recurso' });
-                if (carenciaPassou && temPermissao('notificacao.marcar_cobranca')) {
+                if (carenciaPassou) {
                     actions.push({ label: 'Lançar Cobrança', icon: 'payments', color: 'blue', target: 'cobranca' });
                 }
             } else if (slug === 'em_recurso' && PODE_JULGAR) {
                 actions.push({ label: 'Deferir Recurso', icon: 'thumb_up', color: 'green', target: 'recurso_deferido' });
                 actions.push({ label: 'Indeferir Recurso', icon: 'thumb_down', color: 'red', target: 'recurso_indeferido' });
             } else if (slug === 'recurso_indeferido') {
-                if (temPermissao('notificacao.marcar_cobranca')) {
-                    actions.push({ label: 'Lançar Cobrança', icon: 'payments', color: 'blue', target: 'cobranca' });
-                }
+                actions.push({ label: 'Lançar Cobrança', icon: 'payments', color: 'blue', target: 'cobranca' });
             } else if (slug === 'cobranca' && PODE_ENCERRAR) {
-                actions.push({ label: 'Encerrar (Lançado no Boleto)', icon: 'check_circle', color: 'green', target: 'encerrada' });
+                actions.push({ label: 'Encerrar (No Boleto)', icon: 'check_circle', color: 'green', target: 'encerrada' });
             }
-            if ((slug === 'cobranca' || slug === 'encerrada') && temPermissao('notificacao.reabrir')) {
-                actions.push({ label: 'Reabrir', icon: 'refresh', color: 'orange italic', target: 'reabrir' });
+            
+            if ((slug === 'cobranca' || slug === 'encerrada') || (EH_ADMIN_DEV)) {
+                actions.push({ label: 'Reabrir', icon: 'refresh', color: 'red italic', target: 'reabrir' });
             }
+            
             if (actions.length === 0) { $('#lifecycle-section').hide(); return; }
             actions.forEach(act => {
                 const btn = $(`<button class="btn ${act.color}"><i class="material-icons left">${act.icon}</i> ${act.label}</button>`);
@@ -323,14 +272,12 @@ $podeAlterarFase = isAdmin() || temPermissao('notificacao.alterar_fase');
         async function changePhase(targetSlug, label) {
             let obs = '';
             if (['rascunho', 'encerrada', 'recurso_indeferido', 'reabrir', 'cobranca'].includes(targetSlug)) {
-                let msg = `Informe uma observação para a ação "${label}":`;
-                if (targetSlug === 'reabrir') msg = "Justifique a reabertura da notificação (será revertida para a fase anterior):";
-                obs = prompt(msg);
+                obs = prompt(`Informe uma observação para a ação "${label}":`);
                 if (obs === null) return;
             } else if (!confirm(`Confirmar ação: "${label}"?`)) return;
             
             const payload = { mudar_fase: true, id: NOTIFICACAO_ID, nova_fase: targetSlug, observacao: obs };
-            if (targetSlug === 'ciente') payload.metodo_ciencia = prompt('Método de ciência (ex: Assinatura, WhatsApp):', 'Assinatura');
+            if (targetSlug === 'ciente') payload.metodo_ciencia = prompt('Método de ciência:', 'Assinatura');
             
             try {
                 const response = await fetch(`${API_BASE_URL_PHP}/notificacoes.php`, {
@@ -351,7 +298,7 @@ $podeAlterarFase = isAdmin() || temPermissao('notificacao.alterar_fase');
             if (!logs || logs.length === 0) { section.hide(); return; }
             section.show();
             container.empty();
-            const statusNames = { 'rascunho': 'Rascunho', 'lavrada': 'Lavrada', 'enviada': 'Enviada', 'ciente': 'Ciente', 'em_recurso': 'Em Recurso', 'recurso_deferido': 'Recurso Deferido', 'recurso_indeferido': 'Recurso Indeferido', 'cobranca': 'Em Cobrança', 'encerrada': 'Encerrada' };
+            const statusNames = { 'rascunho': 'Rascunho', 'lavrada': 'Lavrada', 'enviada': 'Enviada', 'ciente': 'Ciente', 'em_recurso': 'Em Recurso', 'recurso_deferido': 'Recurso Deferido', 'recurso_indeferido': 'Recurso Indeferido', 'cobranca': 'Cobrança', 'encerrada': 'Encerrada' };
             logs.forEach(log => {
                 const title = log.fase_anterior ? `${statusNames[log.fase_anterior] || log.fase_anterior} ➜ ${statusNames[log.fase_nova] || log.fase_nova}` : `Iniciado como ${statusNames[log.fase_nova] || log.fase_nova}`;
                 container.append($(`
@@ -369,22 +316,48 @@ $podeAlterarFase = isAdmin() || temPermissao('notificacao.alterar_fase');
             const container = $('#preview-container');
             container.empty();
             imagens.forEach(img => {
+                const url = img.caminho_arquivo.includes('/') ? img.caminho_arquivo : 'uploads/imagens/' + img.caminho_arquivo;
+                const isInactive = img.inactive == 1;
+
                 container.append($(`
-                    <div class="img-preview-item" id="img_${img.id}">
-                        <img src="${img.caminho_arquivo}" alt="${img.nome_original}" onclick="window.open('${img.caminho_arquivo}', '_blank')">
+                    <div class="img-preview-item existing-image ${isInactive ? 'inativa' : ''}" id="img_${img.id}">
+                        <img src="${url}" alt="${img.nome_original}" class="${isInactive ? 'grayscale' : ''}" onclick="window.open('${url}', '_blank')">
                         <div class="img-name">${img.nome_original}</div>
-                        ${EH_ADMIN_DEV || notificationData.status_slug === 'rascunho' ? `<button type="button" class="btn-remove" onclick="removerImagem(${img.id})">×</button>` : ''}
+                        <div class="img-actions" style="margin-top: 5px; display: flex; justify-content: center; gap: 5px;">
+                            ${(EH_ADMIN_DEV || notificationData.status_slug === 'rascunho') ? `
+                                <button type="button" class="btn-floating btn-small ${isInactive ? 'green' : 'orange'}" onclick="alternarImagem(${img.id}, ${isInactive ? 0 : 1})" title="${isInactive ? 'Ativar/Desativar'}">
+                                    <i class="material-icons">${isInactive ? 'check' : 'block'}</i>
+                                </button>
+                                <button type="button" class="btn-floating btn-small red" onclick="removerImagem(${img.id})" title="Excluir">
+                                    <i class="material-icons">delete</i>
+                                </button>
+                            ` : ''}
+                        </div>
                     </div>
                 `));
             });
         }
 
+        async function alternarImagem(id, status) {
+            try {
+                const response = await fetch(`${API_BASE_URL_PHP}/notificacoes.php`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ alternar_imagem_ocorrencia: true, id: id, status: status })
+                });
+                if (response.ok) {
+                    M.toast({html: 'Status atualizado', classes: 'green'});
+                    loadNotificationData();
+                }
+            } catch (e) { M.toast({html: 'Erro ao alternar', classes: 'red'}); }
+        }
+
         async function removerImagem(id) {
-            if (!confirm('Deseja remover esta imagem?')) return;
+            if (!confirm('Deseja remover esta imagem permanentemente?')) return;
             try {
                 const response = await fetch(`${API_BASE_URL_PHP}/notificacoes.php`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ deletar_imagem: true, id: id }) });
                 if (response.ok) { $(`#img_${id}`).remove(); M.toast({html: 'Imagem removida', classes: 'green'}); }
-            } catch (e) { M.toast({html: 'Erro ao remover imagem', classes: 'red'}); }
+            } catch (e) { M.toast({html: 'Erro ao remover', classes: 'red'}); }
         }
 
         function formatDateTime(data) {
@@ -401,9 +374,9 @@ $podeAlterarFase = isAdmin() || temPermissao('notificacao.alterar_fase');
             try {
                 const response = await fetch(`${API_BASE_URL_PHP}/notificacoes.php?buscar_ocorrencias=${encodeURIComponent(busca)}`);
                 const ocorrencias = await response.json();
-                if (ocorrencias.length === 0) { container.innerHTML = '<p>Nenhuma ocorrência encontrada.</p>'; return; }
-                container.innerHTML = ocorrencias.map(o => `<div class="search-result-item" onclick="vincularOcorrencia(${o.id})"><strong>#${o.id}</strong> - ${o.titulo}<br><small>${o.unidades || 'Sem unidades'} | ${formatDate(o.data_fato)}</small></div>`).join('');
-            } catch (error) { container.innerHTML = '<p style="color:red">Erro ao buscar.</p>'; }
+                if (ocorrencias.length === 0) { container.innerHTML = '<p>Nenhuma encontrada.</p>'; return; }
+                container.innerHTML = ocorrencias.map(o => `<div class="search-result-item" onclick="vincularOcorrencia(${o.id})"><strong>#${o.id}</strong> - ${o.titulo}</div>`).join('');
+            } catch (error) { container.innerHTML = '<p style="color:red">Erro.</p>'; }
         }
 
         async function vincularOcorrencia(id) {
@@ -411,121 +384,10 @@ $podeAlterarFase = isAdmin() || temPermissao('notificacao.alterar_fase');
                 const response = await fetch(`${API_BASE_URL_PHP}/ocorrencias.php?id=${id}`);
                 ocorrenciaVinculadaData = await response.json();
                 $('#ocorrencia_id').val(ocorrenciaVinculadaData.id);
-                $('#ocorrencia_titulo').text(`Ocorrência #${ocorrenciaVinculadaData.id}: ${ocorrenciaVinculadaData.titulo}`);
-                $('#ver_ocorrencia_link').attr('href', `ocorrencia_detalhe.php?id=${ocorrenciaVinculadaData.id}`);
                 $('#ocorrencia_info').show();
                 $('#ocorrencia_busca_section').hide();
-                if (!$('#unidade').val()) {
-                    const u = ocorrenciaVinculadaData.unidades && ocorrenciaVinculadaData.unidades[0];
-                    if (u) { $('#unidade').val(u.unidade_numero); $('#bloco').val(u.unidade_bloco); M.updateTextFields(); }
-                }
-                if ($('#fatos-container').children().length <= 1 && !$('#fatos-container textarea').val()) {
-                    $('#fatos-container').empty();
-                    addFato(ocorrenciaVinculadaData.descricao_fato);
-                }
                 M.toast({html: 'Ocorrência vinculada!', classes: 'green'});
             } catch (e) { M.toast({html: 'Erro ao vincular', classes: 'red'}); }
-        }
-        async function fetchInitialData() {
-            try {
-                const response = await fetch(`${API_BASE_URL_PHP}/config.php`);
-                const data = await response.json();
-                initialData = data;
-                const assuntoSelect = $('#assunto_id');
-                assuntoSelect.empty().append('<option value="" disabled selected>Selecione um assunto</option>');
-                data.assuntos.forEach(a => assuntoSelect.append(`<option value="${a.id}">${a.descricao}</option>`));
-                const tipoSelect = $('#tipo_id');
-                tipoSelect.empty().append('<option value="" disabled selected>Selecione o tipo</option>');
-                data.tipos.forEach(t => tipoSelect.append(`<option value="${t.id}">${t.nome}</option>`));
-            } catch (e) { M.toast({html: 'Erro ao carregar dados iniciais', classes: 'red'}); }
-        }
-
-        function configurarCampoBloco() {
-            $('#unidade').on('input', function() {
-                const val = $(this).val().toUpperCase();
-                const match = val.match(/^([A-Z]+)(\d+)$/);
-                if (match) { $('#bloco').val(match[1]); $(this).val(match[2]); M.updateTextFields(); }
-            });
-        }
-
-        function vincularCamposUnidadeBloco() {
-            $('#bloco, #unidade').on('change', function() {
-                const b = $('#bloco').val();
-                const u = $('#unidade').val();
-                if (b && u) console.log(`Unidade vinculada: ${b}${u}`);
-            });
-        }
-
-        function inicializarBuscaRegimento() {
-            $('#input-busca-regimento').on('input', function() {
-                const busca = $(this).val().toLowerCase();
-                const resultados = $('#resultados-regimento');
-                resultados.empty();
-                if (busca.length < 2) return;
-                if (!initialData || !initialData.permissoes) return;
-                // No contexto de regimento, buscamos nos artigos iniciais se houver
-                // Se não, simulamos ou buscamos via API se implementado.
-                // Aqui vamos usar um mock ou buscar do config se disponível.
-            });
-        }
-
-        function abrirModalArtigos() {
-             const modal = M.Modal.getInstance(document.getElementById('modal-regimento'));
-             if (modal) modal.open();
-        }
-
-        async function salvarNotificacao() {
-            const btn = $('#btnSalvar');
-            btn.prop('disabled', true).text('Salvando...');
-            const dados = getFormData();
-            try {
-                const response = await fetch(`${API_BASE_URL_PHP}/notificacoes.php`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(dados)
-                });
-                const result = await response.json();
-                if (!response.ok) throw new Error(result.message);
-                M.toast({html: 'Salvo com sucesso!', classes: 'green'});
-                if (!NOTIFICACAO_ID) window.location.href = `editar.php?id=${result.id}`;
-                else loadNotificationData();
-            } catch (error) { M.toast({html: 'Erro: ' + error.message, classes: 'red'}); }
-            finally { btn.prop('disabled', false).text(NOTIFICACAO_ID ? 'Salvar Alterações' : 'Criar Notificação'); }
-        }
-
-        function getFormData() {
-            const fatos = [];
-            $('.fato-texto').each(function() { if ($(this).val().trim()) fatos.push($(this).val().trim()); });
-            const data = {
-                id: $('#notificacao_id').val(),
-                unidade: $('#unidade').val(),
-                bloco: $('#bloco').val(),
-                numero: $('#numero').val(),
-                data_emissao: $('#data_emissao').val(),
-                assunto_id: $('#assunto_id').val(),
-                tipo_id: $('#tipo_id').val(),
-                valor_multa: $('#valor_multa').val(),
-                url_recurso: $('#url_recurso').val(),
-                fundamentacao_legal: $('#fundamentacao_legal').val(),
-                ocorrencia_id: $('#ocorrencia_id').val(),
-                fatos: fatos,
-                artigos: notificationData ? notificationData.artigos : []
-            };
-            return data;
-        }
-
-        function inicializarBuscaRegimento() {
-            $('#input-busca-regimento').on('keyup', function(e) {
-                if (e.key === 'Enter') buscarRegimento();
-            });
-        }
-
-        async function buscarRegimento() {
-            const query = $('#input-busca-regimento').val();
-            const container = $('#resultados-regimento');
-            container.html('<p>Buscando no regimento...</p>');
-            // Implementação de busca seria via API ou local se regimento_json carregado
-            container.html('<p class="grey-text">Busca de regimento não implementada localmente. Use a fundamentação legal manual.</p>');
         }
     </script>
 </body>

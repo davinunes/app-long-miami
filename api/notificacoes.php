@@ -92,6 +92,14 @@ switch ($metodo) {
                 exit();
             }
             vincularEvidencias($pdo, $dados, $usuario);
+        } elseif (isset($dados->alternar_imagem_ocorrencia)) {
+            $id = (int)$dados->id;
+            $status = (int)$dados->status;
+            $stmt = $pdo->prepare("UPDATE notificacao_imagens SET inactive = ? WHERE id = ?");
+            $stmt->execute([$status, $id]);
+            http_response_code(200);
+            echo json_encode(['message' => 'Status da imagem atualizado.']);
+            exit;
         } elseif (isset($dados->id) && !empty($dados->id)) {
             if (!$podeEditar) {
                 http_response_code(403);
