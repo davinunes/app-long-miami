@@ -9,7 +9,7 @@ echo "Corrigindo permissões...\n\n";
 
 // Atualizar apenas o nome (não o slug) para manter compatibilidade
 echo "Atualizando nome da permissão 'listar_lavradas'...\n";
-$stmt = $pdo->prepare("UPDATE permissoes SET nome = 'Listar Enviadas/Lavrada', descricao = 'Ver notificações nos status lavrada e enviada' WHERE slug = 'notificacao.listar_lavradas'");
+$stmt = $pdo->prepare("UPDATE permissoes SET nome = 'Listar Lavrada', descricao = 'Ver notificações nos status lavrada' WHERE slug = 'notificacao.listar_lavradas'");
 $stmt->execute();
 if ($stmt->rowCount() > 0) {
     echo "  + Permissão atualizada!\n";
