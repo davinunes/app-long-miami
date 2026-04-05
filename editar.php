@@ -111,7 +111,7 @@ $podeEncerrar = isAdmin() || temPermissao('notificacao.encerrar');
         const PODE_RECURSO = <?php echo $podeRegistrarRecurso ? 'true' : 'false'; ?>;
         const PODE_JULGAR = <?php echo $podeJulgarRecurso ? 'true' : 'false'; ?>;
         const PODE_ENCERRAR = <?php echo $podeEncerrar ? 'true' : 'false'; ?>;
-        const EH_ADMIN_DEV = <?php echo isAdmin() ? 'true' : 'false'; ?>;
+        // EH_ADMIN_DEV, PERMISSOES_USUARIO e API_BASE_URL_PHP já são definidos pelo menu.php
 
         let notificationData = null;
 
