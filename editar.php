@@ -174,6 +174,16 @@ $podeEncerrar = isAdmin() || temPermissao('notificacao.encerrar');
             $('#fundamentacao_legal').val(data.fundamentacao_legal);
             $('#url_recurso').val(data.url_recurso);
             
+            if (data.ocorrencia_id) {
+                $('#ocorrencia_id').val(data.ocorrencia_id);
+                $('#ocorrencia_titulo').text(`Ocorrência #${data.ocorrencia_id}: ${data.ocorrencia_titulo || ''}`);
+                $('#ver_ocorrencia_link').attr('href', `ocorrencia_detalhe.php?id=${data.ocorrencia_id}`);
+                $('#ocorrencia_info').show();
+                $('#ocorrencia_busca_section').hide();
+            } else {
+                $('#ocorrencia_busca_section').show();
+            }
+            
             setTimeout(() => {
                 $('#tipo_id').val(data.tipo_id).formSelect();
                 $('#assunto_id').val(data.assunto_id).formSelect();
@@ -306,6 +316,42 @@ $podeEncerrar = isAdmin() || temPermissao('notificacao.encerrar');
                     else loadNotificationData();
                 }
             } catch(e) { M.toast({html: 'Erro ao salvar'}); }
+        }
+
+        async function buscarOcorrencias() {
+            const busca = document.getElementById('ocorrencia_busca').value.trim();
+            const container = document.getElementById('ocorrencia_busca_resultados');
+            if (busca.length < 2) {
+                container.innerHTML = '<p style="color: #666;">Digite pelo menos 2 caracteres.</p>';
+                return;
+            }
+            container.innerHTML = '<p style="color: #666;">Buscando...</p>';
+            try {
+                const response = await fetch(`${API_BASE_URL_PHP}/notificacoes.php?buscar_ocorrencias=${encodeURIComponent(busca)}`);
+                const ocorrencias = await response.json();
+                if (!ocorrencias.length) {
+                    container.innerHTML = '<p style="color: #666;">Nenhuma ocorrência homologada encontrada.</p>';
+                    return;
+                }
+                container.innerHTML = '<div style="display: flex; flex-direction: column; gap: 8px;">' +
+                    ocorrencias.map(o => `<div style="background: #f5f5f5; padding: 10px; border-radius: 4px; cursor: pointer;" onclick="vincularOcorrencia(${o.id})">
+                        <strong>#${o.id}</strong> - ${o.titulo}<br><small style="color: #666;">${o.unidades || 'Sem unidades'}</small>
+                    </div>`).join('') + '</div>';
+            } catch (e) { container.innerHTML = '<p style="color: red;">Erro ao buscar.</p>'; }
+        }
+
+        async function vincularOcorrencia(id) {
+            try {
+                const response = await fetch(`${API_BASE_URL_PHP}/ocorrencias.php?id=${id}`);
+                const occ = await response.json();
+                document.getElementById('ocorrencia_id').value = occ.id;
+                document.getElementById('ocorrencia_titulo').textContent = `Ocorrência #${occ.id}: ${occ.titulo}`;
+                document.getElementById('ver_ocorrencia_link').href = `ocorrencia_detalhe.php?id=${occ.id}`;
+                document.getElementById('ocorrencia_info').style.display = 'block';
+                document.getElementById('ocorrencia_busca_section').style.display = 'none';
+                document.getElementById('ocorrencia_busca_resultados').innerHTML = '';
+                M.toast({html: 'Ocorrência vinculada!', classes: 'green'});
+            } catch (e) { M.toast({html: 'Erro ao vincular', classes: 'red'}); }
         }
 
         let sincronizando = false;

@@ -18,7 +18,7 @@
     <label style="color: #E65100; font-weight: bold;">Vincular Ocorrência:</label>
     <p style="color: #666; font-size: 12px; margin: 5px 0;">Busque uma ocorrência homologada para vincular.</p>
     <div style="display: flex; gap: 10px;">
-        <input type="text" id="ocorrencia_busca" placeholder="Buscar por título ou descrição..." style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+        <input type="text" id="ocorrencia_busca" placeholder="Buscar por título ou descrição..." onkeypress="if(event.key==='Enter'){event.preventDefault();buscarOcorrencias();}" style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
         <button type="button" class="btn orange" onclick="buscarOcorrencias()">Buscar</button>
     </div>
     <div id="ocorrencia_busca_resultados" style="margin-top: 10px; max-height: 200px; overflow-y: auto;"></div>
