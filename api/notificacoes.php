@@ -297,29 +297,33 @@ function listarNotificacoes($pdo, $usuario) {
             $n['motivo_bloqueio_cobranca'] = getMotivoBloqueioCobranca($n);
         }
         
-        // Filtrar baseado nas permissões
-        $filtradas = array_filter($notificacoes, function($n) use ($podeListarLavradas, $podeListarEnviadas, $podeListarCobranca, $isAdminDev) {
-            if ($isAdminDev) return true;
-            
-            $status = $n['status_slug'];
-            // Rascunho não é mostrado para usuários normais
-            if ($status === 'rascunho') {
-                return false;
-            }
-            // Status lavrada precisa de permissão específica
-            if ($status === 'lavrada') {
-                return $podeListarLavradas;
-            }
-            // Status enviada e ciente precisam de permissão específica
-            if (in_array($status, ['enviada', 'ciente'])) {
-                return $podeListarEnviadas;
-            }
-            if ($status === 'cobranca') {
-                return $podeListarCobranca;
-            }
-            // Status encerrada é visível
-            return true;
-        });
+        // Se tem permissão genérica, mostra tudo
+        if ($isAdminDev || temPermissao('notificacao.listar')) {
+            $filtradas = $notificacoes;
+        } else {
+            // Filtrar baseado nas permissões específicas
+            $filtradas = array_filter($notificacoes, function($n) use ($podeListarLavradas, $podeListarEnviadas, $podeListarCobranca) {
+                $status = $n['status_slug'];
+                
+                // Rascunho só mostra se tiver permissão específica
+                if ($status === 'rascunho') {
+                    return false;
+                }
+                // Status lavrada precisa de permissão específica
+                if ($status === 'lavrada') {
+                    return $podeListarLavradas;
+                }
+                // Status enviada e ciente precisam de permissão específica
+                if (in_array($status, ['enviada', 'ciente'])) {
+                    return $podeListarEnviadas;
+                }
+                if ($status === 'cobranca') {
+                    return $podeListarCobranca;
+                }
+                // Status encerrada é visível
+                return true;
+            });
+        }
         
         http_response_code(200);
         echo json_encode(array_values($filtradas));
