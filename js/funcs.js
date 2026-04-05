@@ -254,6 +254,11 @@ function carregarListaNotificacoes() {
             if ((podeAcaoRapida && (typeof PODE_EDITAR_DATAS !== 'undefined' ? PODE_EDITAR_DATAS : false)) || EH_ADMIN_DEV) {
                 acoesHtml += ` <button class="btn-small purple" onclick="abrirQuickEdit(${n.id}, '${n.numero}/${n.ano}')" title="Editar datas"><i class="material-icons" style="font-size: 14px;">edit</i></button>`;
             }
+            
+            // Botão excluir só para rascunhos
+            if (statusSlug === 'rascunho' && ((typeof PODE_EXCLUIR !== 'undefined' && PODE_EXCLUIR) || EH_ADMIN_DEV)) {
+                acoesHtml += ` <button class="btn-small red" onclick="excluirNotificacaoCard(${n.id}, '${n.numero}/${n.ano}')" title="Excluir"><i class="material-icons" style="font-size: 14px;">delete</i></button>`;
+            }
 
             cardsHtml += `
                 <div class="notificacao-card status-${statusSlug}">
@@ -670,6 +675,39 @@ async function excluirNotificacao() {
                 if (instance) instance.close();
             }
             if (typeof carregarListaNotificacoes === 'function') carregarListaNotificacoes();
+        } else {
+            const err = await res.json();
+            M.toast({html: 'Erro: ' + (err.message || 'Falha'), classes: 'red'});
+        }
+    } catch (e) {
+        M.toast({html: 'Erro de conexão', classes: 'red'});
+    }
+}
+
+async function excluirNotificacaoCard(id, numero) {
+    const podeExcluir = (typeof PODE_EXCLUIR !== 'undefined' && PODE_EXCLUIR) || EH_ADMIN_DEV;
+    if (!podeExcluir) {
+        M.toast({html: 'Você não tem permissão para excluir.', classes: 'red'});
+        return;
+    }
+    
+    if (!confirm(`Excluir notificação #${numero}? Esta ação não pode ser desfeita.`)) {
+        return;
+    }
+    
+    try {
+        const res = await fetch(`${API_BASE_URL_PHP}/notificacoes.php`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'excluir',
+                id: id
+            })
+        });
+        
+        if (res.ok) {
+            M.toast({html: 'Notificação excluída!', classes: 'green'});
+            carregarListaNotificacoes();
         } else {
             const err = await res.json();
             M.toast({html: 'Erro: ' + (err.message || 'Falha'), classes: 'red'});
