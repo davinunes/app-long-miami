@@ -366,6 +366,10 @@ async function editarGrupo(id) {
         const res = await fetch(`${API_BASE_URL_PHP}/grupos.php?id=${id}`);
         const grupo = await res.json();
         
+        console.log('Grupo carregado:', grupo);
+        console.log('Permissões do grupo:', grupo.permissoes);
+        console.log('configDataGlobal.permissoesPorModulo:', configDataGlobal.permissoesPorModulo);
+        
         $('#grupo_id').val(grupo.id);
         $('#grupo_nome').val(grupo.nome);
         $('#grupo_desc').val(grupo.descricao);
@@ -380,7 +384,9 @@ async function editarGrupo(id) {
                     <h6>${modulo} <span class="select-all-modulo" data-modulo="${modulo}" style="font-size:12px; cursor:pointer; color:blue;">Selecionar todos</span></h6>
                     <div class="permissao-lista">
                         ${permissoes.map(p => {
-                            const checked = grupo.permissoes && grupo.permissoes.includes(p.slug) ? 'checked' : '';
+                            const temPerm = grupo.permissoes && grupo.permissoes.includes(p.slug);
+                            console.log(`Permissão ${p.slug}: tem=${temPerm}, grupoPermissoes=${JSON.stringify(grupo.permissoes)}`);
+                            const checked = temPerm ? 'checked' : '';
                             return `<p><label><input type="checkbox" class="grupo-permissao-editar" value="${p.id}" ${checked}> <span>${p.nome}</span></label></p>`;
                         }).join('')}
                     </div>
@@ -391,7 +397,7 @@ async function editarGrupo(id) {
         
         M.updateTextFields();
         $('#modal-editar-grupo').modal('open');
-    } catch (e) {}
+    } catch (e) { console.error('Erro ao editar grupo:', e); }
 }
 
 async function salvarGrupoModal() {
