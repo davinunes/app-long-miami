@@ -219,14 +219,27 @@ $podeEncerrar = isAdmin() || temPermissao('notificacao.encerrar');
         }
 
         async function alternarImagem(id, status) {
+            console.log('alternarImagem called:', { id, status });
             try {
+                const body = JSON.stringify({ alternar_imagem_ocorrencia: true, id: id, status: status });
+                console.log('Request body:', body);
                 const res = await fetch(`${API_BASE_URL_PHP}/notificacoes.php`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ alternar_imagem_ocorrencia: true, id: id, status: status })
+                    body: body
                 });
-                if (res.ok) { M.toast({html: 'Imagem atualizada'}); loadNotificationData(); }
-            } catch(e) { M.toast({html: 'Erro ao atualizar imagem'}); }
+                const text = await res.text();
+                console.log('Response status:', res.status, 'Body:', text);
+                if (res.ok) { 
+                    M.toast({html: 'Imagem atualizada'}); 
+                    loadNotificationData(); 
+                } else {
+                    M.toast({html: 'Erro: ' + text});
+                }
+            } catch(e) { 
+                console.error('Fetch error:', e);
+                M.toast({html: 'Erro ao atualizar imagem'}); 
+            }
         }
 
         function renderLifecycleActions(data) {
