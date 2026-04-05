@@ -204,7 +204,14 @@ function carregarListaNotificacoes() {
                     acoesHtml += ` <button class="btn-small green" onclick="acaoRapidaNotificacao(${n.id}, 'enviada')">Enviar</button>`;
                 }
                 if (statusSlug === 'ciente') {
-                    acoesHtml += ` <button class="btn-small orange" onclick="acaoRapidaNotificacao(${n.id}, 'cobranca')">Cobrar</button>`;
+                    const podeCobrar = n.pode_ir_cobranca;
+                    const motivoBloqueio = n.motivo_bloqueio_cobranca;
+                    
+                    if (podeCobrar) {
+                        acoesHtml += ` <button class="btn-small orange" onclick="acaoRapidaNotificacao(${n.id}, 'cobranca')">Cobrar</button>`;
+                    } else {
+                        acoesHtml += ` <button class="btn-small orange" style="opacity: 0.5;" onclick="mostrarBloqueioCobranca(${n.id}, '${motivoBloqueio || 'Regra de negócio não atendida'}')" title="${motivoBloqueio || 'Regra de negócio não atendida'}">Cobrar</button>`;
+                    }
                 }
                 if (statusSlug === 'cobranca') {
                     acoesHtml += ` <button class="btn-small red" onclick="acaoRapidaNotificacao(${n.id}, 'encerrada')">Encerrar</button>`;
@@ -243,14 +250,32 @@ function carregarListaNotificacoes() {
     });
 }
 
-async function acaoRapidaNotificacao(id, novoStatus) {
+async function acaoRapidaNotificacao(id, novoStatus, forcar = false) {
+    if (novoStatus === 'cobranca' && !forcar) {
+        // Verificar se pode ir para cobrança (vai ser validado no servidor também)
+        const res = await fetch(`${API_BASE_URL_PHP}/notificacoes.php?id=${id}`);
+        if (res.ok) {
+            const n = await res.json();
+            if (!n.pode_ir_cobranca && n.motivo_bloqueio_cobranca) {
+                if (EH_ADMIN_DEV) {
+                    if (confirm(`ATENÇÃO: ${n.motivo_bloqueio_cobranca}\n\nDeseja FORÇAR a mudança para cobrança?`)) {
+                        acaoRapidaNotificacao(id, novoStatus, true);
+                    }
+                } else {
+                    M.toast({html: n.motivo_bloqueio_cobranca, classes: 'orange', timeout: 5000});
+                }
+                return;
+            }
+        }
+    }
+    
     if (!confirm(`Alterar status para "${novoStatus}"?`)) return;
     
     try {
         const res = await fetch(`${API_BASE_URL_PHP}/notificacoes.php`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ mudar_fase: true, id: id, nova_fase: novoStatus })
+            body: JSON.stringify({ mudar_fase: true, id: id, nova_fase: novoStatus, forcar: forcar })
         });
         
         if (res.ok) {
@@ -262,6 +287,16 @@ async function acaoRapidaNotificacao(id, novoStatus) {
         }
     } catch (e) {
         M.toast({html: 'Erro de conexão', classes: 'red'});
+    }
+}
+
+function mostrarBloqueioCobranca(id, mensagem) {
+    if (EH_ADMIN_DEV) {
+        if (confirm(`ATENÇÃO: ${mensagem}\n\nDeseja FORÇAR a mudança para cobrança?`)) {
+            acaoRapidaNotificacao(id, 'cobranca', true);
+        }
+    } else {
+        M.toast({html: mensagem, classes: 'orange', timeout: 5000});
     }
 }
 

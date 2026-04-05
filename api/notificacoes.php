@@ -267,7 +267,7 @@ function listarNotificacoes($pdo, $usuario) {
     $podeListarCobranca = $isAdminDev || temPermissao('notificacao.listar_em_cobranca');
     
     try {
-        $sql = "SELECT n.id, n.numero, n.ano, n.unidade, n.bloco, a.descricao as assunto, nt.nome as tipo, ns.nome as status, ns.slug as status_slug, n.data_emissao, n.ocorrencia_id 
+        $sql = "SELECT n.id, n.numero, n.ano, n.unidade, n.bloco, a.descricao as assunto, nt.nome as tipo, ns.nome as status, ns.slug as status_slug, n.data_emissao, n.ocorrencia_id, n.data_ciencia, n.recurso_status
                 FROM notificacoes n 
                 JOIN assuntos a ON n.assunto_id = a.id 
                 JOIN notificacao_tipos nt ON n.tipo_id = nt.id 
@@ -275,6 +275,12 @@ function listarNotificacoes($pdo, $usuario) {
                 ORDER BY n.id DESC";
         $stmt = $pdo->query($sql);
         $notificacoes = $stmt->fetchAll();
+        
+        // Adicionar informação sobre disponibilidade para cobrança
+        foreach ($notificacoes as &$n) {
+            $n['pode_ir_cobranca'] = verificarPodeIrCobranca($n);
+            $n['motivo_bloqueio_cobranca'] = getMotivoBloqueioCobranca($n);
+        }
         
         // Filtrar baseado nas permissões
         $filtradas = array_filter($notificacoes, function($n) use ($podeListarLavradas, $podeListarCobranca, $isAdminDev) {
@@ -302,6 +308,60 @@ function listarNotificacoes($pdo, $usuario) {
         http_response_code(500);
         echo json_encode(['message' => 'Erro ao listar notificações: ' . $e->getMessage()]);
     }
+}
+
+function verificarPodeIrCobranca($n) {
+    if ($n['status_slug'] !== 'ciente') {
+        return false;
+    }
+    
+    if ($n['recurso_status'] === 'indeferido') {
+        return true;
+    }
+    
+    if ($n['recurso_status'] === 'pendente') {
+        return false;
+    }
+    
+    if ($n['data_ciencia']) {
+        $dataCiencia = new DateTime($n['data_ciencia']);
+        $hoje = new DateTime();
+        $diasCiencia = $hoje->diff($dataCiencia)->days;
+        if ($diasCiencia >= 7) {
+            return true;
+        }
+    }
+    
+    return false;
+}
+
+function getMotivoBloqueioCobranca($n) {
+    if ($n['status_slug'] !== 'ciente') {
+        return 'Notificação ainda não está no status "ciente"';
+    }
+    
+    if ($n['recurso_status'] === 'indeferido') {
+        return null;
+    }
+    
+    if ($n['recurso_status'] === 'pendente') {
+        return 'Recurso em análise - aguarde decisão';
+    }
+    
+    if ($n['recurso_status'] === 'deferido') {
+        return 'Recurso deferido - não pode ir para cobrança';
+    }
+    
+    if ($n['data_ciencia']) {
+        $dataCiencia = new DateTime($n['data_ciencia']);
+        $hoje = new DateTime();
+        $dias = $hoje->diff($dataCiencia)->days;
+        if ($dias < 7) {
+            return "Ciência registrada há $dias dia(s) - aguarde 7 dias para cobrar";
+        }
+    }
+    
+    return 'Aguarde 7 dias após ciência para cobrar';
 }
 
 function deletarImagem($pdo, $dados, $usuario) {
@@ -782,30 +842,41 @@ function mudarFase($pdo, $dados, $usuario) {
         }
 
         // --- LÓGICA ESPECIAL: CONDIÇÕES PARA COBRANÇA ---
-        if ($novaFaseSlug === 'cobranca' && !$isAdminDev) {
+        if ($novaFaseSlug === 'cobranca') {
             $stmt_check = $pdo->prepare("SELECT data_ciencia, recurso_status, status_id FROM notificacoes WHERE id = ?");
             $stmt_check->execute([$id]);
             $n = $stmt_check->fetch();
             
             $podeIrCobranca = false;
+            $motivoBloqueio = '';
             
-            // Caso 1: Recurso Indeferido
             if ($n['recurso_status'] === 'indeferido') {
                 $podeIrCobranca = true;
-            } 
-            // Caso 2: 7 dias após ciência (sem recurso pendente)
+            }
+            elseif ($n['recurso_status'] === 'pendente') {
+                $podeIrCobranca = false;
+                $motivoBloqueio = 'Recurso em análise - aguarde decisão';
+            }
             elseif ($n['data_ciencia']) {
                 $dataCiencia = new DateTime($n['data_ciencia']);
                 $hoje = new DateTime();
                 $diff = $hoje->diff($dataCiencia)->days;
-                if ($diff >= 7 && $faseAnteriorSlug !== 'em_recurso') {
+                if ($diff >= 7) {
                     $podeIrCobranca = true;
+                } else {
+                    $motivoBloqueio = "Ciência registrada há $diff dia(s) - aguarde 7 dias para cobrar";
                 }
             }
-
-            if (!$podeIrCobranca) {
+            
+            if (!$podeIrCobranca && !$isAdminDev) {
                 http_response_code(400);
-                echo json_encode(['message' => "A cobrança só estará disponível 7 dias após a ciência ou se o recurso for indeferido."]);
+                echo json_encode(['message' => $motivoBloqueio ?: "Regra de negócio não atendida para cobrança."]);
+                exit();
+            }
+            
+            if (!$podeIrCobranca && $isAdminDev && empty($dados->forcar)) {
+                http_response_code(400);
+                echo json_encode(['message' => $motivoBloqueio, 'forcar_permitido' => true]);
                 exit();
             }
         }
