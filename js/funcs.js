@@ -48,22 +48,79 @@ function toggleMultaField() {
     }
 }
 
-function handleFiles(input, previewContainerId) {
+async function resizeImage(file, maxPixels = 600, quality = 0.8) {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = function() {
+            const width = img.width;
+            const height = img.height;
+            
+            // Se já é menor que o máximo, retorna original
+            if (width <= maxPixels && height <= maxPixels) {
+                const reader = new FileReader();
+                reader.onload = e => resolve(e.target.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+                return;
+            }
+            
+            // Calcular novas dimensões mantendo proporção
+            let newWidth, newHeight;
+            if (width > height) {
+                newWidth = maxPixels;
+                newHeight = Math.round((height / width) * maxPixels);
+            } else {
+                newHeight = maxPixels;
+                newWidth = Math.round((width / height) * maxPixels);
+            }
+            
+            // Criar canvas e redimensionar
+            const canvas = document.createElement('canvas');
+            canvas.width = newWidth;
+            canvas.height = newHeight;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, newWidth, newHeight);
+            
+            // Exportar como JPEG (mais leve) ou manter PNG se for o caso
+            const mimeType = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+            const dataUrl = canvas.toDataURL(mimeType, quality);
+            
+            console.log(`Imagem redimensionada: ${width}x${height} -> ${newWidth}x${newHeight} (${Math.round(dataUrl.length / 1024)}KB)`);
+            resolve(dataUrl);
+        };
+        img.onerror = reject;
+        img.src = URL.createObjectURL(file);
+    });
+}
+
+async function handleFiles(input, previewContainerId) {
     const previewContainer = document.getElementById(previewContainerId);
     if (!previewContainer) return;
     document.querySelectorAll('.new-image-preview').forEach(el => el.remove());
     imageStore = [];
     const files = input.files;
+    
     for (const file of files) {
         if (!file.type.startsWith('image/')) continue;
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const base64String = e.target.result.split(',')[1];
+        
+        try {
+            const resizedDataUrl = await resizeImage(file);
+            const base64String = resizedDataUrl.split(',')[1];
             const fileData = { name: file.name, b64: base64String };
             imageStore.push(fileData);
-            createImagePreview(e.target.result, file.name, previewContainer);
-        };
-        reader.readAsDataURL(file);
+            createImagePreview(resizedDataUrl, file.name, previewContainer);
+        } catch (err) {
+            console.error('Erro ao redimensionar imagem:', err);
+            // Fallback: usar original
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const base64String = e.target.result.split(',')[1];
+                const fileData = { name: file.name, b64: base64String };
+                imageStore.push(fileData);
+                createImagePreview(e.target.result, file.name, previewContainer);
+            };
+            reader.readAsDataURL(file);
+        }
     }
 }
 

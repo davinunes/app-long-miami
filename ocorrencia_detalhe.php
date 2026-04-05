@@ -164,6 +164,7 @@ $podeCriarEvidencia = isAdmin() || temPermissao('ocorrencia.evidencia.anexar');
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script src="js/funcs.js"></script>
     <script>
 const urlParams = new URLSearchParams(window.location.search);
 const ocorrenciaId = urlParams.get('id');
@@ -735,32 +736,31 @@ document.addEventListener('paste', async function(e) {
 async function processarColagemImagem(file) {
     M.toast({html: 'Processando imagem...', classes: 'blue'});
     
-    var reader = new FileReader();
-    reader.onload = async function(e) {
+    try {
+        // Redimensionar imagem no cliente
+        const resizedDataUrl = await resizeImage(file);
+        
         var dados = {
             ocorrencia_id: ocorrenciaId,
             tipo: 'imagem',
             nome_original: 'paste_' + Date.now() + '.png',
-            dados: e.target.result.split(',')[1],
+            dados: resizedDataUrl.split(',')[1],
             mime_type: file.type || 'image/png',
-            tamanho_bytes: file.size
+            tamanho_bytes: resizedDataUrl.length
         };
         
-        try {
-            var response = await fetch(API_BASE_URL_PHP + '/ocorrencias.php?upload=1', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(dados)
-            });
-            var result = await response.json();
-            if (!response.ok) throw new Error(result.message);
-            M.toast({html: 'Imagem colada como evidência!', classes: 'green'});
-            carregarOcorrencia();
-        } catch (error) {
-            M.toast({html: 'Erro ao colar imagem: ' + error.message, classes: 'red'});
-        }
-    };
-    reader.readAsDataURL(file);
+        var response = await fetch(API_BASE_URL_PHP + '/ocorrencias.php?upload=1', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(dados)
+        });
+        var result = await response.json();
+        if (!response.ok) throw new Error(result.message);
+        M.toast({html: 'Imagem colada como evidência!', classes: 'green'});
+        carregarOcorrencia();
+    } catch (error) {
+        M.toast({html: 'Erro ao colar imagem: ' + error.message, classes: 'red'});
+    }
 }
 
 async function adicionarUnidade(bloco, numero) {
