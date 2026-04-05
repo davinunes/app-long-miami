@@ -307,6 +307,40 @@ $podeEncerrar = isAdmin() || temPermissao('notificacao.encerrar');
                 }
             } catch(e) { M.toast({html: 'Erro ao salvar'}); }
         }
+
+        let sincronizando = false;
+        
+        async function sincronizarEvidencias() {
+            const ocorrenciaId = document.getElementById('ocorrencia_id').value;
+            if (!ocorrenciaId || !NOTIFICACAO_ID) {
+                M.toast({html: 'Vincule uma ocorrência primeiro.', classes: 'red'});
+                return;
+            }
+            if (sincronizando) {
+                M.toast({html: 'Sincronização em andamento...', classes: 'orange'});
+                return;
+            }
+            sincronizando = true;
+            try {
+                const res = await fetch(`${API_BASE_URL_PHP}/notificacoes.php`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'sincronizar_evidencias',
+                        notificacao_id: NOTIFICACAO_ID,
+                        ocorrencia_id: parseInt(ocorrenciaId)
+                    })
+                });
+                const result = await res.json();
+                if (res.ok) {
+                    M.toast({html: result.message || 'Sincronizado!', classes: 'green'});
+                    loadNotificationData();
+                } else {
+                    M.toast({html: 'Erro: ' + (result.message || 'Falha'), classes: 'red'});
+                }
+            } catch(e) { M.toast({html: 'Erro de conexão', classes: 'red'}); }
+            finally { sincronizando = false; }
+        }
     </script>
 </body>
 </html>
