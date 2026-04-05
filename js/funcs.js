@@ -186,7 +186,7 @@ function carregarListaNotificacoes() {
         }
 
         const podeAcaoRapida = typeof PODE_ACAO_RAPIDA !== 'undefined' ? PODE_ACAO_RAPIDA : false;
-        const podeListarLavradas = typeof PODE_LISTAR_LAVRADAS !== 'undefined' ? PODE_LISTAR_LAVRADAS : false;
+        const podeListarLavradas = typeof PODE_LISTAR_ENVIADAS !== 'undefined' ? PODE_LISTAR_ENVIADAS : false;
         const podeListarCobranca = typeof PODE_LISTAR_COBRANCA !== 'undefined' ? PODE_LISTAR_COBRANCA : false;
 
         let count = 0;

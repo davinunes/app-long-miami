@@ -19,7 +19,7 @@ $pdo = getDbConnection();
 
 // Verificar permissões
 $isAdminDev = in_array($usuario['role'], ['admin', 'dev']);
-$podeListar = $isAdminDev || temPermissao('notificacao.listar') || temPermissao('notificacao.listar_lavradas') || temPermissao('notificacao.listar_em_cobranca');
+$podeListar = $isAdminDev || temPermissao('notificacao.listar') || temPermissao('notificacao.listar_lavradas') || temPermissao('notificacao.listar_enviadas') || temPermissao('notificacao.listar_em_cobranca');
 $podeCriar = $isAdminDev || temPermissao('notificacao.criar');
 $podeVerDetalhes = $isAdminDev || temPermissao('notificacao.ver');
 $podeEditar = $isAdminDev || temPermissao('notificacao.editar');
@@ -271,6 +271,7 @@ function listarNotificacoes($pdo, $usuario) {
     global $isAdminDev;
     
     $podeListarLavradas = $isAdminDev || temPermissao('notificacao.listar_lavradas');
+    $podeListarEnviadas = $isAdminDev || temPermissao('notificacao.listar_enviadas');
     $podeListarCobranca = $isAdminDev || temPermissao('notificacao.listar_em_cobranca');
     
     try {
@@ -290,7 +291,7 @@ function listarNotificacoes($pdo, $usuario) {
         }
         
         // Filtrar baseado nas permissões
-        $filtradas = array_filter($notificacoes, function($n) use ($podeListarLavradas, $podeListarCobranca, $isAdminDev) {
+        $filtradas = array_filter($notificacoes, function($n) use ($podeListarLavradas, $podeListarEnviadas, $podeListarCobranca, $isAdminDev) {
             if ($isAdminDev) return true;
             
             $status = $n['status_slug'];
@@ -298,9 +299,13 @@ function listarNotificacoes($pdo, $usuario) {
             if ($status === 'rascunho') {
                 return false;
             }
-            // Status que precisam de permissão específica
-            if (in_array($status, ['lavrada', 'enviada', 'ciente'])) {
+            // Status lavrada precisa de permissão específica
+            if ($status === 'lavrada') {
                 return $podeListarLavradas;
+            }
+            // Status enviada e ciente precisam de permissão específica
+            if (in_array($status, ['enviada', 'ciente'])) {
+                return $podeListarEnviadas;
             }
             if ($status === 'cobranca') {
                 return $podeListarCobranca;

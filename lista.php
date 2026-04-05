@@ -5,6 +5,7 @@ requireLogin();
 $podeAcaoRapida = isAdmin() || temPermissao('notificacao.acao_rapida');
 $podeEditarDatas = isAdmin() || temPermissao('notificacao.editar_datas');
 $podeListarLavradas = isAdmin() || temPermissao('notificacao.listar_lavradas');
+$podeListarEnviadas = isAdmin() || temPermissao('notificacao.listar_enviadas');
 $podeListarCobranca = isAdmin() || temPermissao('notificacao.listar_em_cobranca');
 ?>
 <!DOCTYPE html>
@@ -183,6 +184,7 @@ $podeListarCobranca = isAdmin() || temPermissao('notificacao.listar_em_cobranca'
         const PODE_ACAO_RAPIDA = <?php echo $podeAcaoRapida ? 'true' : 'false'; ?>;
         const PODE_EDITAR_DATAS = <?php echo $podeEditarDatas ? 'true' : 'false'; ?>;
         const PODE_LISTAR_LAVRADAS = <?php echo $podeListarLavradas ? 'true' : 'false'; ?>;
+        const PODE_LISTAR_ENVIADAS = <?php echo $podeListarEnviadas ? 'true' : 'false'; ?>;
         const PODE_LISTAR_COBRANCA = <?php echo $podeListarCobranca ? 'true' : 'false'; ?>;
         
         $(document).ready(function() {

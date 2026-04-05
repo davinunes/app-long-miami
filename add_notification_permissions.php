@@ -7,7 +7,8 @@ $pdo = getDbConnection();
 
 $novasPermissoes = [
     ['slug' => 'notificacao.acao_rapida', 'nome' => 'Ações Rápidas', 'descricao' => 'Usar ações rápidas (Enviar/Encerrar) na lista', 'modulo' => 'notificacao'],
-    ['slug' => 'notificacao.listar_lavradas', 'nome' => 'Listar Enviadas', 'descricao' => 'Ver notificações no status lavrada/enviada', 'modulo' => 'notificacao'],
+    ['slug' => 'notificacao.listar_lavradas', 'nome' => 'Listar Lavradas', 'descricao' => 'Ver notificações no status lavrada', 'modulo' => 'notificacao'],
+    ['slug' => 'notificacao.listar_enviadas', 'nome' => 'Listar Enviadas', 'descricao' => 'Ver notificações no status enviada', 'modulo' => 'notificacao'],
     ['slug' => 'notificacao.listar_em_cobranca', 'nome' => 'Listar em Cobrança', 'descricao' => 'Ver notificações em cobrança', 'modulo' => 'notificacao'],
     ['slug' => 'notificacao.editar_campos', 'nome' => 'Editar Campos', 'descricao' => 'Permite editar os campos da notificação', 'modulo' => 'notificacao'],
 ];

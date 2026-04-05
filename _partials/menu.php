@@ -11,7 +11,7 @@
     
     <li><a class="waves-effect ajax-link" href="dashboard_content.php"><i class="material-icons">dashboard</i>Dashboard</a></li>
     
-    <?php if (isAdmin() || temPermissao('notificacao.listar') || temAlgumaPermissao(['notificacao.ver', 'notificacao.criar'])): ?>
+    <?php if (isAdmin() || temAlgumaPermissao(['notificacao.listar', 'notificacao.ver', 'notificacao.criar', 'notificacao.acao_rapida', 'notificacao.listar_lavradas', 'notificacao.listar_enviadas', 'notificacao.listar_em_cobranca', 'notificacao.editar_datas'])): ?>
     <li><a class="waves-effect ajax-link" href="lista.php"><i class="material-icons">notifications</i>Notificações</a></li>
     <?php endif; ?>
     
