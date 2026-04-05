@@ -1174,8 +1174,8 @@ function criarTipoNotificacao($pdo, $dados) {
             return;
         }
         
-        $stmt = $pdo->prepare("INSERT INTO notificacao_tipos (nome, descricao) VALUES (?, ?)");
-        $stmt->execute([$nome, 'Tipo criado pelo usuário.']);
+        $stmt = $pdo->prepare("INSERT INTO notificacao_tipos (nome) VALUES (?)");
+        $stmt->execute([$nome]);
         $id = $pdo->lastInsertId();
         
         http_response_code(201);
