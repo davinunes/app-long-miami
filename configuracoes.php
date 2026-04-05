@@ -113,6 +113,24 @@ if (!isAdmin()) {
                 <button type="button" class="btn orange" onclick="uploadRegimento()">
                     <i class="material-icons">upload</i> Atualizar Regimento
                 </button>
+
+                <h5 style="margin-top: 30px;"><i class="material-icons">edit</i> Editor de Texto Avançado (TinyMCE)</h5>
+                <p style="color: #666; margin-bottom: 15px;">Habilite o editor rich text para os campos de texto. Desativado usa textarea padrão.</p>
+                
+                <div style="display: flex; flex-direction: column; gap: 15px;">
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                        <input type="checkbox" id="tinymce_notificacao_fatos" onchange="salvarTinyMCESetting('notificacao_fatos', this.checked)">
+                        <span>Notificação - Fatos</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                        <input type="checkbox" id="tinymce_notificacao_fundamentacao" onchange="salvarTinyMCESetting('notificacao_fundamentacao', this.checked)">
+                        <span>Notificação - Fundamentação Legal</span>
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                        <input type="checkbox" id="tinymce_ocorrencia_mensagem" onchange="salvarTinyMCESetting('ocorrencia_mensagem', this.checked)">
+                        <span>Ocorrência - Mensagens</span>
+                    </label>
+                </div>
             </div>
 
             <div id="tab-sindicos" class="config-section" style="display: none;">
@@ -202,6 +220,14 @@ if (!isAdmin()) {
                     
                     if (config.chave === 'regimento_json') {
                         document.getElementById('regimento_status').textContent = config.valor ? 'Carregado' : 'Não configurado';
+                    }
+                    
+                    // TinyMCE settings
+                    if (config.chave.startsWith('tinymce_')) {
+                        const checkbox = document.getElementById(config.chave);
+                        if (checkbox) {
+                            checkbox.checked = config.valor === '1';
+                        }
                     }
                 });
             } catch (error) {
@@ -324,6 +350,26 @@ if (!isAdmin()) {
             } catch (error) {
                 console.error('Erro:', error);
                 M.toast({html: 'Erro ao salvar URL', classes: 'red'});
+            }
+        }
+
+        async function salvarTinyMCESetting(chave, valor) {
+            try {
+                const response = await fetch(API_BASE + '/configuracoes.php', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({action: 'salvar_config', chave: 'tinymce_' + chave, valor: valor ? '1' : '0'})
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    M.toast({html: 'Configuração do editor salva!', classes: 'green'});
+                } else {
+                    M.toast({html: result.error || 'Erro ao salvar', classes: 'red'});
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                M.toast({html: 'Erro ao salvar configuração', classes: 'red'});
             }
         }
 

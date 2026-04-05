@@ -168,6 +168,14 @@ $podeEncerrar = isAdmin() || temPermissao('notificacao.encerrar');
                 if (data.tipos) data.tipos.forEach(t => $tipoDatalist.append(`<option value="${t.nome}" data-id="${t.id}">`));
                 
                 $('select').formSelect();
+                
+                // Carregar configurações de TinyMCE e inicializar
+                if (typeof initTinyMCESettings === 'function') {
+                    await initTinyMCESettings();
+                    if (tinyMCESettings['notificacao_fundamentacao'] === '1') {
+                        initTinyMCEForTextarea('fundamentacao_legal');
+                    }
+                }
             } catch (e) { console.error('Erro dados iniciais', e); }
         }
 
@@ -193,7 +201,7 @@ $podeEncerrar = isAdmin() || temPermissao('notificacao.encerrar');
             $('#bloco').val(data.bloco);
             $('#data_emissao').val(data.data_emissao);
             $('#valor_multa').val(data.valor_multa);
-            $('#fundamentacao_legal').val(data.fundamentacao_legal);
+            setTextareaContent('fundamentacao_legal', data.fundamentacao_legal || '');
             $('#url_recurso').val(data.url_recurso);
             
             // Mostrar campos de data se tiver permissão

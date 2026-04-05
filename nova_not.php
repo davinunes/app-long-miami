@@ -73,13 +73,21 @@ requireLogin();
 
         document.addEventListener('DOMContentLoaded', async function() {
             document.getElementById('data_emissao').value = new Date().toISOString().split('T')[0];
-            addFato();
             const configData = await fetchInitialData();
+            addFato();
             $('select').formSelect();
             configurarCampoBloco();
             vincularCamposUnidadeBloco();
             inicializarBuscaRegimento();
             await fetchProximoNumero();
+            
+            // Inicializar TinyMCE para fatos e fundamentação
+            if (typeof initTinyMCESettings === 'function') {
+                await initTinyMCESettings();
+                if (tinyMCESettings['notificacao_fundamentacao'] === '1') {
+                    initTinyMCEForTextarea('fundamentacao_legal');
+                }
+            }
             
             // Preencher URL de recurso padrão se configurado
             if (configData && configData.urlRecursoDefault) {

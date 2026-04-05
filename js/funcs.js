@@ -4,6 +4,77 @@
 
 let imageStore = [];
 let currentPdfUrl = null;
+let tinyMCESettings = {};
+
+async function initTinyMCEForTextarea(textareaId) {
+    if (typeof tinymce === 'undefined') {
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.2/tinymce.min.js';
+        script.onload = () => initTinyMCETextarea(textareaId);
+        document.head.appendChild(script);
+    } else {
+        initTinyMCETextarea(textareaId);
+    }
+}
+
+function initTinyMCETextarea(textareaId) {
+    const textarea = document.getElementById(textareaId);
+    if (!textarea) return;
+    
+    const settingKey = textarea.dataset.tinymce;
+    const usarTinyMCE = tinyMCESettings[settingKey] === '1';
+    
+    if (!usarTinyMCE) return;
+    if (tinymce.get(textareaId)) return;
+    
+    tinymce.init({
+        selector: '#' + textareaId,
+        height: 150,
+        menubar: false,
+        plugins: 'advlist autolink lists link preview code help wordcount',
+        toolbar: 'bold italic | bullist numlist | code',
+        content_style: 'body { font-family: Arial, sans-serif; font-size: 14px; }',
+        branding: false,
+        convert_urls: false,
+        setup: function(editor) {
+            editor.on('init', function() {
+                if (textarea.value) {
+                    editor.setContent(textarea.value);
+                }
+            });
+        }
+    });
+}
+
+async function initTinyMCESettings() {
+    try {
+        const res = await fetch(API_BASE_URL_PHP + '/configuracoes.php');
+        const configs = await res.json();
+        configs.forEach(c => {
+            if (c.chave.startsWith('tinymce_')) {
+                tinyMCESettings[c.chave.replace('tinymce_', '')] = c.valor;
+            }
+        });
+    } catch (e) {
+        console.log('Erro ao carregar configurações TinyMCE:', e);
+    }
+}
+
+function getTextareaContent(id) {
+    if (typeof tinymce !== 'undefined' && tinymce.get(id)) {
+        return tinymce.get(id).getContent();
+    }
+    return document.getElementById(id).value;
+}
+
+function setTextareaContent(id, content) {
+    if (typeof tinymce !== 'undefined' && tinymce.get(id)) {
+        tinymce.get(id).setContent(content);
+    } else {
+        const el = document.getElementById(id);
+        if (el) el.value = content;
+    }
+}
 
 function showStatus(message, type) {
     const statusEl = document.getElementById('status');
@@ -21,18 +92,30 @@ function autoExpand(textarea) {
     textarea.style.height = textarea.scrollHeight + 'px';
 }
 
-function addFato(valor = '') {
+function addFato(valor = '', isHtml = false) {
     const container = document.getElementById('fatos-container');
     if (!container) return;
+    
     const div = document.createElement('div');
     div.className = 'fato-item';
-    div.innerHTML = `<textarea placeholder="Descreva o fato...">${valor}</textarea>
+    
+    const textareaId = 'fato_' + Date.now();
+    
+    div.innerHTML = `<textarea id="${textareaId}" class="tinymce-target" data-tinymce="notificacao_fatos" placeholder="Descreva o fato...">${valor}</textarea>
                      <button type="button" class="remove-fato" onclick="removeFato(this)">×</button>`;
     container.appendChild(div);
+    
+    initTinyMCEForTextarea(textareaId);
 }
 
 function removeFato(button) {
-    button.parentElement.remove();
+    const div = button.parentElement;
+    const textarea = div.querySelector('textarea');
+    if (textarea && typeof tinymce !== 'undefined') {
+        const editor = tinymce.get(textarea.id);
+        if (editor) editor.remove();
+    }
+    div.remove();
 }
 
 function toggleMultaField() {
@@ -440,9 +523,9 @@ function getFormData(forPDF = false) {
         unidade: document.getElementById('unidade').value,
         bloco: document.getElementById('bloco').value,
         data_emissao: document.getElementById('data_emissao').value,
-        fundamentacao_legal: document.getElementById('fundamentacao_legal').value,
+        fundamentacao_legal: getTextareaContent('fundamentacao_legal'),
         texto_descritivo: document.getElementById('texto_descritivo') ? document.getElementById('texto_descritivo').value : '',
-        fatos: Array.from(document.querySelectorAll('#fatos-container textarea')).map(input => input.value).filter(Boolean),
+        fatos: Array.from(document.querySelectorAll('#fatos-container textarea')).map(textarea => getTextareaContent(textarea.id)).filter(Boolean),
         fotos_fatos: imageStore,
         artigos: typeof getSelectedArticles === 'function' ? getSelectedArticles() : []
     };

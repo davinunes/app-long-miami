@@ -50,8 +50,8 @@
 </div>
 
 <div class="form-group">
-    <label for="unidade">Unidade:</label>
-    <input type="text" id="unidade" placeholder="Ex: A101 ou 101" required>
+    <label for="fundamentacao_legal">Fundamentação Legal:</label>
+    <textarea id="fundamentacao_legal" class="tinymce-target" data-tinymce="notificacao_fundamentacao" rows="4" placeholder="Artigos do regimento, leis, etc..." oninput="autoExpand(this)"></textarea>
 </div>
 
 <div class="form-group">

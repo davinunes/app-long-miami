@@ -166,6 +166,7 @@ $podeExcluirAnexoProprio = isAdmin() || temPermissao('ocorrencia.anexo.excluir_p
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script src="js/funcs.js"></script>
     <script>
 const urlParams = new URLSearchParams(window.location.search);
 const ocorrenciaId = urlParams.get('id');
@@ -207,6 +208,14 @@ $(document).ready(async function() {
         return;
     }
     await carregarOcorrencia();
+    
+    // Inicializar TinyMCE para mensagens se configurado
+    if (typeof initTinyMCESettings === 'function') {
+        await initTinyMCESettings();
+        if (tinyMCESettings['ocorrencia_mensagem'] === '1') {
+            initTinyMCEForTextarea('nova-mensagem');
+        }
+    }
 });
 
 function fazerLogout() {
@@ -369,7 +378,7 @@ function renderOcorrencia(occ) {
     if (PODE_CRIAR_MENSAGEM) {
         html += '<hr style="margin: 15px 0; border: none; border-top: 1px solid #eee;">' +
         '<div style="display: flex; gap: 10px; align-items: center;">' +
-        '<input type="text" id="nova-mensagem" placeholder="Digite uma mensagem ou cole (Ctrl+V)..." style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">' +
+        '<textarea id="nova-mensagem" class="tinymce-target" data-tinymce="ocorrencia_mensagem" placeholder="Digite uma mensagem ou cole (Ctrl+V)..." style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px; min-height: 40px;"></textarea>' +
         '<label style="display: flex; align-items: center; gap: 5px;"><input type="checkbox" id="msg-evidencia"><span>Evidência</span></label>' +
         '<button class="btn blue" onclick="enviarMensagem()">Enviar</button>' +
         '</div>' +
@@ -527,7 +536,7 @@ function renderHistorico(logs) {
 }
 
 async function enviarMensagem() {
-    var mensagem = $('#nova-mensagem').val().trim();
+    var mensagem = getTextareaContent('nova-mensagem').trim();
     if (!mensagem) return;
     var ehEvidencia = $('#msg-evidencia').is(':checked');
     
@@ -539,7 +548,11 @@ async function enviarMensagem() {
         });
         var result = await response.json();
         if (!response.ok) throw new Error(result.message);
-        $('#nova-mensagem').val('');
+        if (typeof tinymce !== 'undefined' && tinymce.get('nova-mensagem')) {
+            tinymce.get('nova-mensagem').setContent('');
+        } else {
+            $('#nova-mensagem').val('');
+        }
         $('#msg-evidencia').prop('checked', false);
         carregarOcorrencia();
     } catch (error) {
