@@ -350,6 +350,11 @@ $podeEncerrar = isAdmin() || temPermissao('notificacao.encerrar');
             if (typeof getFormData !== 'function') return;
             const dados = getFormData();
             
+            // Se for edição, incluir o ID
+            if (NOTIFICACAO_ID) {
+                dados.id = NOTIFICACAO_ID;
+            }
+            
             // Incluir datas se o usuário tiver permissão
             if (PODE_EDITAR_DATAS || EH_ADMIN_DEV) {
                 const dataEnvio = document.getElementById('data_envio').value;
@@ -369,6 +374,9 @@ $podeEncerrar = isAdmin() || temPermissao('notificacao.encerrar');
                     M.toast({html: 'Salvo com sucesso'});
                     if (!NOTIFICACAO_ID) window.location.href = 'editar.php?id='+r.id;
                     else loadNotificationData();
+                } else {
+                    const err = await res.json();
+                    M.toast({html: 'Erro: ' + (err.message || 'Falha ao salvar'), classes: 'red'});
                 }
             } catch(e) { M.toast({html: 'Erro ao salvar'}); }
         }

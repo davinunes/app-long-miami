@@ -489,7 +489,22 @@ function atualizarNotificacao($pdo, $dados, $usuario) {
         $pdo->beginTransaction();
         $id = (int)$dados->id;
         
+        // Validar numeração duplicada
         $partes_numero = explode('/', $dados->numero ?? '');
+        $numero = $partes_numero[0] ?? '';
+        $ano = $partes_numero[1] ?? date('Y');
+        
+        $stmtDuplicado = $pdo->prepare("
+            SELECT id FROM notificacoes 
+            WHERE numero = ? AND ano = ? AND id != ?
+        ");
+        $stmtDuplicado->execute([$numero, $ano, $id]);
+        if ($stmtDuplicado->fetch()) {
+            $pdo->rollBack();
+            http_response_code(400);
+            echo json_encode(['message' => "Já existe uma notificação com o número {$numero}/{$ano}."]);
+            return;
+        }
         
         if (!empty($dados->imagens_para_deletar)) {
             $ids_para_deletar = array_map('intval', $dados->imagens_para_deletar);
@@ -620,6 +635,18 @@ function criarNotificacao($pdo, $dados, $usuario) {
         }
         
         $partes_numero = explode('/', $dados->numero);
+        $numero = $partes_numero[0] ?? '';
+        $ano = $partes_numero[1] ?? date('Y');
+        
+        // Validar numeração duplicada
+        $stmtDuplicado = $pdo->prepare("SELECT id FROM notificacoes WHERE numero = ? AND ano = ?");
+        $stmtDuplicado->execute([$numero, $ano]);
+        if ($stmtDuplicado->fetch()) {
+            $pdo->rollBack();
+            http_response_code(400);
+            echo json_encode(['message' => "Já existe uma notificação com o número {$numero}/{$ano}."]);
+            return;
+        }
         
         // Buscar ID do status "rascunho" pelo slug
         $stmtStatus = $pdo->prepare("SELECT id FROM notificacao_status WHERE slug = 'rascunho'");
