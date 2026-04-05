@@ -637,3 +637,44 @@ async function criarNovoTipo() {
         M.toast({html: 'Erro de conexão', classes: 'red'});
     }
 }
+
+async function excluirNotificacao() {
+    const podeExcluir = (typeof PODE_EXCLUIR !== 'undefined' && PODE_EXCLUIR) || EH_ADMIN_DEV;
+    if (!podeExcluir) {
+        M.toast({html: 'Você não tem permissão para excluir.', classes: 'red'});
+        return;
+    }
+    
+    const id = document.getElementById('qe-id').value;
+    if (!id) return;
+    
+    if (!confirm('Tem certeza que deseja excluir esta notificação? Esta ação não pode ser desfeita.')) {
+        return;
+    }
+    
+    try {
+        const res = await fetch(`${API_BASE_URL_PHP}/notificacoes.php`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'excluir',
+                id: parseInt(id)
+            })
+        });
+        
+        if (res.ok) {
+            M.toast({html: 'Notificação excluída!', classes: 'green'});
+            const modal = document.getElementById('modal-quick-edit');
+            if (modal) {
+                const instance = M.Modal.getInstance(modal);
+                if (instance) instance.close();
+            }
+            if (typeof carregarListaNotificacoes === 'function') carregarListaNotificacoes();
+        } else {
+            const err = await res.json();
+            M.toast({html: 'Erro: ' + (err.message || 'Falha'), classes: 'red'});
+        }
+    } catch (e) {
+        M.toast({html: 'Erro de conexão', classes: 'red'});
+    }
+}

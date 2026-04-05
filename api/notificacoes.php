@@ -114,6 +114,22 @@ switch ($metodo) {
                 exit();
             }
             criarTipoNotificacao($pdo, $dados);
+        } elseif (isset($dados->action) && $dados->action === 'excluir') {
+            if (!$isAdminDev && !temPermissao('notificacao.excluir')) {
+                http_response_code(403);
+                echo json_encode(['message' => 'Permissão insuficiente para excluir.']);
+                exit();
+            }
+            $id = (int)($dados->id ?? 0);
+            if (!$id) {
+                http_response_code(400);
+                echo json_encode(['message' => 'ID da notificação não fornecido.']);
+                exit();
+            }
+            $stmt = $pdo->prepare("DELETE FROM notificacoes WHERE id = ?");
+            $stmt->execute([$id]);
+            http_response_code(200);
+            echo json_encode(['message' => 'Notificação excluída com sucesso.']);
         } elseif (isset($dados->id) && !empty($dados->id)) {
             if (!$podeEditar) {
                 http_response_code(403);

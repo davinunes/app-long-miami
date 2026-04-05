@@ -87,6 +87,7 @@ $permissoes = [
     ['notificacao.editar', 'Editar Notificação', 'Editar qualquer notificação', 'notificacao'],
     ['notificacao.editar_propria', 'Editar Própria Notificação', 'Editar apenas notificações criadas', 'notificacao'],
     ['notificacao.excluir', 'Excluir Notificação', 'Excluir notificações', 'notificacao'],
+    ['notificacao.excluir_propria', 'Excluir Própria Notificação', 'Excluir apenas notificações criadas', 'notificacao'],
     ['notificacao.listar', 'Listar Notificações', 'Listar notificações', 'notificacao'],
     ['notificacao.ver', 'Ver Notificação', 'Ver detalhes de notificação', 'notificacao'],
     ['notificacao.lavrar', 'Lavrar Notificação', 'Assinar/lavrar notificações', 'notificacao'],

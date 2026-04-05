@@ -9,6 +9,7 @@ $podeListarEnviadas = isAdmin() || temPermissao('notificacao.listar_enviadas');
 $podeListarCobranca = isAdmin() || temPermissao('notificacao.listar_em_cobranca');
 $podeJulgarRecurso = isAdmin() || temPermissao('notificacao.julgar_recurso');
 $podeRegistrarRecurso = isAdmin() || temPermissao('notificacao.registrar_recurso');
+$podeExcluir = isAdmin() || temPermissao('notificacao.excluir');
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -173,9 +174,14 @@ $podeRegistrarRecurso = isAdmin() || temPermissao('notificacao.registrar_recurso
                 </div>
             </div>
         </div>
-        <div class="modal-footer">
-            <a href="#!" class="modal-close btn-flat">Cancelar</a>
-            <button type="button" class="btn" id="btn-qe-salvar">Salvar</button>
+        <div class="modal-footer" style="display: flex; justify-content: space-between;">
+            <button type="button" class="btn red" id="btn-qe-excluir" onclick="excluirNotificacao()">
+                <i class="material-icons left">delete</i> Excluir
+            </button>
+            <div>
+                <a href="#!" class="modal-close btn-flat">Cancelar</a>
+                <button type="button" class="btn" id="btn-qe-salvar">Salvar</button>
+            </div>
         </div>
     </div>
 
@@ -189,6 +195,7 @@ $podeRegistrarRecurso = isAdmin() || temPermissao('notificacao.registrar_recurso
         const PODE_LISTAR_ENVIADAS = <?php echo $podeListarEnviadas ? 'true' : 'false'; ?>;
         const PODE_LISTAR_COBRANCA = <?php echo $podeListarCobranca ? 'true' : 'false'; ?>;
         const PODE_JULGAR_RECURSO = <?php echo $podeJulgarRecurso ? 'true' : 'false'; ?>;
+        const PODE_EXCLUIR = <?php echo $podeExcluir ? 'true' : 'false'; ?>;
         
         $(document).ready(function() {
             $('.sidenav').sidenav({edge: 'left'});
@@ -203,6 +210,11 @@ $podeRegistrarRecurso = isAdmin() || temPermissao('notificacao.registrar_recurso
             // Mostrar/ocultar campo de recurso baseado na permissão
             if (!PODE_JULGAR_RECURSO && !EH_ADMIN_DEV) {
                 $('.qe-recurso-row').hide();
+            }
+            
+            // Mostrar/ocultar botão excluir baseado na permissão
+            if (!PODE_EXCLUIR && !EH_ADMIN_DEV) {
+                $('#btn-qe-excluir').hide();
             }
         });
         
