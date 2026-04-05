@@ -78,7 +78,7 @@ $permissoes = [
     ['ocorrencia.colocar_em_analise', 'Colocar em Análise', 'Mudar para fase análise', 'ocorrencia'],
     ['ocorrencia.solicitar_complemento', 'Solicitar Complemento', 'Mudar para fase complemento', 'ocorrencia'],
     ['ocorrencia.finalizar', 'Finalizar', 'Mudar para fase finalizada', 'ocorrencia'],
-    ['ocorrencia.pronta', 'Marcar Pronta', 'Mudar para fase pronta', 'ocorrencia'],
+    ['ocorrencia.marcar_pronta', 'Marcar Pronta', 'Mudar para fase pronta', 'ocorrencia'],
     
     // =====================================================
     // PERMISSÕES DE NOTIFICAÇÕES
