@@ -466,7 +466,9 @@ async function salvarQuickEdit() {
     const id = document.getElementById('qe-id').value;
     const dataEnvio = document.getElementById('qe-data-envio').value;
     const dataCiencia = document.getElementById('qe-data-ciencia').value;
-    const recursoStatus = document.getElementById('qe-recurso-status').value;
+    
+    const podeEditarRecurso = (typeof PODE_JULGAR_RECURSO !== 'undefined' && PODE_JULGAR_RECURSO) || EH_ADMIN_DEV;
+    const recursoStatus = podeEditarRecurso ? document.getElementById('qe-recurso-status').value : '';
     
     try {
         const res = await fetch(`${API_BASE_URL_PHP}/notificacoes.php`, {

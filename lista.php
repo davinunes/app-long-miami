@@ -7,6 +7,8 @@ $podeEditarDatas = isAdmin() || temPermissao('notificacao.editar_datas');
 $podeListarLavradas = isAdmin() || temPermissao('notificacao.listar_lavradas');
 $podeListarEnviadas = isAdmin() || temPermissao('notificacao.listar_enviadas');
 $podeListarCobranca = isAdmin() || temPermissao('notificacao.listar_em_cobranca');
+$podeJulgarRecurso = isAdmin() || temPermissao('notificacao.julgar_recurso');
+$podeRegistrarRecurso = isAdmin() || temPermissao('notificacao.registrar_recurso');
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -157,7 +159,7 @@ $podeListarCobranca = isAdmin() || temPermissao('notificacao.listar_em_cobranca'
                 </div>
             </div>
             
-            <div class="row">
+            <div class="row qe-recurso-row">
                 <div class="col s12">
                     <div class="input-field">
                         <select id="qe-recurso-status">
@@ -186,6 +188,7 @@ $podeListarCobranca = isAdmin() || temPermissao('notificacao.listar_em_cobranca'
         const PODE_LISTAR_LAVRADAS = <?php echo $podeListarLavradas ? 'true' : 'false'; ?>;
         const PODE_LISTAR_ENVIADAS = <?php echo $podeListarEnviadas ? 'true' : 'false'; ?>;
         const PODE_LISTAR_COBRANCA = <?php echo $podeListarCobranca ? 'true' : 'false'; ?>;
+        const PODE_JULGAR_RECURSO = <?php echo $podeJulgarRecurso ? 'true' : 'false'; ?>;
         
         $(document).ready(function() {
             $('.sidenav').sidenav({edge: 'left'});
@@ -196,6 +199,11 @@ $podeListarCobranca = isAdmin() || temPermissao('notificacao.listar_em_cobranca'
             $('#user-email').text('<?php echo htmlspecialchars(getUsuarioEmail()); ?>');
             
             $('#btn-qe-salvar').on('click', salvarQuickEdit);
+            
+            // Mostrar/ocultar campo de recurso baseado na permissão
+            if (!PODE_JULGAR_RECURSO && !EH_ADMIN_DEV) {
+                $('.qe-recurso-row').hide();
+            }
         });
         
         function fazerLogout() {
