@@ -470,7 +470,7 @@ async function criarGrupo() {
         const res = await fetch(`${API_BASE_URL_PHP}/grupos.php`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ nome: nome, descricao: descricao, permissoes: permissoes })
+            body: JSON.stringify({ criar_grupo: true, nome: nome, descricao: descricao, permissoes: permissoes })
         });
         
         if (res.ok) {
