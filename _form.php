@@ -25,8 +25,14 @@
 </div>
 
 <div class="form-group">
-    <label for="tipo_id">Tipo de Notificação:</label>
-    <select id="tipo_id" onchange="toggleMultaField()"></select>
+    <label for="tipo_combo">Tipo de Notificação:</label>
+    <div class="combo-wrapper">
+        <input type="text" id="tipo_combo" placeholder="Digite ou selecione..." autocomplete="off" list="tipo_datalist">
+        <datalist id="tipo_datalist"></datalist>
+        <input type="hidden" id="tipo_id" value="">
+        <button type="button" id="btn_criar_tipo" class="btn-criar-tipo" onclick="criarNovoTipo()">+ Criar</button>
+    </div>
+    <small id="tipo_hint" style="color: #666; display: none;">Digite um novo nome e clique em "Criar"</small>
 </div>
 
 <div class="form-group">

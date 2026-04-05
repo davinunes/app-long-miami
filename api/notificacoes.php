@@ -107,6 +107,13 @@ switch ($metodo) {
                 exit();
             }
             quickEditNotificacao($pdo, $dados);
+        } elseif (isset($dados->action) && $dados->action === 'criar_tipo') {
+            if (!$isAdminDev && !temPermissao('notificacao.criar')) {
+                http_response_code(403);
+                echo json_encode(['message' => 'Permissão insuficiente.']);
+                exit();
+            }
+            criarTipoNotificacao($pdo, $dados);
         } elseif (isset($dados->id) && !empty($dados->id)) {
             if (!$podeEditar) {
                 http_response_code(403);
@@ -1012,6 +1019,38 @@ function quickEditNotificacao($pdo, $dados) {
     } catch (Exception $e) {
         http_response_code(500);
         echo json_encode(['message' => 'Erro ao atualizar: ' . $e->getMessage()]);
+    }
+}
+
+function criarTipoNotificacao($pdo, $dados) {
+    try {
+        $nome = trim($dados->nome ?? '');
+        
+        if (empty($nome)) {
+            http_response_code(400);
+            echo json_encode(['message' => 'Nome do tipo é obrigatório.']);
+            return;
+        }
+        
+        // Verificar se já existe
+        $stmt = $pdo->prepare("SELECT id FROM notificacao_tipos WHERE nome = ?");
+        $stmt->execute([$nome]);
+        if ($stmt->fetch()) {
+            http_response_code(400);
+            echo json_encode(['message' => 'Já existe um tipo com este nome.']);
+            return;
+        }
+        
+        $stmt = $pdo->prepare("INSERT INTO notificacao_tipos (nome, descricao) VALUES (?, ?)");
+        $stmt->execute([$nome, 'Tipo criado pelo usuário.']);
+        $id = $pdo->lastInsertId();
+        
+        http_response_code(201);
+        echo json_encode(['message' => 'Tipo criado!', 'id' => $id]);
+        
+    } catch (Exception $e) {
+        http_response_code(500);
+        echo json_encode(['message' => 'Erro ao criar tipo: ' . $e->getMessage()]);
     }
 }
 ?>

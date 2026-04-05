@@ -36,11 +36,10 @@ function removeFato(button) {
 }
 
 function toggleMultaField() {
-    const tipoSelect = document.getElementById('tipo_id');
-    if (!tipoSelect) return;
-    const selectedOption = tipoSelect.options[tipoSelect.selectedIndex];
+    const tipoCombo = document.getElementById('tipo_combo');
+    if (!tipoCombo) return;
     const valorMultaGroup = document.getElementById('valor_multa_group');
-    if (selectedOption && selectedOption.text.toLowerCase().includes('multa')) {
+    if (tipoCombo.value.toLowerCase().includes('multa')) {
         valorMultaGroup.classList.remove('hidden');
     } else {
         valorMultaGroup.classList.add('hidden');
@@ -107,11 +106,45 @@ async function fetchInitialData() {
         
         const configData = await response.json();
         
-        const tipoSelect = document.getElementById('tipo_id');
-        if (tipoSelect) {
-            tipoSelect.innerHTML = '';
+        // Carregar tipos no datalist (combobox)
+        const tipoDatalist = document.getElementById('tipo_datalist');
+        const tipoCombo = document.getElementById('tipo_combo');
+        const tipoIdInput = document.getElementById('tipo_id');
+        if (tipoDatalist) {
+            tipoDatalist.innerHTML = '';
             configData.tipos.forEach(tipo => {
-                tipoSelect.innerHTML += `<option value="${tipo.id}">${tipo.nome}</option>`;
+                tipoDatalist.innerHTML += `<option value="${tipo.nome}" data-id="${tipo.id}">`;
+            });
+        }
+        
+        // Eventos do combobox de tipos
+        if (tipoCombo) {
+            tipoCombo.addEventListener('input', function() {
+                const valor = this.value.trim();
+                const options = tipoDatalist ? tipoDatalist.querySelectorAll('option') : [];
+                const match = Array.from(options).find(opt => opt.value.toLowerCase() === valor.toLowerCase());
+                
+                if (match) {
+                    tipoIdInput.value = match.dataset.id;
+                    this.classList.remove('new-value');
+                    document.getElementById('btn_criar_tipo').style.display = 'none';
+                    toggleMultaField();
+                } else if (valor.length > 0) {
+                    tipoIdInput.value = '';
+                    this.classList.add('new-value');
+                    document.getElementById('btn_criar_tipo').style.display = 'block';
+                    toggleMultaField();
+                } else {
+                    tipoIdInput.value = '';
+                    this.classList.remove('new-value');
+                    document.getElementById('btn_criar_tipo').style.display = 'none';
+                }
+            });
+            
+            tipoCombo.addEventListener('blur', function() {
+                if (this.classList.contains('new-value') && this.value.trim()) {
+                    document.getElementById('btn_criar_tipo').style.display = 'block';
+                }
             });
         }
 
@@ -384,8 +417,12 @@ async function getExistingImagesForPDF() {
 }
 
 function getFormData(forPDF = false) {
-    const tipoSelect = document.getElementById('tipo_id');
-    const selectedTipoOption = tipoSelect.options[tipoSelect.selectedIndex];
+    const tipoCombo = document.getElementById('tipo_combo');
+    const tipoIdInput = document.getElementById('tipo_id');
+    const tipoDatalist = document.getElementById('tipo_datalist');
+    
+    const tipoNome = tipoCombo ? tipoCombo.value : '';
+    const tipoId = tipoIdInput ? parseInt(tipoIdInput.value) : null;
 
     const assuntoSelect = document.getElementById('assunto_id');
     const selectedAssuntoOption = assuntoSelect.options[assuntoSelect.selectedIndex];
@@ -410,21 +447,22 @@ function getFormData(forPDF = false) {
     }
 
     if (forPDF) {
-        dados.tipo_notificacao = selectedTipoOption.text;
-        dados.tipo_penalidade = selectedTipoOption.text.toUpperCase();
+        dados.tipo_notificacao = tipoNome;
+        dados.tipo_penalidade = tipoNome.toUpperCase();
         dados.assunto = selectedAssuntoOption.text;
         dados.url_recurso = document.getElementById('url_recurso').value;
-        if (selectedTipoOption.text.toLowerCase().includes('multa')) {
+        if (tipoNome.toLowerCase().includes('multa')) {
             dados.valor_multa = document.getElementById('valor_multa').value;
         }
         dados.fotos_fatos = imageStore.map(img => img.b64);
     } else {
-        dados.tipo_id = parseInt(selectedTipoOption.value);
+        dados.tipo_id = tipoId;
+        dados.tipo_nome = tipoNome;
         dados.assunto_id = parseInt(selectedAssuntoOption.value);
         dados.url_recurso = document.getElementById('url_recurso').value;
         dados.cidade_emissao = "Taguatinga/DF";
         dados.prazo_recurso = 5;
-        if (selectedTipoOption.text.toLowerCase().includes('multa')) {
+        if (tipoNome.toLowerCase().includes('multa')) {
             dados.valor_multa = document.getElementById('valor_multa').value;
         }
     }
@@ -541,5 +579,50 @@ async function sincronizarEvidencias() {
         if (typeof M !== 'undefined') {
             M.toast({html: 'Erro de conexão', classes: 'red'});
         }
+    }
+}
+
+async function criarNovoTipo() {
+    const tipoCombo = document.getElementById('tipo_combo');
+    const tipoDatalist = document.getElementById('tipo_datalist');
+    const tipoIdInput = document.getElementById('tipo_id');
+    const novoNome = tipoCombo.value.trim();
+    
+    if (!novoNome) {
+        M.toast({html: 'Digite um nome para o tipo.', classes: 'orange'});
+        return;
+    }
+    
+    try {
+        const res = await fetch(`${API_BASE_URL_PHP}/notificacoes.php`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'criar_tipo',
+                nome: novoNome
+            })
+        });
+        
+        const data = await res.json();
+        
+        if (res.ok) {
+            // Adicionar ao datalist
+            const option = document.createElement('option');
+            option.value = novoNome;
+            option.dataset.id = data.id;
+            tipoDatalist.appendChild(option);
+            
+            // Selecionar o novo tipo
+            tipoIdInput.value = data.id;
+            tipoCombo.classList.remove('new-value');
+            document.getElementById('btn_criar_tipo').style.display = 'none';
+            
+            M.toast({html: `Tipo "${novoNome}" criado!`, classes: 'green'});
+            toggleMultaField();
+        } else {
+            M.toast({html: 'Erro: ' + (data.message || 'Falha'), classes: 'red'});
+        }
+    } catch (e) {
+        M.toast({html: 'Erro de conexão', classes: 'red'});
     }
 }
