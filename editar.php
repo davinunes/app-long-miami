@@ -11,6 +11,13 @@ if (!$podeVer) {
     exit;
 }
 
+// Permissões de edição de campos
+$podeEditarCampos = isAdmin() || temPermissao('notificacao.editar') || temPermissao('notificacao.editar_campos');
+
+// Permissões de imagem
+$podeRemoverImagem = isAdmin() || temPermissao('notificacao.imagem.remover');
+$podeAnexarImagem = isAdmin() || temPermissao('notificacao.imagem.anexar');
+
 // Permissões de fase
 $podeLavrar = isAdmin() || temPermissao('notificacao.lavrar');
 $podeRevogarAssinatura = isAdmin() || temPermissao('notificacao.retornar_rascunho');
@@ -115,6 +122,9 @@ $podeEncerrar = isAdmin() || temPermissao('notificacao.encerrar');
     <script>
         const NOTIFICACAO_ID = <?php echo isset($_GET['id']) ? (int)$_GET['id'] : 'null'; ?>;
         const USUARIO_ID = <?php echo $usuarioLogado['id']; ?>;
+        const PODE_EDITAR_CAMPOS = <?php echo $podeEditarCampos ? 'true' : 'false'; ?>;
+        const PODE_REMOVER_IMAGEM = <?php echo $podeRemoverImagem ? 'true' : 'false'; ?>;
+        const PODE_ANEXAR_IMAGEM = <?php echo $podeAnexarImagem ? 'true' : 'false'; ?>;
         const PODE_LAVRAR = <?php echo $podeLavrar ? 'true' : 'false'; ?>;
         const PODE_REVOGAR = <?php echo $podeRevogarAssinatura ? 'true' : 'false'; ?>;
         const PODE_ENVIAR = <?php echo $podeEnviar ? 'true' : 'false'; ?>;
@@ -174,13 +184,28 @@ $podeEncerrar = isAdmin() || temPermissao('notificacao.encerrar');
             $('#fundamentacao_legal').val(data.fundamentacao_legal);
             $('#url_recurso').val(data.url_recurso);
             
+            // Aplicar controle de edição de campos
+            if (!PODE_EDITAR_CAMPOS || (data.status_slug !== 'rascunho' && !EH_ADMIN_DEV)) {
+                $('#documentForm input:not(#notificacao_id):not(#ocorrencia_id)').prop('readonly', true).css('background-color', '#f5f5f5');
+                $('#documentForm textarea').prop('readonly', true).css('background-color', '#f5f5f5');
+                $('#documentForm select').prop('disabled', true).formSelect();
+                $('#documentForm').addClass('form-locked');
+                $('#form-lock-info').show();
+                $('#btnSalvar').hide();
+            }
+            
+            // Ocultar input de anexar imagem se não tiver permissão
+            if (!PODE_ANEXAR_IMAGEM) {
+                $('#fotos_fatos').closest('.form-group').hide();
+            }
+            
             if (data.ocorrencia_id) {
                 $('#ocorrencia_id').val(data.ocorrencia_id);
                 $('#ocorrencia_titulo').text(`Ocorrência #${data.ocorrencia_id}: ${data.ocorrencia_titulo || ''}`);
                 $('#ver_ocorrencia_link').attr('href', `ocorrencia_detalhe.php?id=${data.ocorrencia_id}`);
                 $('#ocorrencia_info').show();
                 $('#ocorrencia_busca_section').hide();
-            } else {
+            } else if (PODE_EDITAR_CAMPOS) {
                 $('#ocorrencia_busca_section').show();
             }
             
@@ -193,12 +218,6 @@ $podeEncerrar = isAdmin() || temPermissao('notificacao.encerrar');
 
             $('#fatos-container').empty();
             if (data.fatos) data.fatos.forEach(f => { if (typeof addFato === 'function') addFato(f); });
-
-            if (data.status_slug !== 'rascunho' && !EH_ADMIN_DEV) {
-                $('#documentForm').addClass('form-locked');
-                $('#form-lock-info').show();
-                $('#btnSalvar').hide();
-            }
 
             renderLifecycleActions(data);
             renderTimeline(data.fase_log || []);
@@ -226,14 +245,17 @@ $podeEncerrar = isAdmin() || temPermissao('notificacao.encerrar');
             imagens.forEach(img => {
                 const url = img.caminho_arquivo.includes('/') ? img.caminho_arquivo : 'uploads/imagens/' + img.caminho_arquivo;
                 const isInactive = (img.inactive == 1);
+                const actionsHtml = PODE_REMOVER_IMAGEM ? `
+                    <div class="img-actions">
+                         <button type="button" class="btn-floating btn-small ${isInactive ? 'green' : 'orange'}" onclick="alternarImagem(${img.id}, ${isInactive ? 0 : 1})">
+                            <i class="material-icons">${isInactive ? 'check' : 'block'}</i>
+                         </button>
+                    </div>
+                ` : '';
                 $cont.append(`
                     <div class="img-preview-item existing-image ${isInactive ? 'inativa' : ''}" id="img_${img.id}">
                         <img src="${url}" class="${isInactive ? 'grayscale' : ''}" title="${img.nome_original}" onclick="window.open('${url}')">
-                        <div class="img-actions">
-                             <button type="button" class="btn-floating btn-small ${isInactive ? 'green' : 'orange'}" onclick="alternarImagem(${img.id}, ${isInactive ? 0 : 1})">
-                                <i class="material-icons">${isInactive ? 'check' : 'block'}</i>
-                             </button>
-                        </div>
+                        ${actionsHtml}
                     </div>
                 `);
             });

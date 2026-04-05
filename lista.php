@@ -1,6 +1,10 @@
 <?php
 require_once 'auth.php';
 requireLogin();
+
+$podeAcaoRapida = isAdmin() || temPermissao('notificacao.acao_rapida');
+$podeListarLavradas = isAdmin() || temPermissao('notificacao.listar_lavradas');
+$podeListarCobranca = isAdmin() || temPermissao('notificacao.listar_em_cobranca');
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -56,6 +60,10 @@ requireLogin();
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
     <script src="js/funcs.js?v=<?php echo time(); ?>"></script>
     <script>
+        const PODE_ACAO_RAPIDA = <?php echo $podeAcaoRapida ? 'true' : 'false'; ?>;
+        const PODE_LISTAR_LAVRADAS = <?php echo $podeListarLavradas ? 'true' : 'false'; ?>;
+        const PODE_LISTAR_COBRANCA = <?php echo $podeListarCobranca ? 'true' : 'false'; ?>;
+        
         $(document).ready(function() {
             $('.sidenav').sidenav({edge: 'left'});
             carregarListaNotificacoes();

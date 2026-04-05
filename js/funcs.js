@@ -186,9 +186,36 @@ function carregarListaNotificacoes() {
             return;
         }
 
+        const podeAcaoRapida = typeof PODE_ACAO_RAPIDA !== 'undefined' ? PODE_ACAO_RAPIDA : false;
+        const podeListarLavradas = typeof PODE_LISTAR_LAVRADAS !== 'undefined' ? PODE_LISTAR_LAVRADAS : false;
+        const podeListarCobranca = typeof PODE_LISTAR_COBRANCA !== 'undefined' ? PODE_LISTAR_COBRANCA : false;
+
+        let count = 0;
         data.forEach(n => {
+            // Filtrar baseado em permissões
+            const statusLower = (n.status_slug || '').toLowerCase();
+            if (statusLower === 'lavrada' || statusLower === 'enviada' || statusLower === 'ciente') {
+                if (!podeListarLavradas && !EH_ADMIN_DEV) return;
+            }
+            if (statusLower === 'cobranca') {
+                if (!podeListarCobranca && !EH_ADMIN_DEV) return;
+            }
+
             const dataEmissao = new Date(n.data_emissao + 'T00:00:00');
             const dataFormatada = dataEmissao.toLocaleDateString('pt-BR');
+
+            let acoesHtml = `<a href="editar.php?id=${n.id}" class="action-btn">Detalhes</a>`;
+            
+            if (podeAcaoRapida || EH_ADMIN_DEV) {
+                // Só mostra botão Enviar se estiver no status correto (lavrada)
+                if (statusLower === 'lavrada') {
+                    acoesHtml += ` <button class="btn-small green" onclick="acaoRapidaNotificacao(${n.id}, 'enviada')" title="Marcar como Enviada">Enviar</button>`;
+                }
+                // Só mostra botão Encerrar se estiver no status correto (ciente)
+                if (statusLower === 'ciente') {
+                    acoesHtml += ` <button class="btn-small orange" onclick="acaoRapidaNotificacao(${n.id}, 'cobranca')" title="Marcar para Cobrança">Cobrar</button>`;
+                }
+            }
 
             const row = `
                 <tr>
@@ -198,18 +225,43 @@ function carregarListaNotificacoes() {
                     <td>${n.tipo}</td>
                     <td>${n.status}</td>
                     <td>${dataFormatada}</td>
-                    <td>
-                        <a href="editar.php?id=${n.id}" class="action-btn">Detalhes / Editar</a>
-                    </td>
+                    <td>${acoesHtml}</td>
                 </tr>
             `;
             tbody.innerHTML += row;
+            count++;
         });
+
+        if (count === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">Nenhuma notificação disponível.</td></tr>';
+        }
     })
     .catch(error => {
         console.error('Erro ao buscar notificações:', error);
         tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: red;">Erro: ${error.message}</td></tr>`;
     });
+}
+
+async function acaoRapidaNotificacao(id, novoStatus) {
+    if (!confirm(`Alterar status para "${novoStatus}"?`)) return;
+    
+    try {
+        const res = await fetch(`${API_BASE_URL_PHP}/notificacoes.php`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ mudar_fase: true, id: id, nova_fase: novoStatus })
+        });
+        
+        if (res.ok) {
+            M.toast({html: 'Status atualizado!', classes: 'green'});
+            carregarListaNotificacoes();
+        } else {
+            const err = await res.json();
+            M.toast({html: 'Erro: ' + (err.message || 'Falha'), classes: 'red'});
+        }
+    } catch (e) {
+        M.toast({html: 'Erro de conexão', classes: 'red'});
+    }
 }
 
 function fazerLogout() {
