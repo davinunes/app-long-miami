@@ -117,7 +117,7 @@
 </div>
 
 <div class="button-group">
-    <button type="button" class="btn-primary" id="btnSalvar">
+    <button type="button" class="btn-primary" id="btnSalvar" onclick="salvarNotificacao()">
         💾 Salvar
     </button>
     <button type="button" class="btn-secondary" onclick="gerarPDF()">
