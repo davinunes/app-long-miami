@@ -264,17 +264,51 @@ function getTableDependencies($sql) {
     return $deps;
 }
 
-// Ordenar tabelas por dependência (topological sort)
+// Remover FOREIGN KEY constraints de um CREATE TABLE (para criar tabelas primeiro)
+function removeForeignKeys($sql) {
+    // Remove CONSTRAINT xxx FOREIGN KEY (...) REFERENCES ... ON DELETE...
+    $sql = preg_replace('/,\s*CONSTRAINT\s+\w+\s+FOREIGN\s+KEY\s*\([^)]+\)\s+REFERENCES\s+[^\)]+(?:\s+ON\s+DELETE[^\,]+)?(?=\s*,?\s*(?:CONSTRAINT|PRIMARY|KEY|\)\s*\;))/', '', $sql);
+    // Remove CONSTRAINT no final
+    $sql = preg_replace('/,\s*CONSTRAINT\s+\w+\s+FOREIGN\s+KEY\s*\([^)]+\)\s+REFERENCES\s+[^\)]+\s+ON\s+DELETE[^\,]+/', '', $sql);
+    return $sql;
+}
+
+// Extrair FOREIGN KEY constraints para adicionar depois
+function extractForeignKeys($sql) {
+    $fks = [];
+    if (preg_match('/CREATE TABLE `?(\w+)`?/i', $sql, $matches)) {
+        $table = $matches[1];
+        // Buscar todas as CONSTRAINT FOREIGN KEY
+        if (preg_match_all('/CONSTRAINT\s+(\w+)\s+FOREIGN\s+KEY\s*\(([^)]+)\)\s+REFERENCES\s+`?(\w+)`?\s*\(([^)]+)\)([^,;]*)/i', $sql, $fkMatches, PREG_SET_ORDER)) {
+            foreach ($fkMatches as $fk) {
+                $fks[] = [
+                    'constraint' => $fk[1],
+                    'column' => $fk[2],
+                    'ref_table' => $fk[3],
+                    'ref_column' => $fk[4],
+                    'on_delete' => trim($fk[5])
+                ];
+            }
+        }
+    }
+    return [$table, $fks];
+}
+
+// Ordenar tabelas por dependência (topological sort com detecção de ciclos)
 function topologicalSort($tables) {
     $graph = [];
     $inDegree = [];
+    $allTables = [];
     
     // Inicializar
     foreach ($tables as $sql) {
         if (preg_match('/CREATE TABLE `?(\w+)`?/i', $sql, $matches)) {
             $table = $matches[1];
+            $allTables[] = $table;
             $graph[$table] = getTableDependencies($sql);
-            $inDegree[$table] = count($graph[$table]);
+            $inDegree[$table] = count(array_filter($graph[$table], function($dep) use ($allTables) {
+                return in_array($dep, $allTables);
+            }));
         }
     }
     
@@ -303,18 +337,33 @@ function topologicalSort($tables) {
         }
     }
     
+    // Se ainda houver tabelas não processadas, há ciclos
+    // Adicionar as restantes sem ordenação (elas terão dependências circulares)
+    foreach ($allTables as $table) {
+        if (!in_array($table, $sorted)) {
+            $sorted[] = $table;
+        }
+    }
+    
     return $sorted;
 }
 
 // Ordenar e criar tabelas
 $sortedTables = topologicalSort($createStatements);
-$output("    DEBUG: Tabelas ordenadas para criação: " . implode(', ', $sortedTables));
 
 $tableMap = []; // Mapear nome para SQL
+$foreignKeysToAdd = []; // Armazenar FKs para adicionar depois
 
 foreach ($createStatements as $sql) {
     if (preg_match('/CREATE TABLE `?(\w+)`?/i', $sql, $matches)) {
-        $tableMap[$matches[1]] = $sql;
+        $tableName = $matches[1];
+        $tableMap[$tableName] = $sql;
+        
+        // Extrair FKs para adicionar depois
+        list($table, $fks) = extractForeignKeys($sql);
+        if (!empty($fks)) {
+            $foreignKeysToAdd[$table] = $fks;
+        }
     }
 }
 
@@ -322,31 +371,40 @@ $createdTables = [];
 $countTables = 0;
 $countInserts = 0;
 
-// Criar tabelas na ordem correta
-$output("    Criando tabelas na ordem correta...");
-$output("    DEBUG: tableMap tem " . count($tableMap) . " tabelas");
-$output("    DEBUG: sortedTables tem " . count($sortedTables) . " tabelas");
-
-// Mostrar tabelas que estão no tableMap mas não no sortedTables
-$missingInSort = array_diff(array_keys($tableMap), $sortedTables);
-if (count($missingInSort) > 0) {
-    $output("    DEBUG: Tabelas no tableMap mas não no sortedTables: " . implode(', ', $missingInSort));
-}
-
+// Criar tabelas SEM foreign keys primeiro
+$output("    Criando tabelas (sem FK)...");
 foreach ($sortedTables as $tableName) {
-    if (!isset($tableMap[$tableName])) {
-        $output("      - {$tableName} (não encontrado no tableMap)");
-        continue;
-    }
+    if (!isset($tableMap[$tableName])) continue;
+    
+    $sql = removeForeignKeys($tableMap[$tableName]);
     
     try {
-        $pdo->exec($tableMap[$tableName]);
+        $pdo->exec($sql);
         $countTables++;
         $createdTables[] = $tableName;
         $output("      ✓ {$tableName}");
     } catch (PDOException $e) {
         $output("      ✗ {$tableName}: " . $e->getMessage());
     }
+}
+
+// Adicionar Foreign Keys depois
+if (!empty($foreignKeysToAdd)) {
+    $output("    Adicionando Foreign Keys...");
+    $fkCount = 0;
+    foreach ($foreignKeysToAdd as $table => $fks) {
+        foreach ($fks as $fk) {
+            $onDelete = !empty($fk['on_delete']) ? 'ON DELETE ' . trim($fk['on_delete']) : '';
+            $sql = "ALTER TABLE `{$table}` ADD CONSTRAINT `{$fk['constraint']}` FOREIGN KEY ({$fk['column']}) REFERENCES `{$fk['ref_table']}`({$fk['ref_column']}) {$onDelete}";
+            try {
+                $pdo->exec($sql);
+                $fkCount++;
+            } catch (PDOException $e) {
+                $output("      ! {$table}.{$fk['constraint']}: " . $e->getMessage());
+            }
+        }
+    }
+    $output("      {$fkCount} FK(s) adicionadas");
 }
 
 // Inserir dados
