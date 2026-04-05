@@ -82,6 +82,11 @@ function setupEventListenersUsuarios() {
             section.show();
             $(this).html('<i class="material-icons">remove</i> Cancelar');
             $(this).removeClass('green').addClass('red');
+            
+            // Preencher permissões se ainda não foi feito
+            if ($('#novo-grupo-permissoes').is(':empty')) {
+                renderizarPermissoesNovoGrupo();
+            }
         } else {
             section.hide();
             $(this).html('<i class="material-icons">add</i> Novo Grupo');
@@ -448,12 +453,63 @@ async function deletarGrupo(id) {
 }
 
 async function criarGrupo() {
-    const nome = prompt('Nome do grupo:');
-    if (!nome) return;
-    await fetch(`${API_BASE_URL_PHP}/grupos.php`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nome: nome, permissoes: [] })
+    const nome = $('#novo_grupo_nome').val().trim();
+    const descricao = $('#novo_grupo_desc').val().trim();
+    
+    if (!nome) {
+        M.toast({html: 'Digite o nome do grupo', classes: 'red'});
+        return;
+    }
+    
+    const permissoes = [];
+    $('.novo-grupo-permissao:checked').each(function() {
+        permissoes.push(parseInt($(this).val()));
     });
-    carregarListaGrupos();
+    
+    try {
+        const res = await fetch(`${API_BASE_URL_PHP}/grupos.php`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nome: nome, descricao: descricao, permissoes: permissoes })
+        });
+        
+        if (res.ok) {
+            M.toast({html: 'Grupo criado!', classes: 'green'});
+            $('#novo_grupo_nome').val('');
+            $('#novo_grupo_desc').val('');
+            $('.novo-grupo-permissao').prop('checked', false);
+            $('#novo-grupo-section').hide();
+            $('#btn-novo-grupo').html('<i class="material-icons">add</i> Novo Grupo');
+            $('#btn-novo-grupo').removeClass('red').addClass('green');
+            carregarListaGrupos();
+        } else {
+            const err = await res.json();
+            M.toast({html: 'Erro: ' + (err.message || 'Falha ao criar'), classes: 'red'});
+        }
+    } catch (e) {
+        M.toast({html: 'Erro de conexão', classes: 'red'});
+    }
+}
+
+function renderizarPermissoesNovoGrupo() {
+    const container = $('#novo-grupo-permissoes');
+    container.empty();
+    
+    Object.keys(configDataGlobal.permissoesPorModulo).forEach(modulo => {
+        const permissoes = configDataGlobal.permissoesPorModulo[modulo];
+        const moduloHtml = $(`
+            <div class="modulo-permissoes" style="margin-bottom: 15px;">
+                <h6 style="margin-bottom: 5px;">${modulo}</h6>
+                <div style="display: flex; flex-wrap: wrap; gap: 5px;">
+                    ${permissoes.map(p => `
+                        <label style="display: inline-flex; align-items: center; gap: 3px; padding: 3px 8px; background: #f5f5f5; border-radius: 4px; font-size: 12px; cursor: pointer;">
+                            <input type="checkbox" class="novo-grupo-permissao" value="${p.id}">
+                            <span>${p.nome}</span>
+                        </label>
+                    `).join('')}
+                </div>
+            </div>
+        `);
+        container.append(moduloHtml);
+    });
 }
