@@ -270,6 +270,20 @@ foreach ($dirs as $dir) {
     }
 }
 
+// Recriar estrutura de diretórios de uploads
+$output("    Recriando estrutura de uploads...");
+$uploadDirs = [
+    __DIR__ . '/uploads/imagens',
+    __DIR__ . '/uploads/ocorrencias',
+    __DIR__ . '/uploads/config',
+];
+foreach ($uploadDirs as $dir) {
+    if (!is_dir($dir)) {
+        mkdir($dir, 0755, true);
+        $output("    + {$dir}");
+    }
+}
+
 // ===========================================
 // RESULTADO
 // ===========================================

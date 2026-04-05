@@ -83,6 +83,15 @@ if (!isAdmin()) {
                 <h4><i class="material-icons">settings</i> Configurações do Sistema</h4>
                 
                 <div class="config-row">
+                    <label for="ultimo_numero_notificacao">Último Número de Notificação:</label>
+                    <input type="number" id="ultimo_numero_notificacao" placeholder="Ex: 100" min="0">
+                    <button type="button" class="btn blue" onclick="salvarUltimoNumero()">
+                        <i class="material-icons">save</i> Salvar
+                    </button>
+                </div>
+                <p style="color: #666; font-size: 12px; margin-top: -10px;">Define o número inicial para geração de notificações. O próximo será este + 1.</p>
+                
+                <div class="config-row" style="margin-top: 20px;">
                     <label for="url_recurso_default">URL para Recurso (padrão):</label>
                     <input type="text" id="url_recurso_default" placeholder="URL para recursos">
                     <button type="button" class="btn blue" onclick="salvarUrlRecurso()">
@@ -271,6 +280,28 @@ if (!isAdmin()) {
             } catch (error) {
                 console.error('Erro:', error);
                 M.toast({html: 'Erro ao enviar regimento', classes: 'red'});
+            }
+        }
+
+        async function salvarUltimoNumero() {
+            const numero = document.getElementById('ultimo_numero_notificacao').value;
+            
+            try {
+                const response = await fetch(API_BASE + '/configuracoes.php', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({action: 'salvar_config', chave: 'ultimo_numero_notificacao', valor: numero})
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    M.toast({html: 'Número salvo! Próxima notificação será: ' + (parseInt(numero) + 1), classes: 'green'});
+                } else {
+                    M.toast({html: result.error || 'Erro ao salvar número', classes: 'red'});
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                M.toast({html: 'Erro ao salvar número', classes: 'red'});
             }
         }
 

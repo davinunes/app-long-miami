@@ -248,14 +248,29 @@ function buscarNotificacao($pdo, $id, $usuario) {
 function buscarProximoNumero($pdo) {
     try {
         $ano_atual = date('Y');
+        
+        // Buscar último número configurado
+        $stmtConfig = $pdo->prepare("SELECT valor FROM configuracoes WHERE chave = 'ultimo_numero_notificacao'");
+        $stmtConfig->execute();
+        $config = $stmtConfig->fetch();
+        $ultimoNumeroConfig = $config ? (int)$config['valor'] : 0;
+        
+        // Buscar maior número no banco
         $sql = "SELECT MAX(CAST(numero AS UNSIGNED)) as max_num FROM notificacoes WHERE ano = ?";
         $stmt = $pdo->prepare($sql);
         $stmt->execute([$ano_atual]);
         $resultado = $stmt->fetch();
-        $proximo_numero = ($resultado && $resultado['max_num']) ? $resultado['max_num'] + 1 : 1;
+        $maxNumDb = ($resultado && $resultado['max_num']) ? (int)$resultado['max_num'] : 0;
+        
+        // Usar o maior entre configuração e banco
+        $proximo_numero = max($ultimoNumeroConfig, $maxNumDb) + 1;
         $numero_formatado = sprintf('%03d/%s', $proximo_numero, $ano_atual);
+        
         http_response_code(200);
-        echo json_encode(['proximo_numero' => $numero_formatado]);
+        echo json_encode([
+            'proximo_numero' => $numero_formatado,
+            'ultimo_configurado' => $ultimoNumeroConfig
+        ]);
     } catch (Exception $e) {
         http_response_code(500);
         echo json_encode(['message' => 'Erro ao buscar próximo número: ' . $e->getMessage()]);
