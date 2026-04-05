@@ -146,6 +146,77 @@ requireLogin();
                 </div>
             `).join('');
         }
+
+        async function buscarOcorrencias() {
+            const busca = document.getElementById('ocorrencia_busca').value.trim();
+            const container = document.getElementById('ocorrencia_busca_resultados');
+            
+            if (busca.length < 2) {
+                container.innerHTML = '<p style="color: #666;">Digite pelo menos 2 caracteres.</p>';
+                return;
+            }
+            
+            container.innerHTML = '<p style="color: #666;">Buscando...</p>';
+            
+            try {
+                const response = await fetch(`${API_BASE_URL_PHP}/notificacoes.php?buscar_ocorrencias=${encodeURIComponent(busca)}`);
+                const ocorrencias = await response.json();
+                
+                if (!ocorrencias.length) {
+                    container.innerHTML = '<p style="color: #666;">Nenhuma ocorrência homologada encontrada.</p>';
+                    return;
+                }
+                
+                container.innerHTML = '<div style="display: flex; flex-direction: column; gap: 8px;">' +
+                    ocorrencias.map(o => `
+                        <div style="background: #f5f5f5; padding: 10px; border-radius: 4px; cursor: pointer;" onclick="vincularOcorrencia(${o.id})">
+                            <strong>#${o.id}</strong> - ${o.titulo}
+                            <br><small style="color: #666;">${o.unidades || 'Sem unidades'}</small>
+                        </div>
+                    `).join('') + '</div>';
+                
+            } catch (error) {
+                container.innerHTML = '<p style="color: red;">Erro ao buscar.</p>';
+                console.error(error);
+            }
+        }
+
+        async function vincularOcorrencia(id) {
+            try {
+                const response = await fetch(`${API_BASE_URL_PHP}/ocorrencias.php?id=${id}`);
+                if (!response.ok) throw new Error('Erro ao carregar ocorrência');
+                
+                ocorrenciaData = await response.json();
+                
+                document.getElementById('ocorrencia_id').value = ocorrenciaData.id;
+                document.getElementById('ocorrencia_titulo').textContent = `Ocorrência #${ocorrenciaData.id}: ${ocorrenciaData.titulo}`;
+                document.getElementById('ver_ocorrencia_link').href = `ocorrencia_detalhe.php?id=${ocorrenciaData.id}`;
+                document.getElementById('ocorrencia_info').style.display = 'block';
+                document.getElementById('ocorrencia_busca_section').style.display = 'none';
+                document.getElementById('ocorrencia_busca_resultados').innerHTML = '';
+                
+                const unidade = ocorrenciaData.unidades && ocorrenciaData.unidades.length > 0 
+                    ? ocorrenciaData.unidades[0] 
+                    : null;
+                if (unidade) {
+                    document.getElementById('unidade').value = unidade.unidade_numero || '';
+                    document.getElementById('bloco').value = unidade.unidade_bloco || '';
+                }
+                
+                if (ocorrenciaData.descricao_fato) {
+                    document.getElementById('fatos-container').innerHTML = '';
+                    addFato(ocorrenciaData.descricao_fato);
+                }
+                
+                renderEvidenciasOcorrencia(ocorrenciaData.anexos || []);
+                
+                M.toast({html: 'Ocorrência vinculada!', classes: 'green'});
+                
+            } catch (error) {
+                M.toast({html: 'Erro ao vincular ocorrência', classes: 'red'});
+                console.error(error);
+            }
+        }
     </script>
 </body>
 </html>
