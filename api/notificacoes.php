@@ -747,7 +747,7 @@ function criarNotificacao($pdo, $dados, $usuario) {
             $pdo->prepare("UPDATE ocorrencias SET notificacao_id = ? WHERE id = ?")->execute([$notificacao_id, $dados->ocorrencia_id]);
             $pdo->prepare("INSERT INTO ocorrencia_notificacoes (ocorrencia_id, notificacao_id, tipo_vinculo) VALUES (?, ?, 'gerada')")->execute([$dados->ocorrencia_id, $notificacao_id]);
             
-            $stmt_anexos = $pdo->prepare("SELECT * FROM ocorrencia_anexos WHERE ocorrencia_id = ? AND inactive = 0");
+            $stmt_anexos = $pdo->prepare("SELECT * FROM ocorrencia_anexos WHERE ocorrencia_id = ? AND inactive = 0 AND tipo = 'imagem'");
             $stmt_anexos->execute([$dados->ocorrencia_id]);
             $anexos = $stmt_anexos->fetchAll(PDO::FETCH_ASSOC);
             
