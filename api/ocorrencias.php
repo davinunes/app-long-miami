@@ -561,10 +561,6 @@ function fazerUpload($pdo, $usuario) {
             $caminho = $uploadDir . $novoNome;
             
             $dadosBin = base64_decode($input['dados']);
-            // Redimensionar imagem se necessário (máx 600px, qualidade 80%)
-            if (in_array($input['tipo'], ['imagem', 'image'])) {
-                $dadosBin = redimensionarImagem($input['dados'], 600, 80) ?: $dadosBin;
-            }
             file_put_contents($caminho, $dadosBin);
             
             $url = '/uploads/ocorrencias/' . $novoNome;
