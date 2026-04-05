@@ -168,6 +168,7 @@ $podeCriarEvidencia = isAdmin() || temPermissao('ocorrencia.evidencia.anexar');
 const urlParams = new URLSearchParams(window.location.search);
 const ocorrenciaId = urlParams.get('id');
 const podeNotificar = <?php echo $podeNotificar ? 'true' : 'false'; ?>;
+const isAdmin = <?php echo $isAdmin ? 'true' : 'false'; ?>;
 const usuarioId = <?php echo $usuario['id']; ?>;
 
 // Permissões granulares injetadas pelo PHP
