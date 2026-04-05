@@ -74,12 +74,17 @@ requireLogin();
         document.addEventListener('DOMContentLoaded', async function() {
             document.getElementById('data_emissao').value = new Date().toISOString().split('T')[0];
             addFato();
-            await fetchInitialData();
+            const configData = await fetchInitialData();
             $('select').formSelect();
             configurarCampoBloco();
             vincularCamposUnidadeBloco();
             inicializarBuscaRegimento();
             await fetchProximoNumero();
+            
+            // Preencher URL de recurso padrão se configurado
+            if (configData && configData.urlRecursoDefault) {
+                document.getElementById('url_recurso').value = configData.urlRecursoDefault;
+            }
             
             if (OCORRENCIA_ID) {
                 await carregarOcorrenciaVinculada(OCORRENCIA_ID);

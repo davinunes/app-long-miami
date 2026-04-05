@@ -114,6 +114,11 @@ try {
         $permissoesPorModulo[$modulo][] = $p;
     }
     
+    // Buscar configuração de URL para recurso
+    $stmtUrlRecurso = $pdo->prepare("SELECT valor FROM configuracoes WHERE chave = 'url_recurso_default'");
+    $stmtUrlRecurso->execute();
+    $urlRecursoDefault = $stmtUrlRecurso->fetchColumn() ?: '';
+    
     http_response_code(200);
 
     echo json_encode([
@@ -122,7 +127,8 @@ try {
         'papeis' => $papeis,
         'grupos' => $grupos,
         'permissoes' => $permissoes,
-        'permissoesPorModulo' => $permissoesPorModulo
+        'permissoesPorModulo' => $permissoesPorModulo,
+        'urlRecursoDefault' => $urlRecursoDefault
     ]);
 
 } catch (Exception $e) {
