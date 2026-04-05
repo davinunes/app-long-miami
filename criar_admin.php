@@ -120,23 +120,12 @@ function criarAdmin($email, $senha, $nome = 'Administrador') {
             VALUES (?, ?, ?, 'admin', ?)
         ");
         $stmt->execute([$nome, $email, $senhaHash, $grupoAdminId]);
-        $usuarioId = $pdo->lastInsertId();
-        
-        // Atribuir todas as permissões ao grupo Admin
-        $stmt = $pdo->prepare("SELECT id FROM permissoes");
-        $stmt->execute();
-        $permissoes = $stmt->fetchAll(PDO::FETCH_COLUMN);
-        
-        $stmtLink = $pdo->prepare("INSERT IGNORE INTO grupo_permissoes (grupo_id, permissao_id) VALUES (?, ?)");
-        foreach ($permissoes as $permissaoId) {
-            $stmtLink->execute([$grupoAdminId, $permissaoId]);
-        }
         
         $pdo->commit();
         
         return [
             'sucesso' => 'Administrador criado com sucesso!',
-            'detalhes' => "Usuário: {$email}\nGrupos: Admin\nPermissões atribuídas: " . count($permissoes)
+            'detalhes' => "Usuário: {$email}\nGrupo: Admin (ID: {$grupoAdminId})"
         ];
         
     } catch (PDOException $e) {

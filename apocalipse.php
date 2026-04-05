@@ -144,7 +144,7 @@ if (!$pdo) {
     die("ERRO: Não foi possível reconectar ao banco.\n");
 }
 
-$estruturaFile = __DIR__ . '/storage/migrate_zero.sql';
+$estruturaFile = __DIR__ . '/storage/estrutura.sql';
 if (!file_exists($estruturaFile)) {
     die("ERRO: Arquivo storage/migrate_zero.sql não encontrado!\n");
 }
