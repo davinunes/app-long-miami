@@ -61,6 +61,86 @@ $podeVerMinhas = true;
             vertical-align: middle;
             margin-right: 5px;
         }
+        
+        .ocorrencias-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 16px;
+        }
+        
+        .ocorrencia-card {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border-left: 4px solid #2196F3;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .ocorrencia-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+        }
+        
+        .ocorrencia-card.fase-nova { border-left-color: #2196F3; }
+        .ocorrencia-card.fase-em_analise { border-left-color: #FF9800; }
+        .ocorrencia-card.fase-pronta { border-left-color: #9C27B0; }
+        .ocorrencia-card.fase-recusada { border-left-color: #F44336; }
+        .ocorrencia-card.fase-homologada { border-left-color: #4CAF50; }
+        
+        .ocorrencia-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+        
+        .ocorrencia-id {
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: #333;
+        }
+        
+        .ocorrencia-titulo {
+            font-size: 0.95rem;
+            color: #555;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+        
+        .ocorrencia-info {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-bottom: 12px;
+            font-size: 0.9rem;
+        }
+        
+        .ocorrencia-info span {
+            color: #666;
+        }
+        
+        .ocorrencia-info strong {
+            color: #333;
+        }
+        
+        .ocorrencia-acoes {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            padding-top: 12px;
+            border-top: 1px solid #eee;
+        }
+        
+        @media (max-width: 600px) {
+            .ocorrencias-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .ocorrencia-card {
+                padding: 14px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -113,42 +193,14 @@ $podeVerMinhas = true;
                 <?php if ($podeListarTodas || $isAdminDev): ?>
                 <div id="section-todas-ocorrencias">
                     <h5>Todas as Ocorrências</h5>
-                    <table class="striped highlight">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Título</th>
-                                <th>Unidades</th>
-                                <th>Data Fato</th>
-                                <th>Fase</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody id="ocorrencias-table-body">
-                            <tr><td colspan="6" style="text-align: center;">Carregando...</td></tr>
-                        </tbody>
-                    </table>
+                    <div id="ocorrencias-grid" class="ocorrencias-grid"></div>
                 </div>
                 <?php endif; ?>
                 
                 <?php if ($podeVerMinhas): ?>
                 <div id="section-minhas-ocorrencias" <?php if ($podeListarTodas || $isAdminDev): ?>style="display:none"<?php endif; ?>>
                     <h5>Minhas Ocorrências</h5>
-                    <table class="striped highlight">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Título</th>
-                                <th>Unidades</th>
-                                <th>Data Fato</th>
-                                <th>Fase</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody id="minhas-ocorrencias-table-body">
-                            <tr><td colspan="6" style="text-align: center;">Carregando...</td></tr>
-                        </tbody>
-                    </table>
+                    <div id="minhas-ocorrencias-grid" class="ocorrencias-grid"></div>
                 </div>
                 <?php endif; ?>
             </div>
@@ -293,9 +345,8 @@ $podeVerMinhas = true;
         async function carregarTodasOcorrencias() {
             if (!PODE_LISTAR_TODAS && !EH_ADMIN_DEV) return;
             
-            const tbody = $('#ocorrencias-table-body');
-            tbody.html('<tr><td colspan="6" style="text-align: center;">Carregando...</td></tr>');
-            console.log('[Todas] Carregando...');
+            const grid = $('#ocorrencias-grid');
+            grid.html('<div style="text-align: center; padding: 40px; color: #999;">Carregando...</div>');
             
             const fase = $('#filtro-fase').val();
             let url = API_BASE_URL_PHP + '/ocorrencias.php';
@@ -303,53 +354,50 @@ $podeVerMinhas = true;
             
             try {
                 const response = await fetch(url);
-                console.log('[Todas] Response:', response.status);
                 if (!response.ok) throw new Error('Erro ao carregar.');
                 ocorrenciasData = await response.json();
-                console.log('[Todas] Recebeu:', ocorrenciasData.length, 'ocorrências');
-                tbody.empty();
                 
                 if (ocorrenciasData.length === 0) {
-                    tbody.html('<tr><td colspan="6" style="text-align: center;">Nenhuma ocorrência encontrada.</td></tr>');
+                    grid.html('<div style="text-align: center; padding: 40px; color: #999;">Nenhuma ocorrência encontrada.</div>');
                     return;
                 }
                 
+                let cardsHtml = '';
                 ocorrenciasData.forEach(o => {
-                    renderLinhaOcorrencia(tbody, o);
+                    cardsHtml += renderCardOcorrencia(o);
                 });
+                grid.html(cardsHtml);
             } catch (error) {
-                tbody.html('<tr><td colspan="6" style="color: red;">Erro: ' + error.message + '</td></tr>');
+                grid.html('<div style="text-align: center; padding: 40px; color: red;">Erro: ' + error.message + '</div>');
             }
         }
 
         async function carregarMinhasOcorrencias() {
             if (!PODE_VER_DETALHES && !EH_ADMIN_DEV && !PODE_CRIAR) return;
             
-            const tbody = $('#minhas-ocorrencias-table-body');
-            tbody.html('<tr><td colspan="6" style="text-align: center;">Carregando minhas ocorrências...</td></tr>');
-            console.log('[Minhas] Carregando para usuário:', USUARIO_ID);
+            const grid = $('#minhas-ocorrencias-grid');
+            grid.html('<div style="text-align: center; padding: 40px; color: #999;">Carregando...</div>');
             
             try {
                 const response = await fetch(API_BASE_URL_PHP + '/ocorrencias.php?minhas=1');
-                console.log('[Minhas] Response status:', response.status);
                 if (!response.ok) {
                     const err = await response.json().catch(() => ({}));
                     throw new Error(err.message || 'Erro ao carregar.');
                 }
                 const minhas = await response.json();
-                console.log('[Minhas] Recebeu:', minhas.length, 'ocorrências');
-                tbody.empty();
                 
                 if (minhas.length === 0) {
-                    tbody.html('<tr><td colspan="6" style="text-align: center;">Nenhuma ocorrência criada por você.</td></tr>');
+                    grid.html('<div style="text-align: center; padding: 40px; color: #999;">Nenhuma ocorrência criada por você.</div>');
                     return;
                 }
                 
+                let cardsHtml = '';
                 minhas.forEach(o => {
-                    renderLinhaOcorrencia(tbody, o);
+                    cardsHtml += renderCardOcorrencia(o);
                 });
+                grid.html(cardsHtml);
             } catch (error) {
-                tbody.html('<tr><td colspan="6" style="color: red;">Erro: ' + error.message + '</td></tr>');
+                grid.html('<div style="text-align: center; padding: 40px; color: red;">Erro: ' + error.message + '</div>');
             }
         }
 
@@ -360,45 +408,41 @@ $podeVerMinhas = true;
             return false;
         }
 
-        function renderLinhaOcorrencia(tbody, o) {
+        function renderCardOcorrencia(o) {
             const faseClass = 'fase-' + o.fase;
             const faseLabel = o.fase.replace('_', ' ');
-            const unidades = o.unidades || '-';
             const podeEditar = podeEditarOcorrencia(o);
             
             let botoes = '';
             
-            // Ver detalhes - sempre disponível se tem acesso
             if (PODE_VER_DETALHES || EH_ADMIN_DEV) {
-                botoes += `<a href="ocorrencia_detalhe.php?id=${o.id}" class="btn-floating btn-small blue" title="Ver">
-                    <i class="material-icons">visibility</i>
-                </a>`;
+                botoes += `<a href="ocorrencia_detalhe.php?id=${o.id}" class="btn-small blue">Ver</a>`;
             }
             
-            // Editar - baseado na fase e permissões
             if (podeEditar) {
-                botoes += `<button class="btn-floating btn-small orange" onclick="editarOcorrencia(${o.id})" title="Editar">
-                    <i class="material-icons">edit</i>
-                </button>`;
+                botoes += `<button class="btn-small orange" onclick="editarOcorrencia(${o.id})">Editar</button>`;
             }
             
-            // Excluir - apenas se tem permissão
             if (PODE_EXCLUIR) {
-                botoes += `<button class="btn-floating btn-small red" onclick="excluirOcorrencia(${o.id})" title="Excluir">
-                    <i class="material-icons">delete</i>
-                </button>`;
+                botoes += `<button class="btn-small red" onclick="excluirOcorrencia(${o.id})">Excluir</button>`;
             }
             
-            tbody.append(`
-                <tr>
-                    <td>${o.id}</td>
-                    <td>${o.titulo}</td>
-                    <td>${unidades}</td>
-                    <td>${formatDate(o.data_fato)}</td>
-                    <td><span class="fase-badge ${faseClass}">${faseLabel}</span></td>
-                    <td>${botoes}</td>
-                </tr>
-            `);
+            return `
+                <div class="ocorrencia-card ${faseClass}">
+                    <div class="ocorrencia-header">
+                        <span class="ocorrencia-id">#${o.id}</span>
+                        <span class="fase-badge ${faseClass}">${faseLabel}</span>
+                    </div>
+                    <div class="ocorrencia-titulo">${o.titulo}</div>
+                    <div class="ocorrencia-info">
+                        <div><span>Unidades:</span> <strong>${o.unidades || '-'}</strong></div>
+                        <div><span>Data:</span> <strong>${formatDate(o.data_fato)}</strong></div>
+                    </div>
+                    <div class="ocorrencia-acoes">
+                        ${botoes}
+                    </div>
+                </div>
+            `;
         }
 
         async function editarOcorrencia(id) {
