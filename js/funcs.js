@@ -564,9 +564,20 @@ async function sincronizarEvidencias() {
         const data = await res.json();
         
         if (res.ok) {
-            if (typeof M !== 'undefined') {
-                M.toast({html: data.message || 'Evidências sincronizadas!', classes: 'green'});
+            // Adicionar evidências de texto como fatos
+            if (data.text_evidencias && data.text_evidencias.length > 0) {
+                data.text_evidencias.forEach(texto => {
+                    addFato(texto);
+                });
+                if (typeof M !== 'undefined') {
+                    M.toast({html: `${data.text_evidencias.length} evidência(s) de texto adicionada(s) como fato.`, classes: 'green'});
+                }
+            } else {
+                if (typeof M !== 'undefined') {
+                    M.toast({html: data.message || 'Evidências sincronizadas!', classes: 'green'});
+                }
             }
+            
             if (typeof carregarImagens === 'function') {
                 carregarImagens();
             }

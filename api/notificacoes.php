@@ -754,6 +754,7 @@ function sincronizarEvidencias($pdo, $dados, $usuario) {
             throw new Exception("Notificação não está vinculada a esta ocorrência.");
         }
         
+        // Sincronizar IMAGENS
         $stmt_anexos = $pdo->prepare("SELECT * FROM ocorrencia_anexos WHERE ocorrencia_id = ? AND tipo = 'imagem' AND inactive = 0");
         $stmt_anexos->execute([$ocorrencia_id]);
         $anexos = $stmt_anexos->fetchAll();
@@ -799,13 +800,44 @@ function sincronizarEvidencias($pdo, $dados, $usuario) {
             }
         }
         
-        $total = $count_novas + $count_reativadas;
+        $total_imagens = $count_novas + $count_reativadas;
+        
+        // Buscar evidências TEXTUAIS (mensagens marcadas como evidência)
+        $stmt_evidencias_texto = $pdo->prepare("
+            SELECT id, mensagem, usuario_id, created_at 
+            FROM ocorrencia_mensagens 
+            WHERE ocorrencia_id = ? AND eh_evidencia = 1
+            ORDER BY created_at ASC
+        ");
+        $stmt_evidencias_texto->execute([$ocorrencia_id]);
+        $evidencias_texto = $stmt_evidencias_texto->fetchAll();
+        
+        // Buscar fatos já existentes na notificação
+        $stmt_fatos = $pdo->prepare("SELECT id, descricao FROM notificacao_fatos WHERE notificacao_id = ?");
+        $stmt_fatos->execute([$notificacao_id]);
+        $fatos_existentes = $stmt_fatos->fetchAll();
+        $fatos_textos = array_map(function($f) { return trim($f['descricao']); }, $fatos_existentes);
+        
+        // Inserir fatos novos (evidências de texto que ainda não existem)
+        $stmt_insert_fato = $pdo->prepare("INSERT INTO notificacao_fatos (notificacao_id, descricao) VALUES (?, ?)");
+        $novas_evidencias_texto = [];
+        foreach ($evidencias_texto as $ev) {
+            $texto = trim($ev['mensagem']);
+            if (!empty($texto) && !in_array($texto, $fatos_textos)) {
+                $stmt_insert_fato->execute([$notificacao_id, $texto]);
+                $novas_evidencias_texto[] = $texto;
+                $fatos_textos[] = $texto; // Evita duplicatas no loop
+            }
+        }
+        
         http_response_code(200);
         echo json_encode([
-            'message' => "Sincronizado: {$count_novas} nova(s), {$count_reativadas} reativada(s).",
-            'images_count' => $total,
-            'novas' => $count_novas,
-            'reativadas' => $count_reativadas
+            'message' => "Sincronizado: {$total_imagens} imagem(ns), " . count($novas_evidencias_texto) . " evidência(s) de texto.",
+            'images_count' => $total_imagens,
+            'images_novas' => $count_novas,
+            'images_reativadas' => $count_reativadas,
+            'text_evidencias' => $novas_evidencias_texto,
+            'text_count' => count($novas_evidencias_texto)
         ]);
     } catch (Exception $e) {
         http_response_code(500);
