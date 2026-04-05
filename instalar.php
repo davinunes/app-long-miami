@@ -137,6 +137,10 @@ if (!$pdo) {
     die("ERRO: Não foi possível reconectar ao banco.\n");
 }
 
+// Desabilitar verificação de FK para permitir criar tabelas com dependências circulares
+$pdo->exec("SET FOREIGN_KEY_CHECKS = 0");
+$output("    ✓ FOREIGN_KEY_CHECKS desabilitado");
+
 // ===========================================
 // PARTE 2: EXECUTAR ESTRUTURA.SQL
 // ===========================================
@@ -406,6 +410,10 @@ if (!empty($foreignKeysToAdd)) {
     }
     $output("      {$fkCount} FK(s) adicionadas");
 }
+
+// Reabilitar verificação de FK
+$pdo->exec("SET FOREIGN_KEY_CHECKS = 1");
+$output("    ✓ FOREIGN_KEY_CHECKS reabilitado");
 
 // Inserir dados
 $output("    Inserindo dados...");
