@@ -20,15 +20,9 @@ echo "=== Seed: Tipos e Status de Notificação ===\n\n";
 
 $tipos = [
     ['nome' => 'Advertência', 'descricao' => 'Notificação para fatos leves que não geram multa.'],
-    ['nome' => 'Multa Leve', 'descricao' => 'Infração de baixa gravidade.'],
-    ['nome' => 'Multa Média', 'descricao' => 'Infração de gravidade moderada.'],
-    ['nome' => 'Multa Grave', 'descricao' => 'Infração grave com multa mais elevada.'],
-    ['nome' => 'Multa Máxima', 'descricao' => 'Infração gravíssima com multa no valor máximo.'],
-    ['nome' => 'Cobrança de Despesas', 'descricao' => 'Cobrança de rateio de despesas extraordinarias.'],
-    ['nome' => 'Citação', 'descricao' => 'Citação para assembleia ou reunião.'],
-    ['nome' => 'Intimação', 'descricao' => 'Intimação para comparecimento.'],
-    ['nome' => 'Notificação Extrajudicial', 'descricao' => 'Notificação via cartório.'],
-    ['nome' => 'Notificação Judicial', 'descricao' => 'Notificação via processo judicial.'],
+    ['nome' => 'Multa', 'descricao' => 'Infração de que gera cobrança.'],
+    ['nome' => 'Orientação Educativa', 'descricao' => 'Sabor Advertência.'],
+    ['nome' => 'Notificação Extrajudicial', 'descricao' => 'Ultimato.'],
 ];
 
 echo "Inserindo tipos de notificação...\n";
@@ -74,17 +68,16 @@ foreach ($status as $s) {
 // =====================================================
 
 $assuntos = [
-    'Barulho excessivo em horário de silêncio',
+    'Pertubação do Sossego',
     'Uso da área comum sem autorização',
     'Estacionamento irregular',
     'Vazamento de água',
-    'Animais não permitidos',
+    'Deveres com Animais de Estimação',
     'Lixo em local inadequado',
     'Manutenção de fachada',
     'Alteração não autorizada na unidade',
-    'Polluição sonora',
     'Lançamento de objetos',
-    'Fumo em área comum fechada',
+    'Fumo em área comum',
     'Prática esportiva em local proibido',
     'Veículo em local proibido',
     'Circulação de pessoas não autorizadas',
