@@ -157,38 +157,118 @@ $sql = preg_replace('/SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";/', '', $sql);
 // Separar statements
 $statements = array_filter(array_map('trim', explode(';', $sql)));
 
-$countTables = 0;
-$countInserts = 0;
-$createdTables = []; // Rastrear tabelas criadas para resetar AUTO_INCREMENT
+// Separar CREATE TABLE e INSERT INTO
+$createStatements = [];
+$insertStatements = [];
 
 foreach ($statements as $statement) {
     if (empty($statement) || strpos($statement, '--') === 0) continue;
     
-    // Criar tabela
     if (stripos($statement, 'CREATE TABLE') !== false) {
-        try {
-            $pdo->exec($statement);
-            $countTables++;
-            
-            // Extrair nome da tabela
-            if (preg_match('/CREATE TABLE `?(\w+)`?/i', $statement, $matches)) {
-                $createdTables[] = $matches[1];
+        $createStatements[] = $statement;
+    }
+    if (stripos($statement, 'INSERT INTO') !== false) {
+        $insertStatements[] = $statement;
+    }
+}
+
+// Extrair dependências de cada tabela
+function getTableDependencies($sql) {
+    $deps = [];
+    if (preg_match('/CREATE TABLE `?(\w+)`?/i', $sql, $matches)) {
+        $table = $matches[1];
+        // Buscar todas as REFERENCES para outras tabelas
+        if (preg_match_all('/REFERENCES `(\w+)`/i', $sql, $refMatches)) {
+            foreach ($refMatches[1] as $ref) {
+                if ($ref !== $table) {
+                    $deps[] = $ref;
+                }
             }
-        } catch (PDOException $e) {
-            $output("    AVISO: " . $e->getMessage());
+        }
+    }
+    return $deps;
+}
+
+// Ordenar tabelas por dependência (topological sort)
+function topologicalSort($tables) {
+    $graph = [];
+    $inDegree = [];
+    
+    // Inicializar
+    foreach ($tables as $sql) {
+        if (preg_match('/CREATE TABLE `?(\w+)`?/i', $sql, $matches)) {
+            $table = $matches[1];
+            $graph[$table] = getTableDependencies($sql);
+            $inDegree[$table] = count($graph[$table]);
         }
     }
     
-    // Inserir dados
-    if (stripos($statement, 'INSERT INTO') !== false) {
-        try {
-            $pdo->exec($statement);
-            $countInserts++;
-        } catch (PDOException $e) {
-            // Ignorar duplicatas
-            if (strpos($e->getMessage(), 'Duplicate') === false) {
-                $output("    AVISO INSERT: " . $e->getMessage());
+    // Encontrar tabelas sem dependências
+    $queue = [];
+    foreach ($inDegree as $table => $degree) {
+        if ($degree == 0) {
+            $queue[] = $table;
+        }
+    }
+    
+    // Processar em ordem
+    $sorted = [];
+    while (!empty($queue)) {
+        $table = array_shift($queue);
+        $sorted[] = $table;
+        
+        // Reduzir grau de entrada das tabelas que dependem desta
+        foreach ($graph as $other => $deps) {
+            if (in_array($table, $deps)) {
+                $inDegree[$other]--;
+                if ($inDegree[$other] == 0) {
+                    $queue[] = $other;
+                }
             }
+        }
+    }
+    
+    return $sorted;
+}
+
+// Ordenar e criar tabelas
+$sortedTables = topologicalSort($createStatements);
+$tableMap = []; // Mapear nome para SQL
+
+foreach ($createStatements as $sql) {
+    if (preg_match('/CREATE TABLE `?(\w+)`?/i', $sql, $matches)) {
+        $tableMap[$matches[1]] = $sql;
+    }
+}
+
+$createdTables = [];
+$countTables = 0;
+$countInserts = 0;
+
+// Criar tabelas na ordem correta
+$output("    Criando tabelas na ordem correta...");
+foreach ($sortedTables as $tableName) {
+    if (!isset($tableMap[$tableName])) continue;
+    
+    try {
+        $pdo->exec($tableMap[$tableName]);
+        $countTables++;
+        $createdTables[] = $tableName;
+    } catch (PDOException $e) {
+        $output("    AVISO: " . $e->getMessage());
+    }
+}
+
+// Inserir dados
+$output("    Inserindo dados...");
+foreach ($insertStatements as $statement) {
+    try {
+        $pdo->exec($statement);
+        $countInserts++;
+    } catch (PDOException $e) {
+        // Ignorar duplicatas
+        if (strpos($e->getMessage(), 'Duplicate') === false) {
+            $output("    AVISO INSERT: " . $e->getMessage());
         }
     }
 }
