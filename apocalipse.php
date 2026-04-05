@@ -210,6 +210,7 @@ foreach ($dirsParaLimpar as $dir) {
 if (!is_dir(__DIR__ . '/uploads/imagens')) {
     mkdir(__DIR__ . '/uploads/imagens', 0755, true);
     $output("    - Estrutura uploads/ recriada");
+}
 
 // ===========================================
 // PARTE 3: OUTROS DIRETÓRIOS
