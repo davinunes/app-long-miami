@@ -19,7 +19,7 @@ $pdo = getDbConnection();
 
 // Verificar permissões
 $isAdminDev = in_array($usuario['role'], ['admin', 'dev']);
-$podeListar = $isAdminDev || temPermissao('notificacao.listar');
+$podeListar = $isAdminDev || temPermissao('notificacao.listar') || temPermissao('notificacao.listar_lavradas') || temPermissao('notificacao.listar_em_cobranca');
 $podeCriar = $isAdminDev || temPermissao('notificacao.criar');
 $podeVerDetalhes = $isAdminDev || temPermissao('notificacao.ver');
 $podeEditar = $isAdminDev || temPermissao('notificacao.editar');
@@ -57,7 +57,7 @@ switch ($metodo) {
             }
             buscarOcorrenciasParaVincular($pdo, $_GET['buscar_ocorrencias']);
         } else {
-            listarNotificacoes($pdo);
+            listarNotificacoes($pdo, $usuario);
         }
         break;
 
@@ -260,17 +260,40 @@ function buscarOcorrenciasParaVincular($pdo, $busca) {
     }
 }
 
-function listarNotificacoes($pdo) {
+function listarNotificacoes($pdo, $usuario) {
+    global $isAdminDev;
+    
+    $podeListarLavradas = $isAdminDev || temPermissao('notificacao.listar_lavradas');
+    $podeListarCobranca = $isAdminDev || temPermissao('notificacao.listar_em_cobranca');
+    
     try {
-        $sql = "SELECT n.id, n.numero, n.ano, n.unidade, n.bloco, a.descricao as assunto, nt.nome as tipo, ns.nome as status, n.data_emissao, n.ocorrencia_id 
+        $sql = "SELECT n.id, n.numero, n.ano, n.unidade, n.bloco, a.descricao as assunto, nt.nome as tipo, ns.nome as status, ns.slug as status_slug, n.data_emissao, n.ocorrencia_id 
                 FROM notificacoes n 
                 JOIN assuntos a ON n.assunto_id = a.id 
                 JOIN notificacao_tipos nt ON n.tipo_id = nt.id 
                 JOIN notificacao_status ns ON n.status_id = ns.id 
                 ORDER BY n.id DESC";
         $stmt = $pdo->query($sql);
+        $notificacoes = $stmt->fetchAll();
+        
+        // Filtrar baseado nas permissões
+        $filtradas = array_filter($notificacoes, function($n) use ($podeListarLavradas, $podeListarCobranca, $isAdminDev) {
+            if ($isAdminDev) return true;
+            
+            $status = $n['status_slug'];
+            // Status que precisam de permissão específica
+            if (in_array($status, ['lavrada', 'enviada', 'ciente'])) {
+                return $podeListarLavradas;
+            }
+            if ($status === 'cobranca') {
+                return $podeListarCobranca;
+            }
+            // Rascunho e outras fases são visíveis para quem pode listar
+            return true;
+        });
+        
         http_response_code(200);
-        echo json_encode($stmt->fetchAll());
+        echo json_encode(array_values($filtradas));
     } catch (Exception $e) {
         http_response_code(500);
         echo json_encode(['message' => 'Erro ao listar notificações: ' . $e->getMessage()]);
