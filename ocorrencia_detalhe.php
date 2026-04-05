@@ -804,6 +804,36 @@ async function removerUnidade(id) {
         M.toast({html: 'Erro ao remover unidade: ' + error.message, classes: 'red'});
     }
 }
+
+async function adicionarUnidadeFromForm() {
+    var bloco = document.getElementById('unidade-bloco').value;
+    var numero = document.getElementById('unidade-numero').value.trim();
+    
+    if (!numero) {
+        M.toast({html: 'Digite o número da unidade', classes: 'orange'});
+        return;
+    }
+    
+    try {
+        var response = await fetch(API_BASE_URL_PHP + '/ocorrencias.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                adicionar_unidade: true,
+                ocorrencia_id: ocorrenciaId,
+                bloco: bloco,
+                numero: numero
+            })
+        });
+        var result = await response.json();
+        if (!response.ok) throw new Error(result.message);
+        M.toast({html: 'Unidade vinculada!', classes: 'green'});
+        document.getElementById('unidade-numero').value = '';
+        carregarOcorrencia();
+    } catch (error) {
+        M.toast({html: 'Erro ao vincular unidade: ' + error.message, classes: 'red'});
+    }
+}
     </script>
 </body>
 </html>
