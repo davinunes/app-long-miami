@@ -267,7 +267,7 @@ function listarNotificacoes($pdo, $usuario) {
     $podeListarCobranca = $isAdminDev || temPermissao('notificacao.listar_em_cobranca');
     
     try {
-        $sql = "SELECT n.id, n.numero, n.ano, n.unidade, n.bloco, a.descricao as assunto, nt.nome as tipo, ns.nome as status, ns.slug as status_slug, n.data_emissao, n.ocorrencia_id, n.data_ciencia, n.recurso_status
+        $sql = "SELECT n.id, n.numero, n.ano, n.unidade, n.bloco, a.descricao as assunto, nt.nome as tipo, ns.nome as status, ns.slug as status_slug, n.data_emissao, n.ocorrencia_id, n.data_ciencia, n.data_envio, n.recurso_status
                 FROM notificacoes n 
                 JOIN assuntos a ON n.assunto_id = a.id 
                 JOIN notificacao_tipos nt ON n.tipo_id = nt.id 
@@ -323,11 +323,22 @@ function verificarPodeIrCobranca($n) {
         return false;
     }
     
+    // Se tem ciência e passou 7+ dias
     if ($n['data_ciencia']) {
         $dataCiencia = new DateTime($n['data_ciencia']);
         $hoje = new DateTime();
         $diasCiencia = $hoje->diff($dataCiencia)->days;
         if ($diasCiencia >= 7) {
+            return true;
+        }
+    }
+    
+    // Se foi enviada há 30+ dias sem ciência
+    if ($n['data_envio'] && !$n['data_ciencia']) {
+        $dataEnvio = new DateTime($n['data_envio']);
+        $hoje = new DateTime();
+        $diasEnvio = $hoje->diff($dataEnvio)->days;
+        if ($diasEnvio >= 30) {
             return true;
         }
     }
@@ -361,7 +372,16 @@ function getMotivoBloqueioCobranca($n) {
         }
     }
     
-    return 'Aguarde 7 dias após ciência para cobrar';
+    if ($n['data_envio'] && !$n['data_ciencia']) {
+        $dataEnvio = new DateTime($n['data_envio']);
+        $hoje = new DateTime();
+        $dias = $hoje->diff($dataEnvio)->days;
+        if ($dias < 30) {
+            return "Enviada há $dias dia(s) - aguarde 30 dias sem ciência para cobrar";
+        }
+    }
+    
+    return 'Aguarde 7 dias após ciência ou 30 dias após envio para cobrar';
 }
 
 function deletarImagem($pdo, $dados, $usuario) {
@@ -890,6 +910,8 @@ function mudarFase($pdo, $dados, $usuario) {
         if ($novaFaseSlug === 'lavrada') {
             $sqlExtra = ", data_lavratura = NOW(), lavrada_por = ?";
             $paramsExtra[] = $usuario['id'];
+        } elseif ($novaFaseSlug === 'enviada') {
+            $sqlExtra = ", data_envio = NOW()";
         } elseif ($novaFaseSlug === 'ciente') {
             $sqlExtra = ", data_ciencia = NOW(), ciencia_por = ?";
             $paramsExtra[] = $dados->metodo_ciencia ?? 'Sistema';

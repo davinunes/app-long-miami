@@ -13,6 +13,7 @@ if (!$podeVer) {
 
 // Permissões de edição de campos
 $podeEditarCampos = isAdmin() || temPermissao('notificacao.editar') || temPermissao('notificacao.editar_campos');
+$podeEditarDatas = isAdmin() || temPermissao('notificacao.editar_datas');
 
 // Permissões de imagem
 $podeRemoverImagem = isAdmin() || temPermissao('notificacao.imagem.remover');
@@ -132,6 +133,7 @@ $podeEncerrar = isAdmin() || temPermissao('notificacao.encerrar');
         const PODE_RECURSO = <?php echo $podeRegistrarRecurso ? 'true' : 'false'; ?>;
         const PODE_JULGAR = <?php echo $podeJulgarRecurso ? 'true' : 'false'; ?>;
         const PODE_ENCERRAR = <?php echo $podeEncerrar ? 'true' : 'false'; ?>;
+        const PODE_EDITAR_DATAS = <?php echo $podeEditarDatas ? 'true' : 'false'; ?>;
         // EH_ADMIN_DEV, PERMISSOES_USUARIO e API_BASE_URL_PHP já são definidos pelo menu.php
 
         let notificationData = null;
@@ -183,6 +185,18 @@ $podeEncerrar = isAdmin() || temPermissao('notificacao.encerrar');
             $('#valor_multa').val(data.valor_multa);
             $('#fundamentacao_legal').val(data.fundamentacao_legal);
             $('#url_recurso').val(data.url_recurso);
+            
+            // Mostrar campos de data se tiver permissão
+            if (PODE_EDITAR_DATAS || EH_ADMIN_DEV) {
+                if (data.data_envio) {
+                    $('#data-envio-group').show();
+                    $('#data_envio').val(data.data_envio.replace(' ', 'T'));
+                }
+                if (data.data_ciencia) {
+                    $('#data-ciencia-group').show();
+                    $('#data_ciencia').val(data.data_ciencia.replace(' ', 'T'));
+                }
+            }
             
             // Aplicar controle de edição de campos
             if (!PODE_EDITAR_CAMPOS || (data.status_slug !== 'rascunho' && !EH_ADMIN_DEV)) {
@@ -325,6 +339,15 @@ $podeEncerrar = isAdmin() || temPermissao('notificacao.encerrar');
         async function salvarNotificacao() {
             if (typeof getFormData !== 'function') return;
             const dados = getFormData();
+            
+            // Incluir datas se o usuário tiver permissão
+            if (PODE_EDITAR_DATAS || EH_ADMIN_DEV) {
+                const dataEnvio = document.getElementById('data_envio').value;
+                const dataCiencia = document.getElementById('data_ciencia').value;
+                if (dataEnvio) dados.data_envio = dataEnvio;
+                if (dataCiencia) dados.data_ciencia = dataCiencia;
+            }
+            
             try {
                 const res = await fetch(`${API_BASE_URL_PHP}/notificacoes.php`, {
                     method: 'POST',

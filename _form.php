@@ -100,6 +100,16 @@
     <input type="url" id="url_recurso" placeholder="https://seu-condominio.com/recursos">
 </div>
 
+<div class="form-group" id="data-envio-group" style="display: none;">
+    <label for="data_envio">Data de Envio:</label>
+    <input type="datetime-local" id="data_envio">
+</div>
+
+<div class="form-group" id="data-ciencia-group" style="display: none;">
+    <label for="data_ciencia">Data da Ciência:</label>
+    <input type="datetime-local" id="data_ciencia">
+</div>
+
 <div class="button-group">
     <button type="button" class="btn-primary" id="btnSalvar">
         💾 Salvar
