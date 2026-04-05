@@ -15,6 +15,100 @@ $podeListarCobranca = isAdmin() || temPermissao('notificacao.listar_em_cobranca'
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
+    <style>
+        .notificacoes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 16px;
+        }
+        
+        .notificacao-card {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border-left: 4px solid #667eea;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .notificacao-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+        }
+        
+        .notificacao-card.status-lavrada { border-left-color: #2196f3; }
+        .notificacao-card.status-enviada { border-left-color: #4caf50; }
+        .notificacao-card.status-ciente { border-left-color: #9c27b0; }
+        .notificacao-card.status-cobranca { border-left-color: #ff9800; }
+        .notificacao-card.status-encerrada { border-left-color: #9e9e9e; }
+        
+        .notificacao-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+        
+        .notificacao-numero {
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: #333;
+        }
+        
+        .notificacao-status {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .status-lavrada { background: #e3f2fd; color: #1976d2; }
+        .status-enviada { background: #e8f5e9; color: #388e3c; }
+        .status-ciente { background: #f3e5f5; color: #7b1fa2; }
+        .status-cobranca { background: #fff3e0; color: #f57c00; }
+        .status-encerrada { background: #eceff1; color: #546e7a; }
+        
+        .notificacao-info {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-bottom: 12px;
+            font-size: 0.9rem;
+        }
+        
+        .notificacao-info span {
+            color: #666;
+        }
+        
+        .notificacao-info strong {
+            color: #333;
+        }
+        
+        .notificacao-assunto {
+            font-size: 0.9rem;
+            color: #555;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+        
+        .notificacao-acoes {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            padding-top: 12px;
+            border-top: 1px solid #eee;
+        }
+        
+        @media (max-width: 600px) {
+            .notificacoes-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .notificacao-card {
+                padding: 14px;
+            }
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -32,26 +126,10 @@ $podeListarCobranca = isAdmin() || temPermissao('notificacao.listar_em_cobranca'
                     <h1>Lista de Notificações</h1>
                     <p>Visualize e gerencie as notificações registradas.</p>
                 </div>
-                <div class="table-container">
-                    <div class="header-actions">
-                        <a href="nova_not.php" class="btn-new">+ Criar Nova Notificação</a>
-                    </div>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Número</th>
-                                <th>Unidade</th>
-                                <th>Assunto</th>
-                                <th>Tipo</th>
-                                <th>Status</th>
-                                <th>Data de Emissão</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody id="notifications-table-body">
-                        </tbody>
-                    </table>
+                <div class="header-actions">
+                    <a href="nova_not.php" class="btn-new">+ Criar Nova Notificação</a>
                 </div>
+                <div id="notifications-grid" class="notificacoes-grid"></div>
             </div>
         </div>
     </main>

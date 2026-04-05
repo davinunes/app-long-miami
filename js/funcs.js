@@ -172,17 +172,16 @@ function baixarPDF() {
 }
 
 function carregarListaNotificacoes() {
-    const tbody = document.getElementById('notifications-table-body');
-    if (!tbody) return;
+    const grid = document.getElementById('notifications-grid');
+    if (!grid) return;
 
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">Carregando...</td></tr>';
+    grid.innerHTML = '<div style="text-align: center; padding: 40px; color: #999;">Carregando...</div>';
 
     fetch(`${API_BASE_URL_PHP}/notificacoes.php`)
     .then(response => response.json())
     .then(data => {
-        tbody.innerHTML = '';
         if (!data || data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">Nenhuma notificação encontrada.</td></tr>';
+            grid.innerHTML = '<div style="text-align: center; padding: 40px; color: #999;">Nenhuma notificação encontrada.</div>';
             return;
         }
 
@@ -191,58 +190,56 @@ function carregarListaNotificacoes() {
         const podeListarCobranca = typeof PODE_LISTAR_COBRANCA !== 'undefined' ? PODE_LISTAR_COBRANCA : false;
 
         let count = 0;
+        let cardsHtml = '';
+        
         data.forEach(n => {
-            // Filtrar baseado em permissões
-            const statusLower = (n.status_slug || '').toLowerCase();
-            if (statusLower === 'lavrada' || statusLower === 'enviada' || statusLower === 'ciente') {
-                if (!podeListarLavradas && !EH_ADMIN_DEV) return;
-            }
-            if (statusLower === 'cobranca') {
-                if (!podeListarCobranca && !EH_ADMIN_DEV) return;
-            }
-
+            const statusSlug = (n.status_slug || '').toLowerCase();
             const dataEmissao = new Date(n.data_emissao + 'T00:00:00');
             const dataFormatada = dataEmissao.toLocaleDateString('pt-BR');
 
-            let acoesHtml = `<a href="editar.php?id=${n.id}" class="action-btn">Detalhes</a>`;
+            let acoesHtml = `<a href="editar.php?id=${n.id}" class="btn-small blue">Detalhes</a>`;
             
             if (podeAcaoRapida || EH_ADMIN_DEV) {
-                // Só mostra botão Enviar se estiver no status correto (lavrada)
-                if (statusLower === 'lavrada') {
-                    acoesHtml += ` <button class="btn-small green" onclick="acaoRapidaNotificacao(${n.id}, 'enviada')" title="Marcar como Enviada">Enviar</button>`;
+                if (statusSlug === 'lavrada') {
+                    acoesHtml += ` <button class="btn-small green" onclick="acaoRapidaNotificacao(${n.id}, 'enviada')">Enviar</button>`;
                 }
-                // Só mostra botão Cobrar se estiver no status correto (ciente)
-                if (statusLower === 'ciente') {
-                    acoesHtml += ` <button class="btn-small orange" onclick="acaoRapidaNotificacao(${n.id}, 'cobranca')" title="Marcar para Cobrança">Cobrar</button>`;
+                if (statusSlug === 'ciente') {
+                    acoesHtml += ` <button class="btn-small orange" onclick="acaoRapidaNotificacao(${n.id}, 'cobranca')">Cobrar</button>`;
                 }
-                // Só mostra botão Encerrar se estiver em cobrança
-                if (statusLower === 'cobranca') {
-                    acoesHtml += ` <button class="btn-small red" onclick="acaoRapidaNotificacao(${n.id}, 'encerrada')" title="Encerrar notificação">Encerrar</button>`;
+                if (statusSlug === 'cobranca') {
+                    acoesHtml += ` <button class="btn-small red" onclick="acaoRapidaNotificacao(${n.id}, 'encerrada')">Encerrar</button>`;
                 }
             }
 
-            const row = `
-                <tr>
-                    <td>${n.numero}/${n.ano}</td>
-                    <td>${n.bloco ? n.bloco : ''}${n.unidade}</td>
-                    <td>${n.assunto}</td>
-                    <td>${n.tipo}</td>
-                    <td>${n.status}</td>
-                    <td>${dataFormatada}</td>
-                    <td>${acoesHtml}</td>
-                </tr>
+            cardsHtml += `
+                <div class="notificacao-card status-${statusSlug}">
+                    <div class="notificacao-header">
+                        <span class="notificacao-numero">#${n.numero}/${n.ano}</span>
+                        <span class="notificacao-status status-${statusSlug}">${n.status}</span>
+                    </div>
+                    <div class="notificacao-info">
+                        <div><span>Unidade:</span> <strong>${n.bloco || ''}${n.unidade}</strong></div>
+                        <div><span>Tipo:</span> <strong>${n.tipo}</strong></div>
+                        <div><span>Data:</span> <strong>${dataFormatada}</strong></div>
+                    </div>
+                    <div class="notificacao-assunto">${n.assunto}</div>
+                    <div class="notificacao-acoes">
+                        ${acoesHtml}
+                    </div>
+                </div>
             `;
-            tbody.innerHTML += row;
             count++;
         });
 
         if (count === 0) {
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">Nenhuma notificação disponível.</td></tr>';
+            grid.innerHTML = '<div style="text-align: center; padding: 40px; color: #999;">Nenhuma notificação disponível.</div>';
+        } else {
+            grid.innerHTML = cardsHtml;
         }
     })
     .catch(error => {
         console.error('Erro ao buscar notificações:', error);
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: red;">Erro: ${error.message}</td></tr>`;
+        grid.innerHTML = `<div style="text-align: center; padding: 40px; color: red;">Erro ao carregar notificações</div>`;
     });
 }
 
