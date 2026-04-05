@@ -85,6 +85,9 @@ if (!isAdmin()) {
                 <div class="config-row">
                     <label for="url_recurso_default">URL para Recurso (padrão):</label>
                     <input type="text" id="url_recurso_default" placeholder="URL para recursos">
+                    <button type="button" class="btn blue" onclick="salvarUrlRecurso()">
+                        <i class="material-icons">save</i> Salvar
+                    </button>
                 </div>
                 
                 <h5 style="margin-top: 30px;"><i class="material-icons">menu_book</i> Regimento Interno</h5>
@@ -268,6 +271,28 @@ if (!isAdmin()) {
             } catch (error) {
                 console.error('Erro:', error);
                 M.toast({html: 'Erro ao enviar regimento', classes: 'red'});
+            }
+        }
+
+        async function salvarUrlRecurso() {
+            const url = document.getElementById('url_recurso_default').value;
+            
+            try {
+                const response = await fetch(API_BASE + '/configuracoes.php', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({action: 'salvar_config', chave: 'url_recurso_default', valor: url})
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    M.toast({html: 'URL para recurso salva!', classes: 'green'});
+                } else {
+                    M.toast({html: result.error || 'Erro ao salvar URL', classes: 'red'});
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                M.toast({html: 'Erro ao salvar URL', classes: 'red'});
             }
         }
 

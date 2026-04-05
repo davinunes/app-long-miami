@@ -71,8 +71,18 @@ switch ($metodo) {
                 case 'salvar_config':
                     $chave = $dados['chave'] ?? '';
                     $valor = $dados['valor'] ?? '';
-                    $stmt = $pdo->prepare("UPDATE configuracoes SET valor = ? WHERE chave = ?");
-                    $stmt->execute([$valor, $chave]);
+                    
+                    if (empty($chave)) {
+                        http_response_code(400);
+                        echo json_encode(['error' => 'Chave não especificada.']);
+                        exit();
+                    }
+                    
+                    $stmt = $pdo->prepare("
+                        INSERT INTO configuracoes (chave, valor, tipo) VALUES (?, ?, 'string')
+                        ON DUPLICATE KEY UPDATE valor = VALUES(valor)
+                    ");
+                    $stmt->execute([$chave, $valor]);
                     echo json_encode(['success' => true, 'message' => 'Configuração salva.']);
                     break;
                     

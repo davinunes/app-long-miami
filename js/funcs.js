@@ -499,3 +499,47 @@ async function salvarQuickEdit() {
         M.toast({html: 'Erro de conexão', classes: 'red'});
     }
 }
+
+async function sincronizarEvidencias() {
+    if (typeof NOTIFICACAO_ID === 'undefined' || !NOTIFICACAO_ID) {
+        if (typeof M !== 'undefined') {
+            M.toast({html: 'Salve a notificação primeiro para sincronizar as evidências.', classes: 'orange', timeout: 4000});
+        }
+        return;
+    }
+    
+    if (typeof M !== 'undefined') {
+        M.toast({html: 'Sincronizando evidências...', classes: 'blue', timeout: 2000});
+    }
+    
+    try {
+        const res = await fetch(`${API_BASE_URL_PHP}/notificacoes.php`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'sincronizar_evidencias',
+                notificacao_id: NOTIFICACAO_ID,
+                ocorrencia_id: OCORRENCIA_ID
+            })
+        });
+        
+        const data = await res.json();
+        
+        if (res.ok) {
+            if (typeof M !== 'undefined') {
+                M.toast({html: data.message || 'Evidências sincronizadas!', classes: 'green'});
+            }
+            if (typeof carregarImagens === 'function') {
+                carregarImagens();
+            }
+        } else {
+            if (typeof M !== 'undefined') {
+                M.toast({html: 'Erro: ' + (data.message || 'Falha'), classes: 'red'});
+            }
+        }
+    } catch (e) {
+        if (typeof M !== 'undefined') {
+            M.toast({html: 'Erro de conexão', classes: 'red'});
+        }
+    }
+}
