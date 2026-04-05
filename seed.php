@@ -287,6 +287,20 @@ $stmtVinculo->execute();
 $count += $stmtVinculo->rowCount();
 
 // =====================================================
+// RESETAR AUTO_INCREMENT
+// =====================================================
+
+$output("Resetando contadores AUTO_INCREMENT...");
+$tablesToReset = ['permissoes', 'notificacao_status', 'notificacao_tipos', 'assuntos', 'grupos'];
+foreach ($tablesToReset as $table) {
+    try {
+        $pdo->exec("ALTER TABLE `{$table}` AUTO_INCREMENT = 1");
+    } catch (PDOException $e) {
+        // Ignorar erros de tabelas sem AUTO_INCREMENT
+    }
+}
+
+// =====================================================
 // RESULTADO
 // =====================================================
 

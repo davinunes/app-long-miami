@@ -159,6 +159,7 @@ $statements = array_filter(array_map('trim', explode(';', $sql)));
 
 $countTables = 0;
 $countInserts = 0;
+$createdTables = []; // Rastrear tabelas criadas para resetar AUTO_INCREMENT
 
 foreach ($statements as $statement) {
     if (empty($statement) || strpos($statement, '--') === 0) continue;
@@ -168,6 +169,11 @@ foreach ($statements as $statement) {
         try {
             $pdo->exec($statement);
             $countTables++;
+            
+            // Extrair nome da tabela
+            if (preg_match('/CREATE TABLE `?(\w+)`?/i', $statement, $matches)) {
+                $createdTables[] = $matches[1];
+            }
         } catch (PDOException $e) {
             $output("    AVISO: " . $e->getMessage());
         }
@@ -184,6 +190,25 @@ foreach ($statements as $statement) {
                 $output("    AVISO INSERT: " . $e->getMessage());
             }
         }
+    }
+}
+
+// Resetar AUTO_INCREMENT de todas as tabelas criadas
+$output("    Resetando contadores AUTO_INCREMENT...");
+foreach ($createdTables as $table) {
+    try {
+        $pdo->exec("ALTER TABLE `{$table}` AUTO_INCREMENT = 1");
+    } catch (PDOException $e) {
+        // Ignorar erros de tabelas sem AUTO_INCREMENT
+    }
+}
+
+// Após inserts, resetar novamente para garantir que próximo ID comece do 1
+foreach ($createdTables as $table) {
+    try {
+        $pdo->exec("ALTER TABLE `{$table}` AUTO_INCREMENT = 1");
+    } catch (PDOException $e) {
+        // Ignorar
     }
 }
 

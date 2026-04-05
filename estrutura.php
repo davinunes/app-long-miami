@@ -46,7 +46,10 @@ if ($isWeb) {
 function exportStructure($pdo, $table) {
     $stmt = $pdo->query("SHOW CREATE TABLE `{$table}`");
     $row = $stmt->fetch(PDO::FETCH_NUM);
-    return $row[1];
+    $create = $row[1];
+    // Remover AUTO_INCREMENT do CREATE para forçar começar do 1
+    $create = preg_replace('/AUTO_INCREMENT=\d+/', 'AUTO_INCREMENT=1', $create);
+    return $create;
 }
 
 function exportTableData($pdo, $table) {
