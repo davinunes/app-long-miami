@@ -49,20 +49,17 @@ CREATE TABLE IF NOT EXISTS notificacao_fase_log (
     INDEX idx_notificacao_fase (notificacao_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 4. Atualizar os status na tabela notificacao_status para o padrão do ciclo de vida
-SET FOREIGN_KEY_CHECKS = 0;
-TRUNCATE TABLE notificacao_status;
-INSERT INTO notificacao_status (id, nome, slug) VALUES 
-    (1, 'Rascunho', 'rascunho'),
-    (2, 'Lavrada', 'lavrada'),
-    (3, 'Enviada', 'enviada'),
-    (4, 'Ciente', 'ciente'),
-    (5, 'Em Recurso', 'em_recurso'),
-    (6, 'Recurso Deferido', 'recurso_deferido'),
-    (7, 'Recurso Indeferido', 'recurso_indeferido'),
-    (8, 'Em Cobrança', 'cobranca'),
-    (9, 'Encerrada', 'encerrada');
-SET FOREIGN_KEY_CHECKS = 1;
+-- 4. Inserir status na tabela notificacao_status (usa SLUG, não ID fixo)
+INSERT IGNORE INTO notificacao_status (nome, slug) VALUES 
+    ('Rascunho', 'rascunho'),
+    ('Lavrada', 'lavrada'),
+    ('Enviada', 'enviada'),
+    ('Ciente', 'ciente'),
+    ('Em Recurso', 'em_recurso'),
+    ('Recurso Deferido', 'recurso_deferido'),
+    ('Recurso Indeferido', 'recurso_indeferido'),
+    ('Em Cobrança', 'cobranca'),
+    ('Encerrada', 'encerrada');
 
 -- 5. Vinculando permissões ao Admin
 INSERT IGNORE INTO grupo_permissoes (grupo_id, permissao_id) 

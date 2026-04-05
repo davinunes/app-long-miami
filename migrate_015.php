@@ -80,25 +80,28 @@ $pdo->exec("
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 ");
 
-// 4. Atualizar status na tabela notificacao_status
-echo "\nAtualizando status da notificação...\n";
-$pdo->exec("TRUNCATE TABLE notificacao_status");
+// 4. Atualizar status na tabela notificacao_status (usa SLUG, não ID fixo)
+echo "\nInserindo status de notificação...\n";
 $status = [
-    [1, 'Rascunho', 'rascunho'],
-    [2, 'Lavrada', 'lavrada'],
-    [3, 'Enviada', 'enviada'],
-    [4, 'Ciente', 'ciente'],
-    [5, 'Em Recurso', 'em_recurso'],
-    [6, 'Recurso Deferido', 'recurso_deferido'],
-    [7, 'Recurso Indeferido', 'recurso_indeferido'],
-    [8, 'Em Cobrança', 'cobranca'],
-    [9, 'Encerrada', 'encerrada'],
+    ['Rascunho', 'rascunho'],
+    ['Lavrada', 'lavrada'],
+    ['Enviada', 'enviada'],
+    ['Ciente', 'ciente'],
+    ['Em Recurso', 'em_recurso'],
+    ['Recurso Deferido', 'recurso_deferido'],
+    ['Recurso Indeferido', 'recurso_indeferido'],
+    ['Em Cobrança', 'cobranca'],
+    ['Encerrada', 'encerrada'],
 ];
 
 foreach ($status as $s) {
-    $stmt = $pdo->prepare("INSERT INTO notificacao_status (id, nome, slug) VALUES (?, ?, ?)");
-    $stmt->execute($s);
-    echo "  + {$s[1]} ({$s[2]})\n";
+    $stmt = $pdo->prepare("INSERT IGNORE INTO notificacao_status (nome, slug) VALUES (?, ?)");
+    $stmt->execute([$s[0], $s[1]]);
+    if ($stmt->rowCount() > 0) {
+        echo "  + {$s[0]} ({$s[1]})\n";
+    } else {
+        echo "  = {$s[0]} (já existe)\n";
+    }
 }
 
 // 5. Linkar permissões ao Admin

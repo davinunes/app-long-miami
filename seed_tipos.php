@@ -15,49 +15,49 @@ if (!$pdo) {
 echo "=== Seed: Tipos e Status de Notificação ===\n\n";
 
 // =====================================================
-// TIPOS DE NOTIFICAÇÃO
+// TIPOS DE NOTIFICAÇÃO (sem descricao - tabela não tem)
 // =====================================================
 
 $tipos = [
-    ['nome' => 'Advertência', 'descricao' => 'Notificação para fatos leves que não geram multa.'],
-    ['nome' => 'Multa', 'descricao' => 'Infração de que gera cobrança.'],
-    ['nome' => 'Orientação Educativa', 'descricao' => 'Sabor Advertência.'],
-    ['nome' => 'Notificação Extrajudicial', 'descricao' => 'Ultimato.'],
+    'Advertência',
+    'Multa',
+    'Orientação Educativa',
+    'Notificação Extrajudicial',
 ];
 
 echo "Inserindo tipos de notificação...\n";
-foreach ($tipos as $t) {
-    $stmt = $pdo->prepare("INSERT IGNORE INTO notificacao_tipos (nome, descricao) VALUES (?, ?)");
-    $stmt->execute([$t['nome'], $t['descricao']]);
+foreach ($tipos as $nome) {
+    $stmt = $pdo->prepare("INSERT IGNORE INTO notificacao_tipos (nome) VALUES (?)");
+    $stmt->execute([$nome]);
     if ($stmt->rowCount() > 0) {
-        echo "  + {$t['nome']}\n";
+        echo "  + {$nome}\n";
     } else {
-        echo "  = {$t['nome']} (já existe)\n";
+        echo "  = {$nome} (já existe)\n";
     }
 }
 
 // =====================================================
-// STATUS DE NOTIFICAÇÃO
+// STATUS DE NOTIFICAÇÃO (usa SLUG, não ID fixo)
 // =====================================================
 
 $status = [
-    ['id' => 1, 'nome' => 'Rascunho', 'slug' => 'rascunho'],
-    ['id' => 2, 'nome' => 'Lavrada', 'slug' => 'lavrada'],
-    ['id' => 3, 'nome' => 'Enviada', 'slug' => 'enviada'],
-    ['id' => 4, 'nome' => 'Ciente', 'slug' => 'ciente'],
-    ['id' => 5, 'nome' => 'Em Recurso', 'slug' => 'em_recurso'],
-    ['id' => 6, 'nome' => 'Recurso Deferido', 'slug' => 'recurso_deferido'],
-    ['id' => 7, 'nome' => 'Recurso Indeferido', 'slug' => 'recurso_indeferido'],
-    ['id' => 8, 'nome' => 'Em Cobrança', 'slug' => 'cobranca'],
-    ['id' => 9, 'nome' => 'Encerrada', 'slug' => 'encerrada'],
+    ['nome' => 'Rascunho', 'slug' => 'rascunho'],
+    ['nome' => 'Lavrada', 'slug' => 'lavrada'],
+    ['nome' => 'Enviada', 'slug' => 'enviada'],
+    ['nome' => 'Ciente', 'slug' => 'ciente'],
+    ['nome' => 'Em Recurso', 'slug' => 'em_recurso'],
+    ['nome' => 'Recurso Deferido', 'slug' => 'recurso_deferido'],
+    ['nome' => 'Recurso Indeferido', 'slug' => 'recurso_indeferido'],
+    ['nome' => 'Em Cobrança', 'slug' => 'cobranca'],
+    ['nome' => 'Encerrada', 'slug' => 'encerrada'],
 ];
 
 echo "\nInserindo status de notificação...\n";
 foreach ($status as $s) {
-    $stmt = $pdo->prepare("INSERT IGNORE INTO notificacao_status (id, nome, slug) VALUES (?, ?, ?)");
-    $stmt->execute([$s['id'], $s['nome'], $s['slug']]);
+    $stmt = $pdo->prepare("INSERT IGNORE INTO notificacao_status (nome, slug) VALUES (?, ?)");
+    $stmt->execute([$s['nome'], $s['slug']]);
     if ($stmt->rowCount() > 0) {
-        echo "  + {$s['nome']}\n";
+        echo "  + {$s['nome']} ({$s['slug']})\n";
     } else {
         echo "  = {$s['nome']} (já existe)\n";
     }
