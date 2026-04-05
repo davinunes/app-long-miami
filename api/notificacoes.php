@@ -615,6 +615,26 @@ function criarNotificacao($pdo, $dados, $usuario) {
         
         $partes_numero = explode('/', $dados->numero);
         
+        // Buscar ID do status "rascunho" pelo slug
+        $stmtStatus = $pdo->prepare("SELECT id FROM notificacao_status WHERE slug = 'rascunho'");
+        $stmtStatus->execute();
+        $statusRascunho = $stmtStatus->fetch();
+        if (!$statusRascunho) {
+            throw new Exception("Status 'rascunho' não encontrado. Execute o seed de tipos.");
+        }
+        $statusId = $statusRascunho['id'];
+        
+        // Buscar ID do tipo pelo nome se foi criado dinamicamente
+        $tipoId = $dados->tipo_id ?? null;
+        if (!$tipoId && !empty($dados->tipo_nome)) {
+            $stmtTipo = $pdo->prepare("SELECT id FROM notificacao_tipos WHERE nome = ?");
+            $stmtTipo->execute([$dados->tipo_nome]);
+            $tipo = $stmtTipo->fetch();
+            if ($tipo) {
+                $tipoId = $tipo['id'];
+            }
+        }
+        
         $pdo->beginTransaction();
         
         $sql = "INSERT INTO notificacoes (unidade, bloco, numero, ano, data_emissao, cidade_emissao, fundamentacao_legal, texto_descritivo, valor_multa, url_recurso, prazo_recurso, assunto_id, tipo_id, status_id, ocorrencia_id) 
@@ -633,8 +653,8 @@ function criarNotificacao($pdo, $dados, $usuario) {
             $dados->url_recurso ?? null, 
             $dados->prazo_recurso ?? 5, 
             $dados->assunto_id, 
-            $dados->tipo_id, 
-            1, 
+            $tipoId, 
+            $statusId, 
             $dados->ocorrencia_id ?? null 
         ]);
         $notificacao_id = $pdo->lastInsertId();
