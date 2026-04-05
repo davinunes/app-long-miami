@@ -66,27 +66,81 @@ async function fetchInitialData() {
         
         configData = await response.json();
         
-        const tipoSelect = document.getElementById('tipo_id');
-        configData.tipos.forEach(tipo => {
-            const option = document.createElement('option');
-            option.value = tipo.id;
-            option.textContent = tipo.nome;
-            tipoSelect.appendChild(option);
-        });
+        // Popular datalist de tipos (combobox)
+        const tipoDatalist = document.getElementById('tipo_datalist');
+        const tipoCombo = document.getElementById('tipo_combo');
+        const tipoIdInput = document.getElementById('tipo_id');
+        
+        if (tipoDatalist && configData.tipos) {
+            configData.tipos.forEach(tipo => {
+                const option = document.createElement('option');
+                option.value = tipo.nome;
+                option.dataset.id = tipo.id;
+                tipoDatalist.appendChild(option);
+            });
+        }
+        
+        // Eventos do combobox de tipos
+        if (tipoCombo) {
+            tipoCombo.addEventListener('input', function() {
+                const valor = this.value.trim();
+                const options = tipoDatalist ? tipoDatalist.querySelectorAll('option') : [];
+                const match = Array.from(options).find(opt => opt.value.toLowerCase() === valor.toLowerCase());
+                
+                if (match) {
+                    tipoIdInput.value = match.dataset.id;
+                    this.classList.remove('new-value');
+                    document.getElementById('btn_criar_tipo').style.display = 'none';
+                    toggleMultaField();
+                } else if (valor.length > 0) {
+                    tipoIdInput.value = '';
+                    this.classList.add('new-value');
+                    document.getElementById('btn_criar_tipo').style.display = 'block';
+                    toggleMultaField();
+                } else {
+                    tipoIdInput.value = '';
+                    this.classList.remove('new-value');
+                    document.getElementById('btn_criar_tipo').style.display = 'none';
+                }
+            });
+        }
 
+        // Popular select de assuntos
         const assuntoSelect = document.getElementById('assunto_id');
-        configData.assuntos.forEach(assunto => {
-            const option = document.createElement('option');
-            option.value = assunto.id;
-            option.textContent = assunto.descricao;
-            assuntoSelect.appendChild(option);
-        });
+        if (assuntoSelect && configData.assuntos) {
+            configData.assuntos.forEach(assunto => {
+                const option = document.createElement('option');
+                option.value = assunto.id;
+                option.textContent = assunto.descricao;
+                assuntoSelect.appendChild(option);
+            });
+        }
 
         toggleMultaField();
     } catch (error) {
         showStatus(error.message, 'error');
         console.error("Fetch initial data error:", error);
     }
+}
+
+
+/**
+ * Mostra ou esconde o campo "Valor da Multa" baseado no tipo de notificação.
+ */
+function toggleMultaField() {
+    const tipoCombo = document.getElementById('tipo_combo');
+    if (!tipoCombo) return;
+    
+    const valorMultaGroup = document.getElementById('valor_multa_group');
+    
+    if (tipoCombo.value.toLowerCase().includes('multa')) {
+        valorMultaGroup.classList.remove('hidden');
+    } else {
+        valorMultaGroup.classList.add('hidden');
+        const multaInput = document.getElementById('valor_multa');
+        if (multaInput) multaInput.value = '';
+    }
+}
 }
 
 
@@ -186,8 +240,10 @@ function removeImage(fileName) {
  * @returns {object} - O objeto com os dados do formulário.
  */
 function getFormData(forPDF = false) {
-    const tipoSelect = document.getElementById('tipo_id');
-    const selectedTipoOption = tipoSelect.options[tipoSelect.selectedIndex];
+    const tipoCombo = document.getElementById('tipo_combo');
+    const tipoIdInput = document.getElementById('tipo_id');
+    const tipoNome = tipoCombo ? tipoCombo.value : '';
+    const tipoId = tipoIdInput ? parseInt(tipoIdInput.value) : null;
 
     const assuntoSelect = document.getElementById('assunto_id');
     const selectedAssuntoOption = assuntoSelect.options[assuntoSelect.selectedIndex];
@@ -200,30 +256,27 @@ function getFormData(forPDF = false) {
         fundamentacao_legal: document.getElementById('fundamentacao_legal').value,
         texto_descritivo: document.getElementById('texto_descritivo').value,
         fatos: Array.from(document.querySelectorAll('#fatos-container input')).map(input => input.value).filter(Boolean),
-        // Agora o 'fotos_fatos' envia um objeto com nome e base64
         fotos_fatos: imageStore
     };
 
     if (forPDF) {
-        // A API de PDF espera os nomes/textos, não os IDs
-        dados.tipo_notificacao = selectedTipoOption.text;
-        dados.tipo_penalidade = selectedTipoOption.text.toUpperCase();
+        dados.tipo_notificacao = tipoNome;
+        dados.tipo_penalidade = tipoNome.toUpperCase();
         dados.assunto = selectedAssuntoOption.text;
         dados.url_recurso = document.getElementById('url_recurso').value;
-        if (selectedTipoOption.text.toLowerCase().includes('multa')) {
+        if (tipoNome.toLowerCase().includes('multa')) {
             dados.valor_multa = document.getElementById('valor_multa').value;
         }
-        // A API do PDF espera um array de strings base64, não o objeto completo
         dados.fotos_fatos = imageStore.map(img => img.b64);
 
     } else {
-        // A API de salvamento (PHP) espera os IDs e outros dados
-        dados.tipo_id = parseInt(selectedTipoOption.value);
+        dados.tipo_id = tipoId;
+        dados.tipo_nome = tipoNome;
         dados.assunto_id = parseInt(selectedAssuntoOption.value);
         dados.url_recurso = document.getElementById('url_recurso').value;
-        dados.cidade_emissao = "Taguatinga/DF"; // Exemplo, pode ser um campo
-        dados.prazo_recurso = 5; // Exemplo
-         if (selectedTipoOption.text.toLowerCase().includes('multa')) {
+        dados.cidade_emissao = "Taguatinga/DF";
+        dados.prazo_recurso = 5;
+        if (tipoNome.toLowerCase().includes('multa')) {
             dados.valor_multa = document.getElementById('valor_multa').value;
         }
     }

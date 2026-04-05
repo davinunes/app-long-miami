@@ -155,11 +155,17 @@ $podeEncerrar = isAdmin() || temPermissao('notificacao.encerrar');
             try {
                 const response = await fetch(`${API_BASE_URL_PHP}/config.php`);
                 const data = await response.json();
-                const $assunto = $('#assunto_id'), $tipo = $('#tipo_id');
+                
+                // Popular select de assuntos
+                const $assunto = $('#assunto_id');
                 $assunto.empty().append('<option value="" disabled selected>Selecione o assunto...</option>');
                 if (data.assuntos) data.assuntos.forEach(a => $assunto.append(`<option value="${a.id}">${a.descricao}</option>`));
-                $tipo.empty().append('<option value="" disabled selected>Selecione o tipo...</option>');
-                if (data.tipos) data.tipos.forEach(t => $tipo.append(`<option value="${t.id}">${t.nome}</option>`));
+                
+                // Popular datalist de tipos (combobox)
+                const $tipoDatalist = $('#tipo_datalist');
+                $tipoDatalist.empty();
+                if (data.tipos) data.tipos.forEach(t => $tipoDatalist.append(`<option value="${t.nome}" data-id="${t.id}">`));
+                
                 $('select').formSelect();
             } catch (e) { console.error('Erro dados iniciais', e); }
         }
@@ -224,7 +230,11 @@ $podeEncerrar = isAdmin() || temPermissao('notificacao.encerrar');
             }
             
             setTimeout(() => {
-                $('#tipo_id').val(data.tipo_id).formSelect();
+                // Setar tipo no combobox
+                if (data.tipo_nome) {
+                    $('#tipo_combo').val(data.tipo_nome);
+                    $('#tipo_id').val(data.tipo_id);
+                }
                 $('#assunto_id').val(data.assunto_id).formSelect();
                 if (typeof toggleMultaField === 'function') toggleMultaField();
                 M.updateTextFields();

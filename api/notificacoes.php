@@ -141,11 +141,13 @@ function buscarNotificacao($pdo, $id, $usuario) {
     try {
         $stmt = $pdo->prepare("
             SELECT n.*, o.titulo as ocorrencia_titulo, o.fase as ocorrencia_fase, o.id as ocorrencia_id,
-                   u_lav.nome as lavrada_por_nome, ns.slug as status_slug, ns.nome as status_nome
+                   u_lav.nome as lavrada_por_nome, ns.slug as status_slug, ns.nome as status_nome,
+                   nt.nome as tipo_nome
             FROM notificacoes n 
             LEFT JOIN ocorrencias o ON n.ocorrencia_id = o.id 
             LEFT JOIN usuarios u_lav ON n.lavrada_por = u_lav.id
             LEFT JOIN notificacao_status ns ON n.status_id = ns.id
+            LEFT JOIN notificacao_tipos nt ON n.tipo_id = nt.id
             WHERE n.id = ?
         ");
         $stmt->execute([$id]);
