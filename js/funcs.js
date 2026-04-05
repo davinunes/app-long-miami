@@ -1,9 +1,6 @@
 // js/funcs.js - Funções compartilhadas (sem JWT)
 // As APIs agora usam sessões PHP diretamente
-
-if (typeof API_BASE_URL_PHP === 'undefined') {
-    var API_BASE_URL_PHP = window.location.origin + '/api';
-}
+// API_BASE_URL_PHP é definido pelo menu.php
 
 let imageStore = [];
 let currentPdfUrl = null;
