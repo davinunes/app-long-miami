@@ -209,22 +209,41 @@ function splitSqlStatements($sql) {
 
 $statements = splitSqlStatements($sql);
 
+// DEBUG
+$output("    DEBUG: Total statements após split: " . count($statements));
+$output("    DEBUG: Tamanho do SQL: " . strlen($sql) . " bytes");
+
 // Filtrar statements relevantes
 $createStatements = [];
 $insertStatements = [];
+$otherStatements = [];
 
 foreach ($statements as $statement) {
     $stmt = trim($statement);
     if (empty($stmt)) continue;
     
-    // Pular comentários
+    // Pular comentários de linha
     if (strpos($stmt, '--') === 0) continue;
     
     if (stripos($stmt, 'CREATE TABLE') !== false) {
         $createStatements[] = $stmt;
-    }
-    if (stripos($stmt, 'INSERT INTO') !== false) {
+    } elseif (stripos($stmt, 'INSERT INTO') !== false) {
         $insertStatements[] = $stmt;
+    } else {
+        $otherStatements[] = $stmt;
+    }
+}
+
+$output("    DEBUG: CREATE TABLE encontrados: " . count($createStatements));
+$output("    DEBUG: INSERT INTO encontrados: " . count($insertStatements));
+$output("    DEBUG: Outros statements: " . count($otherStatements));
+
+// Mostrar primeiros outros statements se houver
+if (count($otherStatements) > 0 && count($otherStatements) <= 10) {
+    $output("    DEBUG: Mostrando outros statements:");
+    foreach ($otherStatements as $idx => $s) {
+        $preview = substr($s, 0, 100);
+        $output("      [$idx]: " . $preview . "...");
     }
 }
 
@@ -289,6 +308,8 @@ function topologicalSort($tables) {
 
 // Ordenar e criar tabelas
 $sortedTables = topologicalSort($createStatements);
+$output("    DEBUG: Tabelas ordenadas para criação: " . implode(', ', $sortedTables));
+
 $tableMap = []; // Mapear nome para SQL
 
 foreach ($createStatements as $sql) {
@@ -303,15 +324,28 @@ $countInserts = 0;
 
 // Criar tabelas na ordem correta
 $output("    Criando tabelas na ordem correta...");
+$output("    DEBUG: tableMap tem " . count($tableMap) . " tabelas");
+$output("    DEBUG: sortedTables tem " . count($sortedTables) . " tabelas");
+
+// Mostrar tabelas que estão no tableMap mas não no sortedTables
+$missingInSort = array_diff(array_keys($tableMap), $sortedTables);
+if (count($missingInSort) > 0) {
+    $output("    DEBUG: Tabelas no tableMap mas não no sortedTables: " . implode(', ', $missingInSort));
+}
+
 foreach ($sortedTables as $tableName) {
-    if (!isset($tableMap[$tableName])) continue;
+    if (!isset($tableMap[$tableName])) {
+        $output("      - {$tableName} (não encontrado no tableMap)");
+        continue;
+    }
     
     try {
         $pdo->exec($tableMap[$tableName]);
         $countTables++;
         $createdTables[] = $tableName;
+        $output("      ✓ {$tableName}");
     } catch (PDOException $e) {
-        $output("    AVISO: " . $e->getMessage());
+        $output("      ✗ {$tableName}: " . $e->getMessage());
     }
 }
 
