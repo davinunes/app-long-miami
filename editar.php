@@ -207,6 +207,69 @@ $podeAlterarFase = isAdmin() || temPermissao('notificacao.alterar_fase');
             if (data.artigos) renderSelectedArticles(data.artigos);
         }
 
+        function toggleMultaField() {
+            const tipoId = $('#tipo_id').val();
+            // Se for multa (id=2), exibe o campo
+            if (tipoId == '2' || tipoId == 2) {
+                $('#valor_multa_container').slideDown();
+            } else {
+                $('#valor_multa_container').slideUp();
+            }
+        }
+
+        function addFato(texto = '') {
+            const container = $('#fatos-container');
+            const fatoHtml = $(`
+                <div class="fato-item">
+                    <textarea class="materialize-textarea fato-texto" placeholder="Descreva aqui o fato observado...">${texto}</textarea>
+                    <button type="button" class="btn-remove-fato red btn-flat" onclick="removerFato(this)">×</button>
+                </div>
+            `);
+            container.append(fatoHtml);
+            M.textareaAutoResize(fatoHtml.find('textarea'));
+        }
+
+        function removerFato(btn) {
+            const container = $('#fatos-container');
+            if (container.children().length > 1) {
+                $(btn).closest('.fato-item').remove();
+            } else {
+                $(btn).closest('.fato-item').find('textarea').val('');
+            }
+        }
+
+        function renderSelectedArticles(artigos) {
+            const container = $('#selected-articles-list');
+            container.empty();
+            if (!artigos || artigos.length === 0) {
+                container.append('<p style="color: #999;">Nenhum artigo selecionado.</p>');
+                return;
+            }
+            artigos.forEach((art, index) => {
+                const artHtml = $(`
+                    <div class="selected-article-item">
+                        <div class="article-notation">${art.notation}</div>
+                        <div class="article-text">${art.text || ''}</div>
+                        <button type="button" class="btn-remove-article" onclick="removerArtigo(${index})">×</button>
+                    </div>
+                `);
+                container.append(artHtml);
+            });
+        }
+
+        function removerArtigo(index) {
+            if (notificationData && notificationData.artigos) {
+                notificationData.artigos.splice(index, 1);
+                renderSelectedArticles(notificationData.artigos);
+            }
+        }
+
+        function formatDate(data) {
+            if (!data) return '-';
+            const d = new Date(data + 'T00:00:00');
+            return d.toLocaleDateString('pt-BR');
+        }
+
         function renderLifecycleActions(data) {
             const container = $('#lifecycle-actions');
             container.empty();
@@ -362,6 +425,107 @@ $podeAlterarFase = isAdmin() || temPermissao('notificacao.alterar_fase');
                 }
                 M.toast({html: 'Ocorrência vinculada!', classes: 'green'});
             } catch (e) { M.toast({html: 'Erro ao vincular', classes: 'red'}); }
+        }
+        async function fetchInitialData() {
+            try {
+                const response = await fetch(`${API_BASE_URL_PHP}/config.php`);
+                const data = await response.json();
+                initialData = data;
+                const assuntoSelect = $('#assunto_id');
+                assuntoSelect.empty().append('<option value="" disabled selected>Selecione um assunto</option>');
+                data.assuntos.forEach(a => assuntoSelect.append(`<option value="${a.id}">${a.descricao}</option>`));
+                const tipoSelect = $('#tipo_id');
+                tipoSelect.empty().append('<option value="" disabled selected>Selecione o tipo</option>');
+                data.tipos.forEach(t => tipoSelect.append(`<option value="${t.id}">${t.nome}</option>`));
+            } catch (e) { M.toast({html: 'Erro ao carregar dados iniciais', classes: 'red'}); }
+        }
+
+        function configurarCampoBloco() {
+            $('#unidade').on('input', function() {
+                const val = $(this).val().toUpperCase();
+                const match = val.match(/^([A-Z]+)(\d+)$/);
+                if (match) { $('#bloco').val(match[1]); $(this).val(match[2]); M.updateTextFields(); }
+            });
+        }
+
+        function vincularCamposUnidadeBloco() {
+            $('#bloco, #unidade').on('change', function() {
+                const b = $('#bloco').val();
+                const u = $('#unidade').val();
+                if (b && u) console.log(`Unidade vinculada: ${b}${u}`);
+            });
+        }
+
+        function inicializarBuscaRegimento() {
+            $('#input-busca-regimento').on('input', function() {
+                const busca = $(this).val().toLowerCase();
+                const resultados = $('#resultados-regimento');
+                resultados.empty();
+                if (busca.length < 2) return;
+                if (!initialData || !initialData.permissoes) return;
+                // No contexto de regimento, buscamos nos artigos iniciais se houver
+                // Se não, simulamos ou buscamos via API se implementado.
+                // Aqui vamos usar um mock ou buscar do config se disponível.
+            });
+        }
+
+        function abrirModalArtigos() {
+             const modal = M.Modal.getInstance(document.getElementById('modal-regimento'));
+             if (modal) modal.open();
+        }
+
+        async function salvarNotificacao() {
+            const btn = $('#btnSalvar');
+            btn.prop('disabled', true).text('Salvando...');
+            const dados = getFormData();
+            try {
+                const response = await fetch(`${API_BASE_URL_PHP}/notificacoes.php`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dados)
+                });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.message);
+                M.toast({html: 'Salvo com sucesso!', classes: 'green'});
+                if (!NOTIFICACAO_ID) window.location.href = `editar.php?id=${result.id}`;
+                else loadNotificationData();
+            } catch (error) { M.toast({html: 'Erro: ' + error.message, classes: 'red'}); }
+            finally { btn.prop('disabled', false).text(NOTIFICACAO_ID ? 'Salvar Alterações' : 'Criar Notificação'); }
+        }
+
+        function getFormData() {
+            const fatos = [];
+            $('.fato-texto').each(function() { if ($(this).val().trim()) fatos.push($(this).val().trim()); });
+            const data = {
+                id: $('#notificacao_id').val(),
+                unidade: $('#unidade').val(),
+                bloco: $('#bloco').val(),
+                numero: $('#numero').val(),
+                data_emissao: $('#data_emissao').val(),
+                assunto_id: $('#assunto_id').val(),
+                tipo_id: $('#tipo_id').val(),
+                valor_multa: $('#valor_multa').val(),
+                url_recurso: $('#url_recurso').val(),
+                fundamentacao_legal: $('#fundamentacao_legal').val(),
+                ocorrencia_id: $('#ocorrencia_id').val(),
+                fatos: fatos,
+                artigos: notificationData ? notificationData.artigos : []
+            };
+            return data;
+        }
+
+        function inicializarBuscaRegimento() {
+            $('#input-busca-regimento').on('keyup', function(e) {
+                if (e.key === 'Enter') buscarRegimento();
+            });
+        }
+
+        async function buscarRegimento() {
+            const query = $('#input-busca-regimento').val();
+            const container = $('#resultados-regimento');
+            container.html('<p>Buscando no regimento...</p>');
+            // Implementação de busca seria via API ou local se regimento_json carregado
+            container.html('<p class="grey-text">Busca de regimento não implementada localmente. Use a fundamentação legal manual.</p>');
         }
     </script>
 </body>
