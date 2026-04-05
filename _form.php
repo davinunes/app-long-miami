@@ -4,22 +4,31 @@
 <div id="status" class="status" style="display: none;"></div>
 
 <div id="ocorrencia_info" class="form-group" style="display: none; background: #e3f2fd; padding: 15px; border-radius: 8px; border-left: 4px solid #2196F3;">
-    <label style="color: #1976D2; font-weight: bold;">Ocorrência Vinculada:</label>
+    <label style="color: #1976D2; font-weight: bold;">Ocorrência Principal:</label>
     <p id="ocorrencia_titulo" style="margin: 5px 0; color: #333;"></p>
-    <div style="display: flex; gap: 10px; margin-top: 10px;">
+    <div style="display: flex; gap: 10px; margin-top: 10px; align-items: center;">
         <a href="#" id="ver_ocorrencia_link" class="btn-small" target="_blank">Ver Ocorrência</a>
         <button type="button" id="btn_sincronizar_evidencias" class="btn-small blue" onclick="sincronizarEvidencias()">
             <i class="material-icons" style="font-size: 16px; vertical-align: middle;">sync</i> Sincronizar Evidências
         </button>
+        <button type="button" id="btn_adicionar_ocorrencia" class="btn-small grey" onclick="mostrarBuscaOcorrencia()" style="background: #9e9e9e; color: white;">
+            <i class="material-icons" style="font-size: 16px; vertical-align: middle;">add</i> Vincular Mais
+        </button>
     </div>
+</div>
+
+<div id="ocorrencias_adicionais_section" class="form-group" style="display: none; background: #f3e5f5; padding: 15px; border-radius: 8px; border-left: 4px solid #9c27b0; margin-top: 10px;">
+    <label style="color: #7b1fa2; font-weight: bold;">Ocorrências Adicionais Vinculadas:</label>
+    <div id="ocorrencias_adicionais_lista"></div>
 </div>
 
 <div id="ocorrencia_busca_section" class="form-group" style="display: none; background: #fff3e0; padding: 15px; border-radius: 8px; border-left: 4px solid #FF9800;">
     <label style="color: #E65100; font-weight: bold;">Vincular Ocorrência:</label>
     <p style="color: #666; font-size: 12px; margin: 5px 0;">Busque uma ocorrência homologada para vincular.</p>
     <div style="display: flex; gap: 10px;">
-        <input type="text" id="ocorrencia_busca" placeholder="Buscar por título ou descrição..." onkeypress="if(event.key==='Enter'){event.preventDefault();buscarOcorrencias();}" style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+        <input type="text" id="ocorrencia_busca" placeholder="Buscar por título, descrição, número ou unidade..." onkeypress="if(event.key==='Enter'){event.preventDefault();buscarOcorrencias();}" style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
         <button type="button" class="btn orange" onclick="buscarOcorrencias()">Buscar</button>
+        <button type="button" class="btn grey" onclick="ocultarBuscaOcorrencia()">Cancelar</button>
     </div>
     <div id="ocorrencia_busca_resultados" style="margin-top: 10px; max-height: 200px; overflow-y: auto;"></div>
 </div>

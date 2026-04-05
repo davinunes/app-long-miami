@@ -114,6 +114,58 @@ switch ($metodo) {
                 exit();
             }
             criarTipoNotificacao($pdo, $dados);
+        } elseif (isset($dados->action) && $dados->action === 'vincular_ocorrencia_adicional') {
+            $notificacao_id = (int)($dados->notificacao_id ?? 0);
+            $ocorrencia_id = (int)($dados->ocorrencia_id ?? 0);
+            if (!$notificacao_id || !$ocorrencia_id) {
+                http_response_code(400);
+                echo json_encode(['message' => 'IDs não fornecidos.']);
+                exit();
+            }
+            try {
+                // Verificar se já está vinculada
+                $stmt_check = $pdo->prepare("SELECT id FROM ocorrencia_notificacoes WHERE ocorrencia_id = ? AND notificacao_id = ?");
+                $stmt_check->execute([$ocorrencia_id, $notificacao_id]);
+                if ($stmt_check->fetch()) {
+                    http_response_code(400);
+                    echo json_encode(['message' => 'Ocorrência já está vinculada.']);
+                    exit();
+                }
+                // Verificar se a ocorrência está homologada
+                $stmt_oc = $pdo->prepare("SELECT fase FROM ocorrencias WHERE id = ?");
+                $stmt_oc->execute([$ocorrencia_id]);
+                $oc = $stmt_oc->fetch();
+                if (!$oc || $oc['fase'] !== 'homologada') {
+                    http_response_code(400);
+                    echo json_encode(['message' => 'Apenas ocorrências homologadas podem ser vinculadas.']);
+                    exit();
+                }
+                // Vincular
+                $stmt_ins = $pdo->prepare("INSERT INTO ocorrencia_notificacoes (ocorrencia_id, notificacao_id, tipo_vinculo) VALUES (?, ?, 'vinculada')");
+                $stmt_ins->execute([$ocorrencia_id, $notificacao_id]);
+                http_response_code(200);
+                echo json_encode(['message' => 'Ocorrência vinculada com sucesso.']);
+            } catch (Exception $e) {
+                http_response_code(500);
+                echo json_encode(['message' => 'Erro ao vincular: ' . $e->getMessage()]);
+            }
+        } elseif (isset($dados->action) && $dados->action === 'desvincular_ocorrencia_adicional') {
+            $notificacao_id = (int)($dados->notificacao_id ?? 0);
+            $ocorrencia_id = (int)($dados->ocorrencia_id ?? 0);
+            if (!$notificacao_id || !$ocorrencia_id) {
+                http_response_code(400);
+                echo json_encode(['message' => 'IDs não fornecidos.']);
+                exit();
+            }
+            try {
+                $stmt_del = $pdo->prepare("DELETE FROM ocorrencia_notificacoes WHERE ocorrencia_id = ? AND notificacao_id = ? AND tipo_vinculo != 'gerada'");
+                $stmt_del->execute([$ocorrencia_id, $notificacao_id]);
+                http_response_code(200);
+                echo json_encode(['message' => 'Ocorrência desvinculada com sucesso.']);
+            } catch (Exception $e) {
+                http_response_code(500);
+                echo json_encode(['message' => 'Erro ao desvincular: ' . $e->getMessage()]);
+            }
         } elseif (isset($dados->action) && $dados->action === 'excluir') {
             if (!$isAdminDev && !temPermissao('notificacao.excluir')) {
                 http_response_code(403);
@@ -204,6 +256,19 @@ function buscarNotificacao($pdo, $id, $usuario) {
                 }
             }
         }
+        
+        // Buscar ocorrências adicionais (excluindo a principal)
+        $stmt_adicionais = $pdo->prepare("
+            SELECT o.id, o.titulo, o.fase,
+                   GROUP_CONCAT(CONCAT(COALESCE(ou.unidade_bloco, ''), ou.unidade_numero) SEPARATOR ', ') as unidades
+            FROM ocorrencia_notificacoes on2
+            JOIN ocorrencias o ON on2.ocorrencia_id = o.id
+            LEFT JOIN ocorrencia_unidades ou ON o.id = ou.ocorrencia_id
+            WHERE on2.notificacao_id = ? AND o.id != ?
+            GROUP BY o.id
+        ");
+        $stmt_adicionais->execute([$id, $notificacao['ocorrencia_id'] ?? 0]);
+        $notificacao['ocorrencias_adicionais'] = $stmt_adicionais->fetchAll();
         
         $stmt_fatos = $pdo->prepare("SELECT descricao FROM notificacao_fatos WHERE notificacao_id = ? ORDER BY ordem ASC");
         $stmt_fatos->execute([$id]);
@@ -837,17 +902,35 @@ function sincronizarEvidencias($pdo, $dados, $usuario) {
     try {
         $notificacao_id = (int)$dados->notificacao_id;
         $ocorrencia_id = (int)$dados->ocorrencia_id;
+        $sincronizar_todas = !empty($dados->sincronizar_todas);
         
-        $stmt_check = $pdo->prepare("SELECT id FROM notificacoes WHERE id = ? AND ocorrencia_id = ?");
-        $stmt_check->execute([$notificacao_id, $ocorrencia_id]);
-        if (!$stmt_check->fetch()) {
-            throw new Exception("Notificação não está vinculada a esta ocorrência.");
+        // Se sincronizar_todas, buscar todas as ocorrências vinculadas
+        if ($sincronizar_todas) {
+            // Buscar ocorrência principal
+            $stmt_principal = $pdo->prepare("SELECT ocorrencia_id FROM notificacoes WHERE id = ?");
+            $stmt_principal->execute([$notificacao_id]);
+            $principal = $stmt_principal->fetch();
+            $todas_ocorrencias = [];
+            if ($principal && $principal['ocorrencia_id']) {
+                $todas_ocorrencias[] = $principal['ocorrencia_id'];
+            }
+            // Buscar adicionais
+            $stmt_adicionais = $pdo->prepare("SELECT ocorrencia_id FROM ocorrencia_notificacoes WHERE notificacao_id = ?");
+            $stmt_adicionais->execute([$notificacao_id]);
+            while ($row = $stmt_adicionais->fetch()) {
+                if (!in_array($row['ocorrencia_id'], $todas_ocorrencias)) {
+                    $todas_ocorrencias[] = $row['ocorrencia_id'];
+                }
+            }
+        } else {
+            // Apenas a ocorrência especificada
+            $stmt_check = $pdo->prepare("SELECT id FROM notificacoes WHERE id = ? AND ocorrencia_id = ?");
+            $stmt_check->execute([$notificacao_id, $ocorrencia_id]);
+            if (!$stmt_check->fetch()) {
+                throw new Exception("Notificação não está vinculada a esta ocorrência.");
+            }
+            $todas_ocorrencias = [$ocorrencia_id];
         }
-        
-        // Sincronizar IMAGENS
-        $stmt_anexos = $pdo->prepare("SELECT * FROM ocorrencia_anexos WHERE ocorrencia_id = ? AND tipo = 'imagem' AND inactive = 0");
-        $stmt_anexos->execute([$ocorrencia_id]);
-        $anexos = $stmt_anexos->fetchAll();
         
         $stmt_existente = $pdo->prepare("SELECT anexo_ocorrencia_id, id FROM notificacao_imagens WHERE notificacao_id = ? AND anexo_ocorrencia_id IS NOT NULL");
         $stmt_existente->execute([$notificacao_id]);
@@ -866,41 +949,8 @@ function sincronizarEvidencias($pdo, $dados, $usuario) {
         $sql_evidencia = "INSERT IGNORE INTO evidencia_compartilhada (ocorrencia_anexo_id, notificacao_id) VALUES (?, ?)";
         $stmt_evidencia = $pdo->prepare($sql_evidencia);
         
-        $count_novas = 0;
-        $count_reativadas = 0;
-        
-        foreach ($anexos as $anexo) {
-            if (isset($ids_inativos[$anexo['id']])) {
-                $stmt_reativar = $pdo->prepare("UPDATE notificacao_imagens SET inactive = 0, deleted_at = NULL WHERE id = ?");
-                $stmt_reativar->execute([$ids_inativos[$anexo['id']]]);
-                $count_reativadas++;
-            } elseif (!in_array($anexo['id'], $ja_vinculados)) {
-                $caminho_relativo = ltrim($anexo['url'], '/');
-                
-                $stmt_img->execute([
-                    $notificacao_id,
-                    $caminho_relativo,
-                    $anexo['nome_original'],
-                    $ocorrencia_id,
-                    $anexo['id']
-                ]);
-                
-                $stmt_evidencia->execute([$anexo['id'], $notificacao_id]);
-                $count_novas++;
-            }
-        }
-        
-        $total_imagens = $count_novas + $count_reativadas;
-        
-        // Buscar evidências TEXTUAIS (mensagens marcadas como evidência)
-        $stmt_evidencias_texto = $pdo->prepare("
-            SELECT id, mensagem, usuario_id, created_at 
-            FROM ocorrencia_mensagens 
-            WHERE ocorrencia_id = ? AND eh_evidencia = 1
-            ORDER BY created_at ASC
-        ");
-        $stmt_evidencias_texto->execute([$ocorrencia_id]);
-        $evidencias_texto = $stmt_evidencias_texto->fetchAll();
+        $total_novas = 0;
+        $total_reativadas = 0;
         
         // Buscar fatos já existentes na notificação
         $stmt_fatos = $pdo->prepare("SELECT id, descricao FROM notificacao_fatos WHERE notificacao_id = ?");
@@ -908,26 +958,67 @@ function sincronizarEvidencias($pdo, $dados, $usuario) {
         $fatos_existentes = $stmt_fatos->fetchAll();
         $fatos_textos = array_map(function($f) { return trim($f['descricao']); }, $fatos_existentes);
         
-        // Inserir fatos novos (evidências de texto que ainda não existem)
         $stmt_insert_fato = $pdo->prepare("INSERT INTO notificacao_fatos (notificacao_id, descricao) VALUES (?, ?)");
         $novas_evidencias_texto = [];
-        foreach ($evidencias_texto as $ev) {
-            $texto = trim($ev['mensagem']);
-            if (!empty($texto) && !in_array($texto, $fatos_textos)) {
-                $stmt_insert_fato->execute([$notificacao_id, $texto]);
-                $novas_evidencias_texto[] = $texto;
-                $fatos_textos[] = $texto; // Evita duplicatas no loop
+        
+        foreach ($todas_ocorrencias as $occ_id) {
+            // Sincronizar IMAGENS desta ocorrência
+            $stmt_anexos = $pdo->prepare("SELECT * FROM ocorrencia_anexos WHERE ocorrencia_id = ? AND tipo = 'imagem' AND inactive = 0");
+            $stmt_anexos->execute([$occ_id]);
+            $anexos = $stmt_anexos->fetchAll();
+            
+            foreach ($anexos as $anexo) {
+                if (isset($ids_inativos[$anexo['id']])) {
+                    $stmt_reativar = $pdo->prepare("UPDATE notificacao_imagens SET inactive = 0, deleted_at = NULL WHERE id = ?");
+                    $stmt_reativar->execute([$ids_inativos[$anexo['id']]]);
+                    $total_reativadas++;
+                } elseif (!in_array($anexo['id'], $ja_vinculados)) {
+                    $caminho_relativo = ltrim($anexo['url'], '/');
+                    $stmt_img->execute([
+                        $notificacao_id,
+                        $caminho_relativo,
+                        $anexo['nome_original'],
+                        $occ_id,
+                        $anexo['id']
+                    ]);
+                    $stmt_evidencia->execute([$anexo['id'], $notificacao_id]);
+                    $total_novas++;
+                    $ja_vinculados[] = $anexo['id'];
+                }
+            }
+            
+            // Buscar evidências TEXTUAIS desta ocorrência
+            $stmt_evidencias_texto = $pdo->prepare("
+                SELECT id, mensagem, usuario_id, created_at 
+                FROM ocorrencia_mensagens 
+                WHERE ocorrencia_id = ? AND eh_evidencia = 1
+                ORDER BY created_at ASC
+            ");
+            $stmt_evidencias_texto->execute([$occ_id]);
+            $evidencias_texto = $stmt_evidencias_texto->fetchAll();
+            
+            foreach ($evidencias_texto as $ev) {
+                $texto = trim($ev['mensagem']);
+                if (!empty($texto) && !in_array($texto, $fatos_textos)) {
+                    $stmt_insert_fato->execute([$notificacao_id, $texto]);
+                    $novas_evidencias_texto[] = $texto;
+                    $fatos_textos[] = $texto;
+                }
             }
         }
         
+        $total_imagens = $total_novas + $total_reativadas;
+        $total_ocorrencias = count($todas_ocorrencias);
+        
         http_response_code(200);
         echo json_encode([
-            'message' => "Sincronizado: {$total_imagens} imagem(ns), " . count($novas_evidencias_texto) . " evidência(s) de texto.",
+            'message' => "Sincronizado {$total_ocorrencias} ocorrência(s): {$total_imagens} imagem(ns), " . count($novas_evidencias_texto) . " evidência(s) de texto.",
             'images_count' => $total_imagens,
-            'images_novas' => $count_novas,
-            'images_reativadas' => $count_reativadas,
+            'images_novas' => $total_novas,
+            'images_reativadas' => $total_reativadas,
             'text_evidencias' => $novas_evidencias_texto,
-            'text_count' => count($novas_evidencias_texto)
+            'text_count' => count($novas_evidencias_texto),
+            'ocorrencias_count' => $total_ocorrencias
         ]);
     } catch (Exception $e) {
         http_response_code(500);

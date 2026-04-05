@@ -229,6 +229,7 @@ $podeEncerrar = isAdmin() || temPermissao('notificacao.encerrar');
                 $('#ver_ocorrencia_link').attr('href', `ocorrencia_detalhe.php?id=${data.ocorrencia_id}`);
                 $('#ocorrencia_info').show();
                 $('#ocorrencia_busca_section').hide();
+                renderOcorrenciasAdicionais(data.ocorrencias_adicionais || []);
             } else if (PODE_EDITAR_CAMPOS) {
                 $('#ocorrencia_busca_section').show();
             }
@@ -402,7 +403,7 @@ $podeEncerrar = isAdmin() || temPermissao('notificacao.encerrar');
                     return;
                 }
                 container.innerHTML = '<div style="display: flex; flex-direction: column; gap: 8px;">' +
-                    ocorrencias.map(o => `<div style="background: #f5f5f5; padding: 10px; border-radius: 4px; cursor: pointer;" onclick="vincularOcorrencia(${o.id})">
+                    ocorrencias.map(o => `<div style="background: #f5f5f5; padding: 10px; border-radius: 4px; cursor: pointer;" onclick="vincularOcorrenciaAdicional(${o.id})">
                         <strong>#${o.id}</strong> - ${o.titulo}<br><small style="color: #666;">${o.unidades || 'Sem unidades'}</small>
                     </div>`).join('') + '</div>';
             } catch (e) { container.innerHTML = '<p style="color: red;">Erro ao buscar.</p>'; }
@@ -423,6 +424,18 @@ $podeEncerrar = isAdmin() || temPermissao('notificacao.encerrar');
         }
 
         let sincronizando = false;
+        let ocorrenciasAdicionais = [];
+        
+        function mostrarBuscaOcorrencia() {
+            document.getElementById('ocorrencia_busca_section').style.display = 'block';
+            document.getElementById('ocorrencia_busca').focus();
+        }
+        
+        function ocultarBuscaOcorrencia() {
+            document.getElementById('ocorrencia_busca_section').style.display = 'none';
+            document.getElementById('ocorrencia_busca_resultados').innerHTML = '';
+            document.getElementById('ocorrencia_busca').value = '';
+        }
         
         async function sincronizarEvidencias() {
             const ocorrenciaId = document.getElementById('ocorrencia_id').value;
@@ -442,7 +455,8 @@ $podeEncerrar = isAdmin() || temPermissao('notificacao.encerrar');
                     body: JSON.stringify({
                         action: 'sincronizar_evidencias',
                         notificacao_id: NOTIFICACAO_ID,
-                        ocorrencia_id: parseInt(ocorrenciaId)
+                        ocorrencia_id: parseInt(ocorrenciaId),
+                        sincronizar_todas: true
                     })
                 });
                 const result = await res.json();
@@ -454,6 +468,74 @@ $podeEncerrar = isAdmin() || temPermissao('notificacao.encerrar');
                 }
             } catch(e) { M.toast({html: 'Erro de conexão', classes: 'red'}); }
             finally { sincronizando = false; }
+        }
+        
+        async function vincularOcorrenciaAdicional(id) {
+            try {
+                const res = await fetch(`${API_BASE_URL_PHP}/notificacoes.php`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'vincular_ocorrencia_adicional',
+                        notificacao_id: NOTIFICACAO_ID,
+                        ocorrencia_id: id
+                    })
+                });
+                const result = await res.json();
+                if (res.ok) {
+                    M.toast({html: 'Ocorrência adicional vinculada!', classes: 'green'});
+                    ocultarBuscaOcorrencia();
+                    loadNotificationData();
+                } else {
+                    M.toast({html: 'Erro: ' + (result.message || 'Falha'), classes: 'red'});
+                }
+            } catch(e) { M.toast({html: 'Erro de conexão', classes: 'red'}); }
+        }
+        
+        async function desvincularOcorrenciaAdicional(id) {
+            if (!confirm('Deseja desvincular esta ocorrência adicional?')) return;
+            try {
+                const res = await fetch(`${API_BASE_URL_PHP}/notificacoes.php`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'desvincular_ocorrencia_adicional',
+                        notificacao_id: NOTIFICACAO_ID,
+                        ocorrencia_id: id
+                    })
+                });
+                const result = await res.json();
+                if (res.ok) {
+                    M.toast({html: 'Ocorrência desvinculada!', classes: 'green'});
+                    loadNotificationData();
+                } else {
+                    M.toast({html: 'Erro: ' + (result.message || 'Falha'), classes: 'red'});
+                }
+            } catch(e) { M.toast({html: 'Erro de conexão', classes: 'red'}); }
+        }
+        
+        function renderOcorrenciasAdicionais(ocorrencias) {
+            const container = document.getElementById('ocorrencias_adicionais_lista');
+            const section = document.getElementById('ocorrencias_adicionais_section');
+            
+            if (!ocorrencias || ocorrencias.length === 0) {
+                section.style.display = 'none';
+                return;
+            }
+            
+            section.style.display = 'block';
+            container.innerHTML = ocorrencias.map(o => `
+                <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px; background: white; border-radius: 4px; margin-bottom: 5px;">
+                    <div>
+                        <strong>#${o.id}</strong> - ${o.titulo || 'Sem título'}<br>
+                        <small style="color: #666;">${o.unidades || ''}</small>
+                    </div>
+                    <div style="display: flex; gap: 5px;">
+                        <a href="ocorrencia_detalhe.php?id=${o.id}" target="_blank" class="btn-small">Ver</a>
+                        <button type="button" class="btn-small red" onclick="desvincularOcorrenciaAdicional(${o.id})">×</button>
+                    </div>
+                </div>
+            `).join('');
         }
     </script>
 </body>
