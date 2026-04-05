@@ -106,30 +106,21 @@ function criarAdmin($email, $senha, $nome = 'Administrador') {
         $grupoAdmin = $stmt->fetch();
         
         if (!$grupoAdmin) {
-            $stmt = $pdo->prepare("INSERT INTO grupos (nome, descricao) VALUES ('Admin', 'Grupo de administradores')");
+            $stmt = $pdo->prepare("INSERT INTO grupos (nome) VALUES ('Admin')");
             $stmt->execute();
             $grupoAdminId = $pdo->lastInsertId();
         } else {
             $grupoAdminId = $grupoAdmin['id'];
         }
         
-        // Criar usuário
+        // Criar usuário com grupo_principal_id
         $senhaHash = password_hash($senha, PASSWORD_DEFAULT);
-        
-        // Verificar se a coluna é 'password' ou 'senha'
-        $stmtCheck = $pdo->query("SHOW COLUMNS FROM usuarios LIKE 'password'");
-        $colunaSenha = $stmtCheck->fetch() ? 'password' : 'senha';
-        
         $stmt = $pdo->prepare("
-            INSERT INTO usuarios (nome, email, {$colunaSenha}, role, created_at) 
-            VALUES (?, ?, ?, 'admin', NOW())
+            INSERT INTO usuarios (nome, email, senha, role, grupo_principal_id) 
+            VALUES (?, ?, ?, 'admin', ?)
         ");
-        $stmt->execute([$nome, $email, $senhaHash]);
+        $stmt->execute([$nome, $email, $senhaHash, $grupoAdminId]);
         $usuarioId = $pdo->lastInsertId();
-        
-        // Vincular usuário ao grupo Admin
-        $stmt = $pdo->prepare("INSERT INTO grupo_usuarios (grupo_id, usuario_id) VALUES (?, ?)");
-        $stmt->execute([$grupoAdminId, $usuarioId]);
         
         // Atribuir todas as permissões ao grupo Admin
         $stmt = $pdo->prepare("SELECT id FROM permissoes");
