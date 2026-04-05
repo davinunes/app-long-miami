@@ -217,6 +217,10 @@ function carregarListaNotificacoes() {
                     acoesHtml += ` <button class="btn-small red" onclick="acaoRapidaNotificacao(${n.id}, 'encerrada')">Encerrar</button>`;
                 }
             }
+            
+            if ((podeAcaoRapida && (typeof PODE_EDITAR_DATAS !== 'undefined' ? PODE_EDITAR_DATAS : false)) || EH_ADMIN_DEV) {
+                acoesHtml += ` <button class="btn-small purple" onclick="abrirQuickEdit(${n.id}, '${n.numero}/${n.ano}')" title="Editar datas"><i class="material-icons" style="font-size: 14px;">edit</i></button>`;
+            }
 
             cardsHtml += `
                 <div class="notificacao-card status-${statusSlug}">
@@ -434,3 +438,62 @@ document.addEventListener('DOMContentLoaded', function() {
         autoExpand(fundamentacao);
     }
 });
+
+function abrirQuickEdit(id, numero) {
+    if (typeof M === 'undefined') return;
+    const modal = document.getElementById('modal-quick-edit');
+    if (!modal) return;
+    
+    document.getElementById('qe-id').value = id;
+    document.getElementById('qe-data-envio').value = '';
+    document.getElementById('qe-data-ciencia').value = '';
+    const select = document.getElementById('qe-recurso-status');
+    if (select) {
+        select.value = '';
+        if (typeof M !== 'undefined') M.FormSelect.init(select);
+    }
+    
+    const titulo = document.getElementById('modal-qe-titulo');
+    if (titulo) titulo.textContent = 'Editar #' + numero;
+    
+    if (typeof M !== 'undefined') M.updateTextFields();
+    const instance = M.Modal.getInstance(modal);
+    if (instance) instance.open();
+}
+
+async function salvarQuickEdit() {
+    if (typeof M === 'undefined') return;
+    const id = document.getElementById('qe-id').value;
+    const dataEnvio = document.getElementById('qe-data-envio').value;
+    const dataCiencia = document.getElementById('qe-data-ciencia').value;
+    const recursoStatus = document.getElementById('qe-recurso-status').value;
+    
+    try {
+        const res = await fetch(`${API_BASE_URL_PHP}/notificacoes.php`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                quick_edit: true,
+                id: parseInt(id),
+                data_envio: dataEnvio || null,
+                data_ciencia: dataCiencia || null,
+                recurso_status: recursoStatus || null
+            })
+        });
+        
+        if (res.ok) {
+            M.toast({html: 'Atualizado com sucesso!', classes: 'green'});
+            const modal = document.getElementById('modal-quick-edit');
+            if (modal) {
+                const instance = M.Modal.getInstance(modal);
+                if (instance) instance.close();
+            }
+            if (typeof carregarListaNotificacoes === 'function') carregarListaNotificacoes();
+        } else {
+            const err = await res.json();
+            M.toast({html: 'Erro: ' + (err.message || 'Falha'), classes: 'red'});
+        }
+    } catch (e) {
+        M.toast({html: 'Erro de conexão', classes: 'red'});
+    }
+}

@@ -3,6 +3,7 @@ require_once 'auth.php';
 requireLogin();
 
 $podeAcaoRapida = isAdmin() || temPermissao('notificacao.acao_rapida');
+$podeEditarDatas = isAdmin() || temPermissao('notificacao.editar_datas');
 $podeListarLavradas = isAdmin() || temPermissao('notificacao.listar_lavradas');
 $podeListarCobranca = isAdmin() || temPermissao('notificacao.listar_em_cobranca');
 ?>
@@ -134,20 +135,65 @@ $podeListarCobranca = isAdmin() || temPermissao('notificacao.listar_em_cobranca'
         </div>
     </main>
 
+    <!-- Modal Quick Edit -->
+    <div id="modal-quick-edit" class="modal modal-fixed-footer">
+        <div class="modal-content">
+            <h4 id="modal-qe-titulo">Editar Notificação</h4>
+            <input type="hidden" id="qe-id">
+            
+            <div class="row">
+                <div class="col s12 m6">
+                    <div class="input-field">
+                        <input type="datetime-local" id="qe-data-envio">
+                        <label for="qe-data-envio">Data de Envio</label>
+                    </div>
+                </div>
+                <div class="col s12 m6">
+                    <div class="input-field">
+                        <input type="datetime-local" id="qe-data-ciencia">
+                        <label for="qe-data-ciencia">Data da Ciência</label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col s12">
+                    <div class="input-field">
+                        <select id="qe-recurso-status">
+                            <option value="">Selecione...</option>
+                            <option value="pendente">Recurso Pendente</option>
+                            <option value="deferido">Recurso Deferido</option>
+                            <option value="indeferido">Recurso Indeferido</option>
+                        </select>
+                        <label>Status do Recurso</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <a href="#!" class="modal-close btn-flat">Cancelar</a>
+            <button type="button" class="btn" id="btn-qe-salvar">Salvar</button>
+        </div>
+    </div>
+
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
     <script src="js/funcs.js?v=<?php echo time(); ?>"></script>
     <script>
         const PODE_ACAO_RAPIDA = <?php echo $podeAcaoRapida ? 'true' : 'false'; ?>;
+        const PODE_EDITAR_DATAS = <?php echo $podeEditarDatas ? 'true' : 'false'; ?>;
         const PODE_LISTAR_LAVRADAS = <?php echo $podeListarLavradas ? 'true' : 'false'; ?>;
         const PODE_LISTAR_COBRANCA = <?php echo $podeListarCobranca ? 'true' : 'false'; ?>;
         
         $(document).ready(function() {
             $('.sidenav').sidenav({edge: 'left'});
+            $('.modal').modal();
             carregarListaNotificacoes();
             
             $('#user-name').text('<?php echo htmlspecialchars(getUsuarioNome()); ?>');
             $('#user-email').text('<?php echo htmlspecialchars(getUsuarioEmail()); ?>');
+            
+            $('#btn-qe-salvar').on('click', salvarQuickEdit);
         });
         
         function fazerLogout() {

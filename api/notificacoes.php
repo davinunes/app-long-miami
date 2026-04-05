@@ -100,6 +100,13 @@ switch ($metodo) {
             http_response_code(200);
             echo json_encode(['message' => 'Status da imagem atualizado.']);
             exit;
+        } elseif (isset($dados->quick_edit)) {
+            if (!$isAdminDev && !temPermissao('notificacao.editar_datas')) {
+                http_response_code(403);
+                echo json_encode(['message' => 'Permissão insuficiente para editar datas.']);
+                exit();
+            }
+            quickEditNotificacao($pdo, $dados);
         } elseif (isset($dados->id) && !empty($dados->id)) {
             if (!$podeEditar) {
                 http_response_code(403);
@@ -945,6 +952,61 @@ function mudarFase($pdo, $dados, $usuario) {
         if ($pdo->inTransaction()) $pdo->rollBack();
         http_response_code(500);
         echo json_encode(['message' => 'Erro ao mudar fase: ' . $e->getMessage()]);
+    }
+}
+
+function quickEditNotificacao($pdo, $dados) {
+    try {
+        $id = (int)$dados->id;
+        
+        $updates = [];
+        $params = [];
+        
+        if (isset($dados->data_envio)) {
+            if ($dados->data_envio) {
+                $updates[] = "data_envio = ?";
+                $params[] = $dados->data_envio;
+            } else {
+                $updates[] = "data_envio = NULL";
+            }
+        }
+        
+        if (isset($dados->data_ciencia)) {
+            if ($dados->data_ciencia) {
+                $updates[] = "data_ciencia = ?";
+                $params[] = $dados->data_ciencia;
+            } else {
+                $updates[] = "data_ciencia = NULL";
+            }
+        }
+        
+        if (isset($dados->recurso_status)) {
+            if ($dados->recurso_status) {
+                $updates[] = "recurso_status = ?";
+                $params[] = $dados->recurso_status;
+            } else {
+                $updates[] = "recurso_status = NULL";
+            }
+        }
+        
+        if (empty($updates)) {
+            http_response_code(400);
+            echo json_encode(['message' => 'Nenhum campo para atualizar.']);
+            return;
+        }
+        
+        $params[] = $id;
+        $sql = "UPDATE notificacoes SET " . implode(", ", $updates) . ", data_atualizacao = CURRENT_TIMESTAMP WHERE id = ?";
+        
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+        
+        http_response_code(200);
+        echo json_encode(['message' => 'Atualizado com sucesso!']);
+        
+    } catch (Exception $e) {
+        http_response_code(500);
+        echo json_encode(['message' => 'Erro ao atualizar: ' . $e->getMessage()]);
     }
 }
 ?>
