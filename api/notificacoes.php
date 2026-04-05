@@ -670,7 +670,9 @@ function atualizarNotificacao($pdo, $dados, $usuario) {
         http_response_code(200);
         echo json_encode(['message' => 'Notificação atualizada com sucesso!', 'id' => $id]);
     } catch (Exception $e) {
-        $pdo->rollBack();
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
         http_response_code(500);
         echo json_encode(['message' => 'Erro ao atualizar notificação: ' . $e->getMessage()]);
     }
@@ -690,7 +692,6 @@ function criarNotificacao($pdo, $dados, $usuario) {
         $stmtDuplicado = $pdo->prepare("SELECT id FROM notificacoes WHERE numero = ? AND ano = ?");
         $stmtDuplicado->execute([$numero, $ano]);
         if ($stmtDuplicado->fetch()) {
-            $pdo->rollBack();
             http_response_code(400);
             echo json_encode(['message' => "Já existe uma notificação com o número {$numero}/{$ano}."]);
             return;
@@ -701,7 +702,9 @@ function criarNotificacao($pdo, $dados, $usuario) {
         $stmtStatus->execute();
         $statusRascunho = $stmtStatus->fetch();
         if (!$statusRascunho) {
-            throw new Exception("Status 'rascunho' não encontrado. Execute o seed de tipos.");
+            http_response_code(400);
+            echo json_encode(['message' => "Status 'rascunho' não encontrado. Execute o seed de tipos."]);
+            return;
         }
         $statusId = $statusRascunho['id'];
         
@@ -812,7 +815,9 @@ function criarNotificacao($pdo, $dados, $usuario) {
         http_response_code(201);
         echo json_encode(['message' => 'Notificação criada com sucesso!', 'id' => $notificacao_id]);
     } catch (Exception $e) {
-        $pdo->rollBack();
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
         http_response_code(500);
         echo json_encode(['message' => 'Erro ao criar notificação: ' . $e->getMessage()]);
     }
