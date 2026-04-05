@@ -281,6 +281,10 @@ function listarNotificacoes($pdo, $usuario) {
             if ($isAdminDev) return true;
             
             $status = $n['status_slug'];
+            // Rascunho não é mostrado para usuários normais
+            if ($status === 'rascunho') {
+                return false;
+            }
             // Status que precisam de permissão específica
             if (in_array($status, ['lavrada', 'enviada', 'ciente'])) {
                 return $podeListarLavradas;
@@ -288,7 +292,7 @@ function listarNotificacoes($pdo, $usuario) {
             if ($status === 'cobranca') {
                 return $podeListarCobranca;
             }
-            // Rascunho e outras fases são visíveis para quem pode listar
+            // Status encerrada é visível
             return true;
         });
         

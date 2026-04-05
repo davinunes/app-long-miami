@@ -211,9 +211,13 @@ function carregarListaNotificacoes() {
                 if (statusLower === 'lavrada') {
                     acoesHtml += ` <button class="btn-small green" onclick="acaoRapidaNotificacao(${n.id}, 'enviada')" title="Marcar como Enviada">Enviar</button>`;
                 }
-                // Só mostra botão Encerrar se estiver no status correto (ciente)
+                // Só mostra botão Cobrar se estiver no status correto (ciente)
                 if (statusLower === 'ciente') {
                     acoesHtml += ` <button class="btn-small orange" onclick="acaoRapidaNotificacao(${n.id}, 'cobranca')" title="Marcar para Cobrança">Cobrar</button>`;
+                }
+                // Só mostra botão Encerrar se estiver em cobrança
+                if (statusLower === 'cobranca') {
+                    acoesHtml += ` <button class="btn-small red" onclick="acaoRapidaNotificacao(${n.id}, 'encerrada')" title="Encerrar notificação">Encerrar</button>`;
                 }
             }
 
