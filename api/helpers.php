@@ -116,3 +116,70 @@ function requireApiAlgumaPermissao($permissoes) {
 function podeEditarRecurso($tabela, $registroId, $permissaoPropria, $permissaoGeral) {
     return podeEditar($tabela, $registroId, $permissaoPropria, $permissaoGeral);
 }
+
+/**
+ * Redimensiona uma imagem para caber dentro de um máximo de pixels no maior lado
+ * Mantém proporção e reduz a qualidade
+ * 
+ * @param string $imageData Dados da imagem em Base64 ou binário
+ * @param int $maxPixels Tamanho máximo do maior lado (padrão: 600)
+ * @param int $quality Qualidade do JPEG (0-100, padrão: 80)
+ * @return string|null Dados da imagem redimensionada ou null se falhar
+ */
+function redimensionarImagem($imageData, $maxPixels = 600, $quality = 80) {
+    // Detectar se é base64
+    if (preg_match('/^data:image\/(\w+);base64,/', $imageData, $matches)) {
+        $imageData = base64_decode(preg_replace('/^data:image\/\w+;base64,/', '', $imageData));
+    }
+    
+    $source = imagecreatefromstring($imageData);
+    if (!$source) {
+        return null;
+    }
+    
+    $width = imagesx($source);
+    $height = imagesy($source);
+    
+    // Se já é menor que o máximo, retorna original
+    if ($width <= $maxPixels && $height <= $maxPixels) {
+        imagedestroy($source);
+        return $imageData;
+    }
+    
+    // Calcular novas dimensões mantendo proporção
+    if ($width > $height) {
+        $newWidth = $maxPixels;
+        $newHeight = round(($height / $width) * $maxPixels);
+    } else {
+        $newHeight = $maxPixels;
+        $newWidth = round(($width / $height) * $maxPixels);
+    }
+    
+    // Criar nova imagem
+    $resized = imagecreatetruecolor($newWidth, $newHeight);
+    
+    // Preservar transparência para PNG
+    imagealphablending($resized, false);
+    imagesavealpha($resized, true);
+    
+    // Redimensionar com reamostragem bicúbica
+    imagecopyresampled($resized, $source, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
+    
+    // Obter extensão original da imagem
+    $finfo = new finfo(FILEINFO_MIME_TYPE);
+    $mimeType = $finfo->buffer($imageData);
+    
+    // Gerar output
+    ob_start();
+    if ($mimeType === 'image/png') {
+        imagepng($resized, null, round($quality / 10)); // PNG usa 0-9, então convertemos
+    } else {
+        imagejpeg($resized, null, $quality);
+    }
+    $output = ob_get_clean();
+    
+    imagedestroy($source);
+    imagedestroy($resized);
+    
+    return $output ?: null;
+}

@@ -640,6 +640,8 @@ function atualizarNotificacao($pdo, $dados, $usuario) {
             foreach ($dados->fotos_fatos as $ordem => $foto) {
                 if(!isset($foto->b64)) continue;
                 $dados_imagem = base64_decode($foto->b64);
+                // Redimensionar imagem (máx 600px, qualidade 80%)
+                $dados_imagem = redimensionarImagem($foto->b64, 600, 80) ?: $dados_imagem;
                 $nome_arquivo = uniqid('img_' . $id . '_', true) . '.jpg';
                 $caminho_completo = UPLOADS_PATH . $nome_arquivo;
                 if (!is_dir(UPLOADS_PATH)) { mkdir(UPLOADS_PATH, 0755, true); }
@@ -782,6 +784,8 @@ function criarNotificacao($pdo, $dados, $usuario) {
             $stmt_imagens = $pdo->prepare($sql_imagens);
             foreach ($dados->fotos_fatos as $ordem => $foto) {
                 $dados_imagem = base64_decode($foto->b64);
+                // Redimensionar imagem (máx 600px, qualidade 80%)
+                $dados_imagem = redimensionarImagem($foto->b64, 600, 80) ?: $dados_imagem;
                 $nome_arquivo = uniqid('img_' . $notificacao_id . '_', true) . '.jpg';
                 $caminho_completo = UPLOADS_PATH . $nome_arquivo;
                 if (!is_dir(UPLOADS_PATH)) { mkdir(UPLOADS_PATH, 0755, true); }
