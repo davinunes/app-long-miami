@@ -150,25 +150,81 @@ $output("[3/5] Executando estrutura.sql...");
 $sql = file_get_contents($estruturaFile);
 
 // Remover comandos perigosos
-$sql = preg_replace('/SET FOREIGN_KEY_CHECKS = 0;/', '', $sql);
-$sql = preg_replace('/SET FOREIGN_KEY_CHECKS = 1;/', '', $sql);
-$sql = preg_replace('/SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";/', '', $sql);
+$sql = preg_replace('/SET FOREIGN_KEY_CHECKS = 0;/i', '', $sql);
+$sql = preg_replace('/SET FOREIGN_KEY_CHECKS = 1;/i', '', $sql);
+$sql = preg_replace('/SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";/i', '', $sql);
 
-// Separar statements
-$statements = array_filter(array_map('trim', explode(';', $sql)));
+// Função para separar statements SQL corretamente (ignora ; dentro de strings)
+function splitSqlStatements($sql) {
+    $statements = [];
+    $current = '';
+    $inString = false;
+    $stringChar = '';
+    $len = strlen($sql);
+    $i = 0;
+    
+    while ($i < $len) {
+        $char = $sql[$i];
+        $nextChar = $i + 1 < $len ? $sql[$i + 1] : '';
+        
+        // Detectar início/fim de string
+        if (!$inString && ($char === "'" || $char === '"')) {
+            $inString = true;
+            $stringChar = $char;
+            $current .= $char;
+        } elseif ($inString && $char === $stringChar && $nextChar === $stringChar) {
+            // Escape de aspas ('' ou "")
+            $current .= $char . $nextChar;
+            $i += 2;
+            continue;
+        } elseif ($inString && $char === $stringChar) {
+            $inString = false;
+            $current .= $char;
+        } elseif (!$inString && $char === ';' && $nextChar === ';') {
+            // ;; escaping
+            $current .= ';';
+            $i += 2;
+            continue;
+        } elseif (!$inString && $char === ';') {
+            $stmt = trim($current);
+            if (!empty($stmt)) {
+                $statements[] = $stmt;
+            }
+            $current = '';
+        } else {
+            $current .= $char;
+        }
+        
+        $i++;
+    }
+    
+    // Último statement
+    $stmt = trim($current);
+    if (!empty($stmt)) {
+        $statements[] = $stmt;
+    }
+    
+    return $statements;
+}
 
-// Separar CREATE TABLE e INSERT INTO
+$statements = splitSqlStatements($sql);
+
+// Filtrar statements relevantes
 $createStatements = [];
 $insertStatements = [];
 
 foreach ($statements as $statement) {
-    if (empty($statement) || strpos($statement, '--') === 0) continue;
+    $stmt = trim($statement);
+    if (empty($stmt)) continue;
     
-    if (stripos($statement, 'CREATE TABLE') !== false) {
-        $createStatements[] = $statement;
+    // Pular comentários
+    if (strpos($stmt, '--') === 0) continue;
+    
+    if (stripos($stmt, 'CREATE TABLE') !== false) {
+        $createStatements[] = $stmt;
     }
-    if (stripos($statement, 'INSERT INTO') !== false) {
-        $insertStatements[] = $statement;
+    if (stripos($stmt, 'INSERT INTO') !== false) {
+        $insertStatements[] = $stmt;
     }
 }
 
