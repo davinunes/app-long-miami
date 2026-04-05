@@ -237,6 +237,15 @@ function listarOcorrencias($pdo) {
         $stmt = $pdo->prepare("SELECT COUNT(*) FROM ocorrencia_anexos WHERE ocorrencia_id = ?");
         $stmt->execute([$o['id']]);
         $o['total_anexos'] = (int)$stmt->fetchColumn();
+        
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM ocorrencia_notificacoes WHERE ocorrencia_id = ?");
+        $stmt->execute([$o['id']]);
+        $o['total_notificacoes'] = (int)$stmt->fetchColumn();
+        
+        $stmt = $pdo->prepare("SELECT n.numero, n.ano, ns.slug as status_slug FROM ocorrencia_notificacoes ocn JOIN notificacoes n ON ocn.notificacao_id = n.id JOIN notificacao_status ns ON n.status_id = ns.id WHERE ocn.ocorrencia_id = ? ORDER BY n.id DESC LIMIT 1");
+        $stmt->execute([$o['id']]);
+        $ultimaNotificacao = $stmt->fetch();
+        $o['ultima_notificacao'] = $ultimaNotificacao ?: null;
     }
     
     http_response_code(200);

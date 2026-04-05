@@ -88,6 +88,31 @@ $podeVerMinhas = true;
         .ocorrencia-card.fase-recusada { border-left-color: #F44336; }
         .ocorrencia-card.fase-homologada { border-left-color: #4CAF50; }
         
+        .ocorrencia-card.vinculada {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e8f4fc 50%, #f0f7ff 100%);
+            border: 1px solid;
+            border-image: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%) 1;
+            border-left: 4px solid transparent;
+            border-image-slice: 1;
+        }
+        
+        .notificacao-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+        
+        .notificacao-badge i {
+            font-size: 14px;
+        }
+        
         .ocorrencia-header {
             display: flex;
             justify-content: space-between;
@@ -412,6 +437,16 @@ $podeVerMinhas = true;
             const faseClass = 'fase-' + o.fase;
             const faseLabel = o.fase.replace('_', ' ');
             const podeEditar = podeEditarOcorrencia(o);
+            const temNotificacao = o.total_notificacoes > 0;
+            const cardClass = temNotificacao ? `${faseClass} vinculada` : faseClass;
+            
+            let notificacaoBadge = '';
+            if (temNotificacao) {
+                const badgeText = o.total_notificacoes === 1 
+                    ? `<i class="material-icons">description</i> Notif.`
+                    : `<i class="material-icons">description</i> ${o.total_notificacoes} Notif.`;
+                notificacaoBadge = `<span class="notificacao-badge" title="${o.ultima_notificacao ? 'Última: ' + o.ultima_notificacao.numero + '/' + o.ultima_notificacao.ano : ''}">${badgeText}</span>`;
+            }
             
             let botoes = '';
             
@@ -428,10 +463,13 @@ $podeVerMinhas = true;
             }
             
             return `
-                <div class="ocorrencia-card ${faseClass}">
+                <div class="ocorrencia-card ${cardClass}">
                     <div class="ocorrencia-header">
                         <span class="ocorrencia-id">#${o.id}</span>
-                        <span class="fase-badge ${faseClass}">${faseLabel}</span>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            ${notificacaoBadge}
+                            <span class="fase-badge ${faseClass}">${faseLabel}</span>
+                        </div>
                     </div>
                     <div class="ocorrencia-titulo">${o.titulo}</div>
                     <div class="ocorrencia-info">
