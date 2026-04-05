@@ -285,13 +285,25 @@ function buscarOcorrenciasParaVincular($pdo, $busca) {
             FROM ocorrencias o
             LEFT JOIN usuarios u ON o.created_by = u.id
             LEFT JOIN ocorrencia_unidades ou ON o.id = ou.ocorrencia_id
-            WHERE o.fase = 'homologada' AND o.notificacao_id IS NULL
+            LEFT JOIN ocorrencia_notificacoes on2 ON o.id = on2.ocorrencia_id
+            WHERE o.fase = 'homologada' 
+            AND on2.id IS NULL
         ";
         
         $params = [];
         if ($busca) {
-            $sql .= " AND (o.titulo LIKE ? OR o.descricao_fato LIKE ?)";
-            $params = ['%' . $busca . '%', '%' . $busca . '%'];
+            $buscaStr = '%' . $busca . '%';
+            $params = [$buscaStr, $buscaStr, $buscaStr];
+            
+            // Verificar se é busca por número exato da ocorrência
+            if (is_numeric($busca)) {
+                $sql .= " AND (o.id = ? OR o.titulo LIKE ? OR o.descricao_fato LIKE ? OR CONCAT(COALESCE(ou.unidade_bloco, ''), ou.unidade_numero) LIKE ?)";
+            } else {
+                // Tentar normalizar busca de unidade (101A -> A101 ou A101 -> 101A)
+                $unidadeNormalizada = preg_replace('/[^a-zA-Z0-9]/', '', $busca);
+                $params[] = '%' . $unidadeNormalizada . '%';
+                $sql .= " AND (o.titulo LIKE ? OR o.descricao_fato LIKE ? OR REPLACE(CONCAT(COALESCE(ou.unidade_bloco, ''), ou.unidade_numero), ' ', '') LIKE ?)";
+            }
         }
         
         $sql .= " GROUP BY o.id ORDER BY o.data_criacao DESC LIMIT 20";
