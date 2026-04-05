@@ -16,6 +16,8 @@ $podeVincularUnidade = isAdmin() || temPermissao('ocorrencia.unidade.vincular');
 $podeCriarMensagem = isAdmin() || temPermissao('ocorrencia.mensagem.criar');
 $podeCriarAnexo = isAdmin() || temPermissao('ocorrencia.anexo.criar');
 $podeCriarEvidencia = isAdmin() || temPermissao('ocorrencia.evidencia.anexar');
+$podeExcluirAnexo = isAdmin() || temPermissao('ocorrencia.anexo.excluir');
+$podeExcluirAnexoProprio = isAdmin() || temPermissao('ocorrencia.anexo.excluir_proprio');
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -176,6 +178,8 @@ const PODE_VINCULAR_UNIDADE = <?php echo $podeVincularUnidade ? 'true' : 'false'
 const PODE_CRIAR_MENSAGEM = <?php echo $podeCriarMensagem ? 'true' : 'false'; ?>;
 const PODE_CRIAR_ANEXO = <?php echo $podeCriarAnexo ? 'true' : 'false'; ?>;
 const PODE_CRIAR_EVIDENCIA = <?php echo $podeCriarEvidencia ? 'true' : 'false'; ?>;
+const PODE_EXCLUIR_ANEXO = <?php echo $podeExcluirAnexo ? 'true' : 'false'; ?>;
+const PODE_EXCLUIR_ANEXO_PROPRIO = <?php echo $podeExcluirAnexoProprio ? 'true' : 'false'; ?>;
 
 // Permissões de fase
 const PODE_COLOCAR_EM_ANALISE = <?php echo $podeColocarEmAnalise ? 'true' : 'false'; ?>;
@@ -376,7 +380,7 @@ function renderOcorrencia(occ) {
         
         '<div class="section-card">' +
         '<div class="section-title">Anexos</div>' +
-        '<div class="anexo-lista" id="anexos-container">' + renderAnexos(occ.anexos || [], podeEditarProprio) + '</div>';
+        '<div class="anexo-lista" id="anexos-container">' + renderAnexos(occ.anexos || []) + '</div>';
     
     if (PODE_CRIAR_ANEXO || PODE_CRIAR_EVIDENCIA) {
         html += '<hr style="margin: 15px 0; border: none; border-top: 1px solid #eee;">' +
@@ -442,12 +446,12 @@ function converterLinks(texto) {
     });
 }
 
-function renderAnexos(anexos, podeEditarLocal) {
+function renderAnexos(anexos) {
     if (!anexos || anexos.length === 0) {
         return '<p style="color: #999;">Nenhum anexo.</p>';
     }
     return anexos.map(function(a) {
-        var podeExcluir = podeEditarLocal && (isAdmin || a.usuario_id === usuarioId);
+        var podeExcluir = PODE_EXCLUIR_ANEXO || (PODE_EXCLUIR_ANEXO_PROPRIO && a.usuario_id === usuarioId);
         var conteudo = '';
         if (a.tipo === 'link') {
             var iconeLink = getIconeLink(a.url);
