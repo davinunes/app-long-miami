@@ -489,6 +489,23 @@ function atualizarNotificacao($pdo, $dados, $usuario) {
         $pdo->beginTransaction();
         $id = (int)$dados->id;
         
+        // Buscar status_id pelo slug ou manter o atual
+        $statusId = null;
+        if (!empty($dados->status_slug)) {
+            $stmtStatus = $pdo->prepare("SELECT id FROM notificacao_status WHERE slug = ?");
+            $stmtStatus->execute([$dados->status_slug]);
+            $statusRow = $stmtStatus->fetch();
+            if ($statusRow) {
+                $statusId = $statusRow['id'];
+            }
+        }
+        if (!$statusId) {
+            $stmtStatusAtual = $pdo->prepare("SELECT status_id FROM notificacoes WHERE id = ?");
+            $stmtStatusAtual->execute([$id]);
+            $rowStatus = $stmtStatusAtual->fetch();
+            $statusId = $rowStatus ? $rowStatus['status_id'] : null;
+        }
+        
         // Validar numeração duplicada
         $partes_numero = explode('/', $dados->numero ?? '');
         $numero = $partes_numero[0] ?? '';
@@ -572,7 +589,7 @@ function atualizarNotificacao($pdo, $dados, $usuario) {
             $dados->url_recurso ?? null, 
             $dados->assunto_id, 
             $dados->tipo_id, 
-            $dados->status_id, 
+            $statusId, 
             $dados->ocorrencia_id ?? null, 
             $id 
         ]);

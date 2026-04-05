@@ -137,6 +137,7 @@ $podeEncerrar = isAdmin() || temPermissao('notificacao.encerrar');
         // EH_ADMIN_DEV, PERMISSOES_USUARIO e API_BASE_URL_PHP já são definidos pelo menu.php
 
         let notificationData = null;
+        let CURRENT_STATUS_SLUG = null;
 
         $(document).ready(function() {
             M.AutoInit();
@@ -180,6 +181,9 @@ $podeEncerrar = isAdmin() || temPermissao('notificacao.encerrar');
         }
 
         function renderNotificationView(data) {
+            // Salvar status_slug para uso no salvamento
+            CURRENT_STATUS_SLUG = data.status_slug;
+            
             $('#page-title').text(`Notificação #${data.numero}/${data.ano}`);
             $('#status-badge-container').html(`<span class="status-badge status-${data.status_slug}">${data.status_nome}</span>`);
             
@@ -350,9 +354,10 @@ $podeEncerrar = isAdmin() || temPermissao('notificacao.encerrar');
             if (typeof getFormData !== 'function') return;
             const dados = getFormData();
             
-            // Se for edição, incluir o ID
+            // Se for edição, incluir o ID e o status_slug atual
             if (NOTIFICACAO_ID) {
                 dados.id = NOTIFICACAO_ID;
+                dados.status_slug = CURRENT_STATUS_SLUG;
             }
             
             // Incluir datas se o usuário tiver permissão
