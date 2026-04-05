@@ -1,6 +1,10 @@
 // js/funcs.js - Funções compartilhadas (sem JWT)
 // As APIs agora usam sessões PHP diretamente
 
+if (typeof API_BASE_URL_PHP === 'undefined') {
+    var API_BASE_URL_PHP = window.location.origin + '/api';
+}
+
 let imageStore = [];
 let currentPdfUrl = null;
 
@@ -216,6 +220,7 @@ function fazerLogout() {
 }
 
 async function gerarPDF() {
+    const apiBase = typeof API_BASE_URL_PHP !== 'undefined' ? API_BASE_URL_PHP : window.location.origin + '/api';
     showStatus('Gerando preview do PDF...', 'loading');
     
     try {
@@ -227,7 +232,7 @@ async function gerarPDF() {
         
         dados.fotos_fatos = await getExistingImagesForPDF();
         
-        const response = await fetch(`${API_BASE_URL_PHP}/gerar_pdf.php`, {
+        const response = await fetch(`${apiBase}/gerar_pdf.php`, {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json'

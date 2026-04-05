@@ -82,8 +82,19 @@ $podeEncerrar = isAdmin() || temPermissao('notificacao.encerrar');
                 <div class="preview-section">
                     <h3>Preview do Documento</h3>
                     <div class="pdf-preview" id="pdfPreview" style="background: #fafafa; border: 1px solid #eee; min-height: 400px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
-                        <div id="pdf-msg">O PDF será carregado aqui</div>
+                        <div class="pdf-placeholder" id="pdfPlaceholder">
+                            <div>📋</div>
+                            <p>Clique em "Gerar Preview" para visualizar o PDF</p>
+                        </div>
                         <iframe id="pdfViewer" style="display: none; width: 100%; height: 600px; border: none;"></iframe>
+                    </div>
+                    <div style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button type="button" class="btn blue" onclick="gerarPDF()">
+                            <i class="material-icons left">visibility</i> Gerar Preview
+                        </button>
+                        <button type="button" class="btn-secondary" onclick="baixarPDF()" id="btnDownload" style="display: none;">
+                            💾 Baixar PDF
+                        </button>
                     </div>
                     
                     <div class="timeline-section section-card" id="history-section" style="display: none; margin-top: 30px;">
