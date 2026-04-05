@@ -293,16 +293,14 @@ function buscarOcorrenciasParaVincular($pdo, $busca) {
         $params = [];
         if ($busca) {
             $buscaStr = '%' . $busca . '%';
-            $params = [$buscaStr, $buscaStr, $buscaStr];
             
             // Verificar se é busca por número exato da ocorrência
             if (is_numeric($busca)) {
+                $params = [$busca, $buscaStr, $buscaStr, $buscaStr];
                 $sql .= " AND (o.id = ? OR o.titulo LIKE ? OR o.descricao_fato LIKE ? OR CONCAT(COALESCE(ou.unidade_bloco, ''), ou.unidade_numero) LIKE ?)";
             } else {
-                // Tentar normalizar busca de unidade (101A -> A101 ou A101 -> 101A)
-                $unidadeNormalizada = preg_replace('/[^a-zA-Z0-9]/', '', $busca);
-                $params[] = '%' . $unidadeNormalizada . '%';
-                $sql .= " AND (o.titulo LIKE ? OR o.descricao_fato LIKE ? OR REPLACE(CONCAT(COALESCE(ou.unidade_bloco, ''), ou.unidade_numero), ' ', '') LIKE ?)";
+                $params = [$buscaStr, $buscaStr, $buscaStr];
+                $sql .= " AND (o.titulo LIKE ? OR o.descricao_fato LIKE ? OR CONCAT(COALESCE(ou.unidade_bloco, ''), ou.unidade_numero) LIKE ?)";
             }
         }
         
