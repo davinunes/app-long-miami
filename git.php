@@ -22,7 +22,7 @@ if (isset($_GET['action'])) {
 		$gitCmd = "cd $htmlPath && git pull && git add . && git commit -m \"$mensagem\" && git push";
 
 		// Executa via script SSH Python existente no projeto
-		$fullCmd = "$pythonPath $sshScript '$gitCmd'";
+		$fullCmd = "$pythonPath $sshScript '$gitCmd' 2>&1";
 
 		$output = shell_exec($fullCmd);
 		echo json_encode(['success' => true, 'output' => $output]);
