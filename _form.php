@@ -51,12 +51,12 @@
 
 <div class="form-group">
     <label for="unidade">Unidade:</label>
-    <input type="text" id="unidade" placeholder="Ex: A101 ou 101" required>
+    <input type="text" id="unidade" placeholder="Ex: 101" required>
 </div>
 
 <div class="form-group">
-    <label for="bloco">Bloco (automático):</label>
-    <input type="text" id="bloco" placeholder="Ex: A"  style="background-color: #e9ecef;">
+    <label for="bloco">Bloco:</label>
+    <input type="text" id="bloco" placeholder="Ex: A">
 </div>
 
 <div class="form-group">
@@ -97,7 +97,7 @@
         </button>
     </div>
     
-    <textarea id="fundamentacao_legal" rows="4" placeholder="Artigos do regimento, leis, etc..." oninput="autoExpand(this)"></textarea>
+    <textarea id="fundamentacao_legal" class="tinymce-target" data-tinymce="notificacao_fundamentacao" rows="4" placeholder="Artigos do regimento, leis, etc..." oninput="autoExpand(this)"></textarea>
 </div>
 
 <div class="form-group hidden" id="valor_multa_group">
